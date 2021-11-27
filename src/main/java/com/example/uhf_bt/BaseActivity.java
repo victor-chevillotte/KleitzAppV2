@@ -7,6 +7,11 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.rscja.deviceapi.interfaces.ConnectionStatus;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by WuShengjun on 2019/7/3.
  * Description:
@@ -16,14 +21,6 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // 横竖屏判断
-//        if(Utils.isLandscape()) {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//        } else {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-//        }
-
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
@@ -40,4 +37,33 @@ public class BaseActivity extends AppCompatActivity {
     public void showToast(int resId) {
         showToast(getString(resId));
     }
+
+    //------------连接状态监听-----------------------
+    public List<IConnectStatus> connectStatusList = new ArrayList<>();
+
+    public void addConnectStatusNotice(StartActivity.IConnectStatus iConnectStatus) {
+        connectStatusList.add(iConnectStatus);
+    }
+
+    public void removeConnectStatusNotice(StartActivity.IConnectStatus iConnectStatus) {
+        connectStatusList.remove(iConnectStatus);
+    }
+
+    public interface IConnectStatus {
+        void getStatus(ConnectionStatus connectionStatus);
+    }
+
+    public void saveConnectedDevice(String address, String name) {
+        List<String[]> list = FileUtils.readXmlList();
+        for (int k = 0; k < list.size(); k++) {
+            if (address.equals(list.get(k)[0])) {
+                list.remove(list.get(k));
+                break;
+            }
+        }
+        String[] strArr = new String[]{address, name};
+        list.add(0, strArr);
+        FileUtils.saveXmlList(list);
+    }
+
 }

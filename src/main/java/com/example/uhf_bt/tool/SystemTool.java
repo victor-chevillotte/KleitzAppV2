@@ -437,19 +437,6 @@ public class SystemTool {
 		}
 	}
 
-	/**
-	 * 获取设备唯一标识号
-	 * @return 若不存在返回"0"
-	 */
-	public static String getIMEI(Context context) {
-		String imei = "";
-		if(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
-			TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-			imei = tm.getDeviceId();
-			return TextUtils.isEmpty(imei) ? "0" : imei;
-		}
-		return imei;
-	}
 
 	/**
 	 * 获取app版本名字

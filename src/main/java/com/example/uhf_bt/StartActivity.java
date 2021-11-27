@@ -386,19 +386,6 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
         }
     }
 
-    public void saveConnectedDevice(String address, String name) {
-        List<String[]> list = FileUtils.readXmlList();
-        for (int k = 0; k < list.size(); k++) {
-            if (address.equals(list.get(k)[0])) {
-                list.remove(list.get(k));
-                break;
-            }
-        }
-        String[] strArr = new String[]{address, name};
-        list.add(0, strArr);
-        FileUtils.saveXmlList(list);
-    }
-
     private void reConnect(String deviceAddress) {
         if (!mIsActiveDisconnect && mReConnectCount > 0) {
             mReConnectCount--;
@@ -411,21 +398,6 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
             //tvAddress.setText(tvAddress.getText().toString().replace(oldName, newName));
             remoteBTName = newName;
         }
-    }
-
-    //------------连接状态监听-----------------------
-    private List<StartActivity.IConnectStatus> connectStatusList = new ArrayList<>();
-
-    public void addConnectStatusNotice(StartActivity.IConnectStatus iConnectStatus) {
-        connectStatusList.add(iConnectStatus);
-    }
-
-    public void removeConnectStatusNotice(StartActivity.IConnectStatus iConnectStatus) {
-        connectStatusList.remove(iConnectStatus);
-    }
-
-    public interface IConnectStatus {
-        void getStatus(ConnectionStatus connectionStatus);
     }
 
     @Override

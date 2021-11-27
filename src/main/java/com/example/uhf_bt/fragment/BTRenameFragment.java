@@ -22,7 +22,7 @@ import androidx.fragment.app.Fragment;
 
 public class BTRenameFragment extends Fragment {
     static boolean isExit_ = false;
-    StartActivity mContext;
+    MainActivity mContext;
     EditText etNewName;
     EditText etOldName;
     Button btSet;
@@ -48,7 +48,7 @@ public class BTRenameFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         isExit_ = false;
-        mContext = (StartActivity) getActivity();
+        mContext = (MainActivity) getActivity();
         etNewName = (EditText) getActivity().findViewById(R.id.etNewName);
         etOldName = (EditText) getActivity().findViewById(R.id.etOldName);
         etNewName.setText(mContext.remoteBTName);

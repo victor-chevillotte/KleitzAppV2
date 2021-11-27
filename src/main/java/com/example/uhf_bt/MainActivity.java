@@ -1,10 +1,8 @@
 package com.example.uhf_bt;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -15,41 +13,26 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Process;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.example.uhf_bt.fragment.BTRenameFragment;
 import com.example.uhf_bt.fragment.BarcodeFragment;
-import com.example.uhf_bt.fragment.UHFEraseFragment;
-import com.example.uhf_bt.fragment.UHFKillFragment;
-import com.example.uhf_bt.fragment.UHFLockFragment;
 import com.example.uhf_bt.fragment.UHFNewReadTagFragment;
-import com.example.uhf_bt.fragment.UHFReadFragment;
-import com.example.uhf_bt.fragment.UHFReadTagFragment;
 import com.example.uhf_bt.fragment.UHFSetFragment;
 import com.example.uhf_bt.fragment.UHFUpdataFragment;
-import com.example.uhf_bt.fragment.UHFWriteFragment;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
-import com.rscja.deviceapi.interfaces.ConnectionStatusCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTabHost;
@@ -61,14 +44,11 @@ public class MainActivity extends BaseActivity {
     public String remoteBTAdd = "";
     private final static String TAG = "MainActivity";
     private static final int REQUEST_ENABLE_BT = 2;
-    private static final int REQUEST_SELECT_DEVICE = 1;
     public static Activity fa;
 
     public BluetoothDevice mDevice = null;
     private FragmentTabHost mTabHost;
     private FragmentManager fm;
-    private Button btn_connect, btn_search;
-    private TextView tvAddress;
     public BluetoothAdapter mBtAdapter = null;
     public RFIDWithUHFBLE uhf = RFIDWithUHFBLE.getInstance();
 
@@ -260,19 +240,7 @@ public class MainActivity extends BaseActivity {
 
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_update)).setIndicator(getString(R.string.title_update)), UHFUpdataFragment.class, null);
 
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_inventory)).setIndicator(getString(R.string.title_inventory)), UHFReadTagFragment.class, null);
-
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_2d_Scan)).setIndicator(getString(R.string.title_2d_Scan)), BarcodeFragment.class, null);
-
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_read)).setIndicator(getString(R.string.uhf_msg_tab_read)), UHFReadFragment.class, null);
-
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_write)).setIndicator(getString(R.string.uhf_msg_tab_write)), UHFWriteFragment.class, null);
-
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_lock)).setIndicator(getString(R.string.uhf_msg_tab_lock)), UHFLockFragment.class, null);
-
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_kill)).setIndicator(getString(R.string.uhf_msg_tab_kill)), UHFKillFragment.class, null);
-
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_erase)).setIndicator(getString(R.string.uhf_msg_tab_erase)), UHFEraseFragment.class, null);
 
 
     }
@@ -298,18 +266,11 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private List<IConnectStatus> connectStatusList = new ArrayList<>();
-
-    public void addConnectStatusNotice(IConnectStatus iConnectStatus) {
-        connectStatusList.add(iConnectStatus);
-    }
-
-    public void removeConnectStatusNotice(IConnectStatus iConnectStatus) {
-        connectStatusList.remove(iConnectStatus);
-    }
-
-    public interface IConnectStatus {
-        void getStatus(ConnectionStatus connectionStatus);
+    public void updateConnectMessage(String oldName, String newName) {
+        if (!TextUtils.isEmpty(oldName) && !TextUtils.isEmpty(newName)) {
+            //tvAddress.setText(tvAddress.getText().toString().replace(oldName, newName));
+            remoteBTName = newName;
+        }
     }
 
     private boolean isLocationEnabled() {
