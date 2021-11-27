@@ -266,13 +266,6 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    public void updateConnectMessage(String oldName, String newName) {
-        if (!TextUtils.isEmpty(oldName) && !TextUtils.isEmpty(newName)) {
-            //tvAddress.setText(tvAddress.getText().toString().replace(oldName, newName));
-            remoteBTName = newName;
-        }
-    }
-
     private boolean isLocationEnabled() {
         int locationMode = 0;
         String locationProviders;

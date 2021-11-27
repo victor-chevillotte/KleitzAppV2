@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.uhf_bt.BaseActivity;
 import com.example.uhf_bt.FileUtils;
 import com.example.uhf_bt.MainActivity;
 import com.example.uhf_bt.R;
@@ -60,15 +61,15 @@ public class BTRenameFragment extends Fragment {
             public void onClick(View v) {
                 String newName = etNewName.getText().toString();
                 if (newName != null && newName.length() == 0) {
-                    Toast.makeText(mContext, "设置失败", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, "Veuillez indiquer un nom valide.", Toast.LENGTH_SHORT).show();
                 } else {
                     boolean result = mContext.uhf.setRemoteBluetoothName(newName);
                     if (result) {
                         mContext.updateConnectMessage(mContext.remoteBTName, newName);
                         mContext.saveConnectedDevice(mContext.remoteBTAdd, newName);
-                        Toast.makeText(mContext, "设置成功", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, "Antenne renommée avec succès", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(mContext, "设置失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, "Echec du renommage.", Toast.LENGTH_SHORT).show();
                     }
                 }
             }

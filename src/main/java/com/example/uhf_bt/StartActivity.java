@@ -42,8 +42,6 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
     private boolean mIsActiveDisconnect = true; // 是否主动断开连接
     private static final int RECONNECT_NUM = 1; // 重连次数
     private int mReConnectCount = RECONNECT_NUM; // 重新连接次数
-    public String remoteBTName = "";
-    public String remoteBTAdd = "";
     private TextView tvAddress;
 
 
@@ -94,7 +92,6 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "qgjdsgqdsgdgd");
         uhf.init(getApplicationContext());
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter.isEnabled())
@@ -390,13 +387,6 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
         if (!mIsActiveDisconnect && mReConnectCount > 0) {
             mReConnectCount--;
             connect(deviceAddress);
-        }
-    }
-
-    public void updateConnectMessage(String oldName, String newName) {
-        if (!TextUtils.isEmpty(oldName) && !TextUtils.isEmpty(newName)) {
-            //tvAddress.setText(tvAddress.getText().toString().replace(oldName, newName));
-            remoteBTName = newName;
         }
     }
 

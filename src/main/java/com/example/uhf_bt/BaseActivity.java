@@ -2,6 +2,7 @@ package com.example.uhf_bt;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -24,6 +25,8 @@ public class BaseActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
+    public String remoteBTName = "";
+    public String remoteBTAdd = "";
     private Toast toast;
 
     public void showToast(String text) {
@@ -47,6 +50,13 @@ public class BaseActivity extends AppCompatActivity {
 
     public void removeConnectStatusNotice(StartActivity.IConnectStatus iConnectStatus) {
         connectStatusList.remove(iConnectStatus);
+    }
+
+    public void updateConnectMessage(String oldName, String newName) {
+        if (!TextUtils.isEmpty(oldName) && !TextUtils.isEmpty(newName)) {
+            //tvAddress.setText(tvAddress.getText().toString().replace(oldName, newName));
+            remoteBTName = newName;
+        }
     }
 
     public interface IConnectStatus {
