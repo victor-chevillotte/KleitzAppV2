@@ -1,0 +1,101 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion '28.0.2'
+
+    defaultConfig {
+        applicationId "com.example.uhf_bt"
+        minSdkVersion 18
+        targetSdkVersion 22
+        versionCode 4
+        versionName "1.4.3"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    signingConfigs {
+        debug {
+            File strFile = new File("./uhf-ble_release.jks")
+            storeFile file(strFile)
+            storePassword "123456"
+            keyPassword "123456"
+            keyAlias "key0"
+        }
+        release {
+            File strFile = new File("./uhf-ble_release.jks")
+            storeFile file(strFile)
+            storePassword "123456"
+            keyPassword "123456"
+            keyAlias "key0"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        // 自定义apk名称
+        android.applicationVariants.all { variant ->
+            variant.outputs.all {
+                outputFileName = "UHF-ble_v${defaultConfig.versionName}.apk"
+            }
+        }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
+    }
+}
+
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.1.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+//    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+//        exclude group: 'com.android.support', module: 'support-annotations'
+//    })
+//    testCompile 'junit:junit:4.12'
+
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha05'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation files('libs/cw-deviceapiver20191022.jar')
+    // 蓝牙固件升级
+    implementation('no.nordicsemi.android:dfu:1.9.0') {
+        exclude group: 'com.android.support'
+    }
+}
