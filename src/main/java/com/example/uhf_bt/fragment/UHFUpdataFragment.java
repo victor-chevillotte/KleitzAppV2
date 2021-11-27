@@ -22,6 +22,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.uhf_bt.MainActivity;
 import com.example.uhf_bt.R;
 import com.example.uhf_bt.StartActivity;
 import com.example.uhf_bt.filebrowser.FileManagerActivity;
@@ -45,7 +46,7 @@ import no.nordicsemi.android.nrftoolbox.dfu.DfuService;
 
 public class UHFUpdataFragment extends Fragment implements View.OnClickListener {
 
-    StartActivity mContext;
+    MainActivity mContext;
     TextView tvPath, tvMsg;
     Button btSelect;
     Button btnUpdata, btnReadVere;
@@ -71,7 +72,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mContext = (StartActivity) getActivity();
+        mContext = (MainActivity) getActivity();
 
         tvPath = (TextView) mContext.findViewById(R.id.tvPath);
         tvMsg = (TextView) mContext.findViewById(R.id.tvMsg);
@@ -357,7 +358,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
     }
 
     private void reconnect() {
-        mContext.connect(mContext.mDevice.getAddress());
+        mContext.uhf.connect(mContext.mDevice.getAddress());
     }
 
     public class PathReceiver extends BroadcastReceiver {
