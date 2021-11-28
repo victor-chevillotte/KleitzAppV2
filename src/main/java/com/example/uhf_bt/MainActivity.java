@@ -242,18 +242,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 }
             }
         });
-//        addConnectStatusNotice(mConnectStatus);
-
-       /* if (getUserVisibleHint()) {
-            //alertTips(); //j'ai retire ca
-            if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-                setViewsEnabled(true);
-                getMode(false);
-            } else {
-                cbFilter.setChecked(false);
-                setViewsEnabled(false);
-            }
-        }*/
+        addConnectStatusNotice(mConnectStatus);
         fa = this;
         if (uhf.getConnectStatus() == ConnectionStatus.DISCONNECTED)
             finish();
@@ -262,7 +251,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         initUI();
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
-        //checkLocationEnable();// a voir
+        //checkLocationEnable(); à mettre en place ulterieurement
         Utils.initSound(getApplicationContext());
     }
 
@@ -270,6 +259,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected void onDestroy() {
         Utils.freeSound();
         unregisterReceiver(bluetoothBroadcastReceiver);
+        isExit = true;
+        removeConnectStatusNotice((MainActivity.IConnectStatus) mConnectStatus);
         super.onDestroy();
     }
 
@@ -459,13 +450,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             stopInventory();
         }
     }
-/*
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        isExit = true;
-        removeConnectStatusNotice((MainActivity.IConnectStatus) mConnectStatus);
-    }*/
 
     @Override
     public void onClick(View view) {
@@ -497,7 +481,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 Intent intent=new Intent(MainActivity.this, UHFSettingsActivity.class);
                 intent.putExtra("BTMode",true);
                 MainActivity.this.startActivity(intent);
-                //MainActivity.this.finish();
                 break;
         }
     }
@@ -868,6 +851,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             return true;
         }
     }
+    /* A mettre en place ulterieurement
     private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 100;
     private static final int REQUEST_ACTION_LOCATION_SETTINGS = 3;
 
@@ -903,6 +887,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             locationProviders = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
             return !TextUtils.isEmpty(locationProviders);
         }
-    }
+    }*/
 
 }
