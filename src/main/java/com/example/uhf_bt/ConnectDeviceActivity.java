@@ -23,7 +23,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.rscja.deviceapi.RFIDWithUHFBLE;
+
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback;
 import com.rscja.deviceapi.interfaces.ScanBTCallback;
@@ -35,10 +35,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StartActivity extends BaseActivity implements View.OnClickListener {
+public class ConnectDeviceActivity extends BaseActivity implements View.OnClickListener {
 
     public BluetoothDevice mDevice = null;
-    StartActivity.BTStatus btStatus = new StartActivity.BTStatus();
+    ConnectDeviceActivity.BTStatus btStatus = new ConnectDeviceActivity.BTStatus();
     private boolean mIsActiveDisconnect = true; // 是否主动断开连接
     private static final int RECONNECT_NUM = 1; // 重连次数
     private int mReConnectCount = RECONNECT_NUM; // 重新连接次数
@@ -100,10 +100,10 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
 
-        /*Intent intent=new Intent(StartActivity.this,MainActivity.class);
+        /*Intent intent=new Intent(ConnectDeviceActivity.this,ScanListActivity.class);
         intent.putExtra("BTMode",true);
-        StartActivity.this.startActivity(intent);
-        StartActivity.this.finish();*/
+        ConnectDeviceActivity.this.startActivity(intent);
+        ConnectDeviceActivity.this.finish();*/
     }
 
     @Override
@@ -162,7 +162,7 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
             }
         });
 
-        boolean isHistoryList = getIntent().getBooleanExtra(StartActivity.SHOW_HISTORY_CONNECTED_LIST, false);
+        boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
         if (isHistoryList) {
             tvTitle.setText(R.string.history_connected_device);
             mEmptyList.setText(R.string.no_history);
@@ -206,7 +206,6 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            //Log.d(TAG, "扫描成功");
                             if (bluetoothDevice.getName() != null) {
                                 MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName());
                                 addDevice(myDevice, rssi);
@@ -276,7 +275,7 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
             if(!TextUtils.isEmpty(address)) {
                 String deviceAddress = device.getAddress();
                 if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && deviceAddress.equals(remoteBTAdd)) {
-                    Intent newIntent = new Intent(StartActivity.this,MainActivity.class);
+                    Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
                     Bundle b = new Bundle();
                     b.putString(BluetoothDevice.EXTRA_DEVICE, deviceAddress);
                     Bundle b2 = new Bundle();
@@ -285,7 +284,7 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
                     newIntent.putExtras(b2);
                     newIntent.putExtra("BTMode",true);
                     uhf.stopScanBTDevices();
-                    StartActivity.this.startActivity(newIntent);
+                    ConnectDeviceActivity.this.startActivity(newIntent);
                 }
                 else if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED)
                 {
@@ -336,7 +335,7 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
 
                         tvAddress.setText(String.format("%s(%s)\nconnected", remoteBTName, remoteBTAdd));
                         showToast(R.string.connect_success);
-                        Intent newIntent = new Intent(StartActivity.this,MainActivity.class);
+                        Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
                         Bundle b = new Bundle();
                         b.putString(BluetoothDevice.EXTRA_DEVICE, device.getAddress());
                         Bundle b2 = new Bundle();
@@ -345,7 +344,7 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
                         newIntent.putExtras(b2);
                         newIntent.putExtra("BTMode",true);
                         uhf.stopScanBTDevices();
-                        StartActivity.this.startActivity(newIntent);
+                        ConnectDeviceActivity.this.startActivity(newIntent);
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
                             saveConnectedDevice(remoteBTAdd, remoteBTName);
                         }
@@ -361,7 +360,7 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
                             if (shouldShowDisconnected())
                             {
                                 tvAddress.setText("disconnected");
-                                MainActivity.fa.finish();
+                                ScanListActivity.fa.finish();
                             }
                         }
                         //showToast(R.string.disconnect);
@@ -372,7 +371,7 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
                         }*/
                     }
 
-                    for (StartActivity.IConnectStatus iConnectStatus : connectStatusList) {
+                    for (ConnectDeviceActivity.IConnectStatus iConnectStatus : connectStatusList) {
                         if (iConnectStatus != null) {
                             iConnectStatus.getStatus(connectionStatus);
                         }

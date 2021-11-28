@@ -47,11 +47,11 @@ public class BaseActivity extends AppCompatActivity {
     //------------连接状态监听-----------------------
     public List<IConnectStatus> connectStatusList = new ArrayList<>();
 
-    public void addConnectStatusNotice(StartActivity.IConnectStatus iConnectStatus) {
+    public void addConnectStatusNotice(ConnectDeviceActivity.IConnectStatus iConnectStatus) {
         connectStatusList.add(iConnectStatus);
     }
 
-    public void removeConnectStatusNotice(StartActivity.IConnectStatus iConnectStatus) {
+    public void removeConnectStatusNotice(ConnectDeviceActivity.IConnectStatus iConnectStatus) {
         connectStatusList.remove(iConnectStatus);
     }
 

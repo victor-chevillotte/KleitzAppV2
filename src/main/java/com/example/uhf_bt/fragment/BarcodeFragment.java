@@ -13,7 +13,7 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.uhf_bt.MainActivity;
+import com.example.uhf_bt.ScanListActivity;
 import com.example.uhf_bt.R;
 import com.example.uhf_bt.Utils;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
@@ -26,7 +26,7 @@ public class BarcodeFragment extends Fragment implements View.OnClickListener{
 
 
     static boolean isExit_=false;
-    MainActivity mContext;
+    ScanListActivity mContext;
     ScrollView scrBarcode;
     TextView tvData;
     Button btnScan,btClear;
@@ -60,7 +60,7 @@ public class BarcodeFragment extends Fragment implements View.OnClickListener{
          btnScan.setOnClickListener(this);
          btClear.setOnClickListener(this);
          spingCodingFormat=(Spinner)getActivity().findViewById(R.id.spingCodingFormat);
-         mContext=(MainActivity) getActivity();
+         mContext=(ScanListActivity) getActivity();
          mContext.uhf.setKeyEventCallback(new KeyEventCallback() {
              @Override
              public void onKeyDown(int keycode) {

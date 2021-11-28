@@ -22,9 +22,9 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.uhf_bt.MainActivity;
+import com.example.uhf_bt.ConnectDeviceActivity;
+import com.example.uhf_bt.ScanListActivity;
 import com.example.uhf_bt.R;
-import com.example.uhf_bt.StartActivity;
 import com.example.uhf_bt.filebrowser.FileManagerActivity;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
@@ -46,7 +46,7 @@ import no.nordicsemi.android.nrftoolbox.dfu.DfuService;
 
 public class UHFUpdataFragment extends Fragment implements View.OnClickListener {
 
-    MainActivity mContext;
+    ScanListActivity mContext;
     TextView tvPath, tvMsg;
     Button btSelect;
     Button btnUpdata, btnReadVere;
@@ -72,7 +72,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mContext = (MainActivity) getActivity();
+        mContext = (ScanListActivity) getActivity();
 
         tvPath = (TextView) mContext.findViewById(R.id.tvPath);
         tvMsg = (TextView) mContext.findViewById(R.id.tvMsg);
@@ -93,7 +93,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
         mContext.addConnectStatusNotice(iConnectStatus);
     }
 
-    private StartActivity.IConnectStatus iConnectStatus = new StartActivity.IConnectStatus() {
+    private ConnectDeviceActivity.IConnectStatus iConnectStatus = new ConnectDeviceActivity.IConnectStatus() {
         @Override
         public void getStatus(ConnectionStatus connectionStatus) {
             Log.e(TAG, "reconnected>connectionStatus=" + connectionStatus);

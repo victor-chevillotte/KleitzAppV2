@@ -112,23 +112,23 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
       if (!isScanning) {
           if (item.getItemId() == R.id.UHF_Battery) {
               String ver = getString(R.string.action_uhf_bat) + ":" + uhf.getBattery() + "%";
-              Utils.alert(MainActivity.this, R.string.action_uhf_bat, ver, R.drawable.webtext);
+              Utils.alert(ScanListActivity.this, R.string.action_uhf_bat, ver, R.drawable.webtext);
           } else if (item.getItemId() == R.id.UHF_T) {
               String temp = getString(R.string.title_about_Temperature) + ":" + uhf.getTemperature() + "℃";
-              Utils.alert(MainActivity.this, R.string.title_about_Temperature, temp, R.drawable.webtext);
+              Utils.alert(ScanListActivity.this, R.string.title_about_Temperature, temp, R.drawable.webtext);
           } else if (item.getItemId() == R.id.UHF_ver) {
               String ver = uhf.getVersion();
-              Utils.alert(MainActivity.this, R.string.action_uhf_ver, ver, R.drawable.webtext);
+              Utils.alert(ScanListActivity.this, R.string.action_uhf_ver, ver, R.drawable.webtext);
           } else if (item.getItemId() == R.id.ble_ver) {
               HashMap<String, String> versionMap = uhf.getBluetoothVersion();
               if (versionMap != null) {
                   String verMsg = "固件版本：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_FIRMWARE)
                           + "\n硬件版本：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_HARDWARE)
                           + "\n软件版本：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_SOFTWARE);
-                  Utils.alert(MainActivity.this, R.string.action_ble_ver, verMsg, R.drawable.webtext);
+                  Utils.alert(ScanListActivity.this, R.string.action_ble_ver, verMsg, R.drawable.webtext);
               }
           } else if (item.getItemId() == R.id.ble_disconnectTime) {
-              View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_disconnect_time, null);
+              View view = LayoutInflater.from(ScanListActivity.this).inflate(R.layout.dialog_disconnect_time, null);
               final Spinner spDisconnectTime = view.findViewById(R.id.spDisconnectTime);
               int index = SPUtils.getInstance(getApplicationContext()).getSPInt(SPUtils.DISCONNECT_TIME_INDEX, 0);
               spDisconnectTime.setSelection(index);
@@ -192,7 +192,7 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
               }
           }
       });
-      addConnectStatusNotice(new StartActivity.IConnectStatus(){
+      addConnectStatusNotice(new ConnectDeviceActivity.IConnectStatus(){
           @Override
           public void getStatus(ConnectionStatus connectionStatus) {
               if(connectionStatus==ConnectionStatus.CONNECTED){
