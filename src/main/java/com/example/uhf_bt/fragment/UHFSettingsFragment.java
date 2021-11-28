@@ -22,7 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 
-public class UHFSetFragment extends Fragment implements View.OnClickListener {
+public class UHFSettingsFragment extends Fragment implements View.OnClickListener {
 
     Button btnGetPower;
     Button btnSetPower;

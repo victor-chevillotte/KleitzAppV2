@@ -17,7 +17,6 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Spinner;
@@ -26,14 +25,12 @@ import android.widget.TextView;
 import com.example.uhf_bt.fragment.BTRenameFragment;
 import com.example.uhf_bt.fragment.BarcodeFragment;
 import com.example.uhf_bt.fragment.UHFNewReadTagFragment;
-import com.example.uhf_bt.fragment.UHFSetFragment;
+import com.example.uhf_bt.fragment.UHFSettingsFragment;
 import com.example.uhf_bt.fragment.UHFUpdataFragment;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Timer;
 
 import androidx.fragment.app.FragmentManager;
@@ -121,6 +118,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        showToast(R.string.title_stop_read_card);
         Utils.freeSound();
         unregisterReceiver(bluetoothBroadcastReceiver);
         super.onDestroy();
@@ -250,7 +248,7 @@ public class MainActivity extends BaseActivity {
 
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_inventory2)).setIndicator(getString(R.string.title_inventory2)), UHFNewReadTagFragment.class, null);
 
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_set)).setIndicator(getString(R.string.uhf_msg_tab_set)), UHFSetFragment.class, null);
+        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_set)).setIndicator(getString(R.string.uhf_msg_tab_set)), UHFSettingsFragment.class, null);
 
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_bt_rename)).setIndicator(getString(R.string.title_bt_rename)), BTRenameFragment.class, null);
 
