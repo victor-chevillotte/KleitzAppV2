@@ -491,7 +491,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 alertSet();
                 break;
             case R.id.settings_button:
-                Intent intent=new Intent(MainActivity.this, BTRenameActivity.class);
+                Intent intent=new Intent(MainActivity.this, UHFSettingsActivity.class);
                 intent.putExtra("BTMode",true);
                 MainActivity.this.startActivity(intent);
                 //MainActivity.this.finish();

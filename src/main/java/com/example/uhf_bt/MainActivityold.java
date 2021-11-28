@@ -25,7 +25,7 @@ import android.widget.TextView;
 import com.example.uhf_bt.BTRenameFragment;
 import com.example.uhf_bt.fragment.BarcodeFragment;
 import com.example.uhf_bt.fragment.UHFNewReadTagFragment;
-import com.example.uhf_bt.fragment.UHFSettingsFragment;
+import com.example.uhf_bt.UHFSettingsActivity;
 import com.example.uhf_bt.fragment.UHFUpdataFragment;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
@@ -248,7 +248,7 @@ public class MainActivity extends BaseActivity {
 
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_inventory2)).setIndicator(getString(R.string.title_inventory2)), UHFNewReadTagFragment.class, null);
 
-        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_set)).setIndicator(getString(R.string.uhf_msg_tab_set)), UHFSettingsFragment.class, null);
+        mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.uhf_msg_tab_set)).setIndicator(getString(R.string.uhf_msg_tab_set)), UHFSettingsActivity.class, null);
 
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_bt_rename)).setIndicator(getString(R.string.title_bt_rename)), BTRenameFragment.class, null);
 

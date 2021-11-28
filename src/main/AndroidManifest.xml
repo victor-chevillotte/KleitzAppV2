@@ -42,7 +42,7 @@
         </activity>
 
         <activity
-            android:name=".BTRenameActivity"
+            android:name=".UHFSettingsActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:configChanges="orientation|screenSize">
         </activity>

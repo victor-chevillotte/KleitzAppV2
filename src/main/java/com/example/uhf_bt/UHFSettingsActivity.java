@@ -1,28 +1,21 @@
-package com.example.uhf_bt.fragment;
+package com.example.uhf_bt;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.Toast;
 
-import com.example.uhf_bt.MainActivity;
-import com.example.uhf_bt.R;
-import com.example.uhf_bt.SPUtils;
-
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
 
-public class UHFSettingsFragment extends Fragment implements View.OnClickListener {
+public class UHFSettingsActivity extends BaseActivity implements View.OnClickListener {
 
     Button btnGetPower;
     Button btnSetPower;
@@ -30,7 +23,6 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
     Spinner SpinnerMode;
     Button BtSetFre;
     Button BtGetFre;
-    MainActivity context;
     RadioButton rbUsHop;
     RadioButton rbBRA;
     RadioButton rbOtherHop;
@@ -64,7 +56,7 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
                         int count = SpinnerMode.getCount();
                         SpinnerMode.setSelection(idx > count - 1 ? count - 1 : idx);
                     } else if (msg.arg1 == 1) {
-                        context.showToast(R.string.uhf_msg_read_frequency_fail);
+                        showToast(R.string.uhf_msg_read_frequency_fail);
                     }
                     break;
                 case GET_POWER:
@@ -77,7 +69,7 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
                             }
                         }
                     } else if (msg.arg1 == 1) {
-                        context.showToast(R.string.uhf_msg_read_power_fail);
+                        showToast(R.string.uhf_msg_read_power_fail);
                     }
                     break;
                 case GET_PROTOCOL:
@@ -85,10 +77,10 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
                     if (pro >= 0 && pro < spProtocol.getCount()) {
                         spProtocol.setSelection(pro);
                         if (msg.arg1 == 1)
-                            context.showToast(R.string.uhf_msg_get_protocol_succ);
+                            showToast(R.string.uhf_msg_get_protocol_succ);
                     } else {
                         if (msg.arg1 == 1)
-                            context.showToast(R.string.uhf_msg_get_protocol_fail);
+                            showToast(R.string.uhf_msg_get_protocol_fail);
                     }
                     break;
                 case GET_CW:
@@ -96,56 +88,84 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
                     if (flag == 1) {
                         cbContinuousWave.setChecked(true);
                         if (msg.arg1 == 1)
-                            context.showToast(R.string.get_succ);
+                            showToast(R.string.get_succ);
                     } else if (flag == 0) {
                         cbContinuousWave.setChecked(false);
                         if (msg.arg1 == 1)
-                            context.showToast(R.string.get_succ);
+                            showToast(R.string.get_succ);
                     } else {
                         if (msg.arg1 == 1)
-                            context.showToast(R.string.get_fail);
+                            showToast(R.string.get_fail);
                     }
                     break;
             }
         }
     };
+    EditText etNewName;
+    EditText etOldName;
+    Button btSet;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_uhfset, container, false);
-        init(view);
-        return view;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_uhf_settings);
+        initUI();
+        etNewName = (EditText) findViewById(R.id.etNewName);
+        etOldName = (EditText) findViewById(R.id.etOldName);
+        etNewName.setText(remoteBTName);
+        etOldName.setEnabled(false);
+        etOldName.setVisibility(View.GONE);
+        btSet = (Button) findViewById(R.id.btSet);
+        btSet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String newName = etNewName.getText().toString();
+                if (newName != null && newName.length() == 0) {
+                    showToast("Veuillez indiquer un nom valide.");
+                } else {
+                    boolean result = uhf.setRemoteBluetoothName(newName);
+                    if (result) {
+                        updateConnectMessage(remoteBTName, newName);
+                        saveConnectedDevice(remoteBTAdd, newName);
+                        showToast("Antenne renommée avec succès");
+                    } else {
+                        showToast("Echec du renommage.");
+                    }
+                }
+            }
+        });
+        addConnectStatusNotice(new StartActivity.IConnectStatus(){
+            @Override
+            public void getStatus(ConnectionStatus connectionStatus) {
+                if(connectionStatus==ConnectionStatus.CONNECTED){
+                    etNewName.setText(remoteBTName);
+                }
+            }
+        });
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        context = (MainActivity) getActivity();
-    }
+    private void initUI() {
+        btnGetPower = (Button) findViewById(R.id.btnGetPower);
+        btnSetPower = (Button) findViewById(R.id.btnSetPower);
 
-    private void init(View view) {
-        btnGetPower = (Button) view.findViewById(R.id.btnGetPower);
-        btnSetPower = (Button) view.findViewById(R.id.btnSetPower);
-
-        spPower = (Spinner) view.findViewById(R.id.spPower);
+        spPower = (Spinner) findViewById(R.id.spPower);
         arrayPower = getResources().getStringArray(R.array.arrayPower);
-        ArrayAdapter adapter = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_item, arrayPower);
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayPower);
         spPower.setAdapter(adapter);
 
-        SpinnerMode = (Spinner) view.findViewById(R.id.SpinnerMode);
-        BtSetFre = (Button) view.findViewById(R.id.BtSetFre);
-        BtGetFre = (Button) view.findViewById(R.id.BtGetFre);
+        SpinnerMode = (Spinner) findViewById(R.id.SpinnerMode);
+        BtSetFre = (Button) findViewById(R.id.BtSetFre);
+        BtGetFre = (Button) findViewById(R.id.BtGetFre);
 
-        rbUsHop = (RadioButton) view.findViewById(R.id.rbUsHop);
-        rbBRA = (RadioButton) view.findViewById(R.id.rbBRA);
-        rbOtherHop = (RadioButton) view.findViewById(R.id.rbOtherHop);
-        spFreHop = (Spinner) view.findViewById(R.id.spFreHop);
-        btnSetFreHop = (Button) view.findViewById(R.id.btnSetFreHop);
+        rbUsHop = (RadioButton) findViewById(R.id.rbUsHop);
+        rbBRA = (RadioButton) findViewById(R.id.rbBRA);
+        rbOtherHop = (RadioButton) findViewById(R.id.rbOtherHop);
+        spFreHop = (Spinner) findViewById(R.id.spFreHop);
+        btnSetFreHop = (Button) findViewById(R.id.btnSetFreHop);
 
-        btnbeepOpen = (Button) view.findViewById(R.id.btnbeepOpen);
-        btnbeepClose = (Button) view.findViewById(R.id.btnbeepClose);
-        cbTagFocus= (CheckBox) view.findViewById(R.id.cbTagFocus);
+        btnbeepOpen = (Button) findViewById(R.id.btnbeepOpen);
+        btnbeepClose = (Button) findViewById(R.id.btnbeepClose);
+        cbTagFocus= (CheckBox) findViewById(R.id.cbTagFocus);
 
         cbTagFocus.setOnClickListener(this);
         rbOtherHop.setOnClickListener(this);
@@ -160,13 +180,13 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
         btnbeepOpen.setOnClickListener(this);
         btnbeepClose.setOnClickListener(this);
 
-        spProtocol = (Spinner) view.findViewById(R.id.spProtocol);
-        btnSetProtocol = (Button) view.findViewById(R.id.btnSetProtocol);
+        spProtocol = (Spinner) findViewById(R.id.spProtocol);
+        btnSetProtocol = (Button) findViewById(R.id.btnSetProtocol);
         btnSetProtocol.setOnClickListener(this);
-        btnGetProtocol = (Button) view.findViewById(R.id.btnGetProtocol);
+        btnGetProtocol = (Button) findViewById(R.id.btnGetProtocol);
         btnGetProtocol.setOnClickListener(this);
 
-        rgWorkingMode = view.findViewById(R.id.rgWorkingMode);
+        rgWorkingMode = findViewById(R.id.rgWorkingMode);
         rgWorkingMode.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -178,7 +198,7 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
             }
         });
 
-        cbContinuousWave = (CheckBox) view.findViewById(R.id.cbContinuousWave);
+        cbContinuousWave = (CheckBox) findViewById(R.id.cbContinuousWave);
         cbContinuousWave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -187,13 +207,13 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
             }
         });
 
-        boolean reconnect = SPUtils.getInstance(getContext().getApplicationContext()).getSPBoolean(SPUtils.AUTO_RECONNECT, false);
-        cbAutoReconnect = (CheckBox) view.findViewById(R.id.cbAutoReconnect);
+        boolean reconnect = SPUtils.getInstance(this.getApplicationContext()).getSPBoolean(SPUtils.AUTO_RECONNECT, false);
+        cbAutoReconnect = (CheckBox) findViewById(R.id.cbAutoReconnect);
         cbAutoReconnect.setChecked(reconnect);
         cbAutoReconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SPUtils.getInstance(getContext().getApplicationContext()).setSPBoolean(SPUtils.AUTO_RECONNECT, cbAutoReconnect.isChecked());
+                SPUtils.getInstance(getApplicationContext()).setSPBoolean(SPUtils.AUTO_RECONNECT, cbAutoReconnect.isChecked());
             }
         });
     }
@@ -246,24 +266,24 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
                 getProtocol(true);
                 break;
             case R.id.btnbeepClose:
-                if (context.uhf.setBeep(false)) {
-                    context.showToast(R.string.setting_succ);
+                if (uhf.setBeep(false)) {
+                    showToast(R.string.setting_succ);
                 } else {
-                    context.showToast(R.string.setting_fail);
+                    showToast(R.string.setting_fail);
                 }
                 break;
             case R.id.btnbeepOpen:
-                if (context.uhf.setBeep(true)) {
-                    context.showToast(R.string.setting_succ);
+                if (uhf.setBeep(true)) {
+                    showToast(R.string.setting_succ);
                 } else {
-                    context.showToast(R.string.setting_fail);
+                    showToast(R.string.setting_fail);
                 }
                 break;
             case R.id.cbTagFocus:
-                if (context.uhf.setTagFocus(cbTagFocus.isChecked())) {
-                    context.showToast(R.string.setting_succ);
+                if (uhf.setTagFocus(cbTagFocus.isChecked())) {
+                    showToast(R.string.setting_succ);
                 } else {
-                    context.showToast(R.string.setting_fail);
+                    showToast(R.string.setting_fail);
                 }
                 break;
         }
@@ -276,21 +296,21 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
     }
 
     private void getPower(boolean showToast) {
-        int iPower = context.uhf.getPower();
+        int iPower = uhf.getPower();
         sendMessage(GET_POWER, iPower, showToast ? 1 : 0);
     }
 
     private void setPower() {
         int iPower = Integer.valueOf(spPower.getSelectedItem().toString());
-        if (context.uhf.setPower(iPower)) {
-            Toast.makeText(context, R.string.uhf_msg_set_power_succ, Toast.LENGTH_SHORT).show();
+        if (uhf.setPower(iPower)) {
+            showToast(R.string.uhf_msg_set_power_succ);
         } else {
-            Toast.makeText(context, R.string.uhf_msg_set_power_fail, Toast.LENGTH_SHORT).show();
+            showToast(R.string.uhf_msg_set_power_fail);
         }
     }
 
     public void getFre(boolean showToast) {
-        int idx = context.uhf.getFrequencyMode();
+        int idx = uhf.getFrequencyMode();
         switch (idx) {
             case 0x01:
                 idx = 0;
@@ -336,18 +356,18 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
                 f = 0x032;
                 break;
         }
-        if (context.uhf.setFrequencyMode(f)) {
-            context.showToast(R.string.uhf_msg_set_frequency_succ);
+        if (uhf.setFrequencyMode(f)) {
+            showToast(R.string.uhf_msg_set_frequency_succ);
         } else {
-            context.showToast(R.string.uhf_msg_set_frequency_fail);
+            showToast(R.string.uhf_msg_set_frequency_fail);
         }
     }
 
     private void setFre2() {
-        if (context.uhf.setFreHop(new Float(spFreHop.getSelectedItem().toString().trim()).floatValue())) {
-            context.showToast(R.string.uhf_msg_set_frequency_succ);
+        if (uhf.setFreHop(new Float(spFreHop.getSelectedItem().toString().trim()).floatValue())) {
+            showToast(R.string.uhf_msg_set_frequency_succ);
         } else {
-            context.showToast(R.string.uhf_msg_set_frequency_fail);
+            showToast(R.string.uhf_msg_set_frequency_fail);
         }
     }
 
@@ -357,11 +377,11 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
      * @return
      */
     private boolean setProtocol() {
-        if (context.uhf.setProtocol(spProtocol.getSelectedItemPosition())) {
-            context.showToast(R.string.uhf_msg_set_protocol_succ);
+        if (uhf.setProtocol(spProtocol.getSelectedItemPosition())) {
+            showToast(R.string.uhf_msg_set_protocol_succ);
             return true;
         } else {
-            context.showToast(R.string.uhf_msg_get_protocol_fail);
+            showToast(R.string.uhf_msg_get_protocol_fail);
         }
         return false;
     }
@@ -373,7 +393,7 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
      * @return
      */
     private void getProtocol(boolean showToast) {
-        int pro = context.uhf.getProtocol();
+        int pro = uhf.getProtocol();
         sendMessage(GET_PROTOCOL, pro, showToast ? 1 : 0);
     }
 
@@ -384,12 +404,12 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
      * @param showToast
      */
     private void setCW(int flag, boolean showToast) {
-        boolean res = context.uhf.setCW(flag);
+        boolean res = uhf.setCW(flag);
         if (showToast) {
             if (res) {
-                context.showToast(getString(R.string.setting_succ));
+                showToast(getString(R.string.setting_succ));
             } else {
-                context.showToast(getString(R.string.setting_fail));
+                showToast(getString(R.string.setting_fail));
             }
         }
     }
@@ -400,7 +420,7 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
      * @param showToast
      */
     private void getCW(boolean showToast) {
-        int flag = context.uhf.getCW();
+        int flag = uhf.getCW();
         sendMessage(GET_CW, flag, showToast ? 1 : 0);
     }
 
@@ -409,27 +429,27 @@ public class UHFSettingsFragment extends Fragment implements View.OnClickListene
      * @param mode 实时：0，脱机：1
      */
     private void setWorkingMode(int mode) {
-        if(context.uhf.setR6Workmode(mode)) {
-            context.showToast(R.string.setting_succ);
+        if(uhf.setR6Workmode(mode)) {
+            showToast(R.string.setting_succ);
         } else {
-            context.showToast(R.string.setting_fail);
+            showToast(R.string.setting_fail);
         }
     }
 
     public void OnClick_rbUsHop() {
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(context, R.array.arrayFreHop_us, android.R.layout.simple_spinner_item);
+        ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.arrayFreHop_us, android.R.layout.simple_spinner_item);
         spFreHop.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
     public void OnClick_rbBRA() {
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(context, R.array.arrayFreHop_bra, android.R.layout.simple_spinner_item);
+        ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.arrayFreHop_bra, android.R.layout.simple_spinner_item);
         spFreHop.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
     public void OnClick_rbOtherHop() {
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(context, R.array.arrayFreHop, android.R.layout.simple_spinner_item);
+        ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.arrayFreHop, android.R.layout.simple_spinner_item);
         spFreHop.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
