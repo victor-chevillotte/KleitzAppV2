@@ -86,7 +86,6 @@ public class StartActivity extends BaseActivity implements View.OnClickListener 
 
     private Handler mHandler = new Handler();
     private boolean mScanning;
-    public RFIDWithUHFBLE uhf = RFIDWithUHFBLE.getInstance();
     public boolean isScanning = false;
 
     @Override

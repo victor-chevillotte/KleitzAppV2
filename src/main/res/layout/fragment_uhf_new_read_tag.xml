@@ -6,6 +6,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+        <TextView
+            android:id="@+id/device_battery"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="left"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="100%" />
+
+        <ImageButton
+            android:id="@+id/settings_button"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="left"
+            android:icon="@android:drawable/ic_dialog_info" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="150dp"
+        android:orientation="vertical">
 
         <RadioGroup
             android:layout_width="match_parent"

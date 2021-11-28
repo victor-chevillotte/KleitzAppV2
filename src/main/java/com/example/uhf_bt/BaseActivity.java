@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class BaseActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
+    public RFIDWithUHFBLE uhf = RFIDWithUHFBLE.getInstance();
     public String remoteBTName = "";
     public String remoteBTAdd = "";
     private Toast toast;
