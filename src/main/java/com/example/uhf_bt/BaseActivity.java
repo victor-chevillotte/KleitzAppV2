@@ -31,6 +31,7 @@ public class BaseActivity extends AppCompatActivity {
     public String remoteBTAdd = "";
     private Toast toast;
 
+
     public void showToast(String text) {
         if (toast != null) {
             toast.cancel();

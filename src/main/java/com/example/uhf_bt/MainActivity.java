@@ -1,5 +1,6 @@
 package com.example.uhf_bt;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,11 +11,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -70,7 +73,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public static final String TAG_RSSI = "tagRssi";
     private TextView device_battery;
 
-    private final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
+    public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -865,18 +868,41 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             return true;
         }
     }
+    private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 100;
+    private static final int REQUEST_ACTION_LOCATION_SETTINGS = 3;
 
-    private Toast toast;
-
-    public void showToast(String text) {
-        if (toast != null) {
-            toast.cancel();
+    private void checkLocationEnable() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
+            }
         }
-        toast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
-        toast.show();
+        if (!isLocationEnabled()) {
+            Utils.alert(this, R.string.get_location_permission, getString(R.string.tips_open_the_ocation_permission), R.drawable.webtext, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS);
+                }
+            });
+        }
     }
 
-    public void showToast(int resId) {
-        showToast(getString(resId));
+    private boolean isLocationEnabled() {
+        int locationMode = 0;
+        String locationProviders;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+        } else {
+            locationProviders = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
     }
+
 }
