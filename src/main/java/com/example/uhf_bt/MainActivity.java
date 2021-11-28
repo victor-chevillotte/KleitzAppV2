@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.uhf_bt.fragment.BTRenameFragment;
 import com.example.uhf_bt.fragment.BarcodeFragment;
@@ -59,6 +61,7 @@ public class MainActivity extends BaseActivity {
     public static final String TAG_LEN = "tagLen";
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
+    private TextView device_battery;
 
     private boolean mIsActiveDisconnect = true; // 是否主动断开连接
     private static final int RECONNECT_NUM = Integer.MAX_VALUE; // 重连次数
@@ -123,13 +126,13 @@ public class MainActivity extends BaseActivity {
         super.onDestroy();
     }
 
-
+/*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
     }
-
+*/
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
@@ -188,8 +191,8 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 
-    /*public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    public void onBackPressed() {
+        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(false);
         builder.setMessage("Voulez vous vraiment changer d'antenne ?");
         builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
@@ -205,25 +208,38 @@ public class MainActivity extends BaseActivity {
             }
         });
         AlertDialog alert=builder.create();
-        alert.show();
-    }*/
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case REQUEST_ENABLE_BT:
-                if (resultCode == Activity.RESULT_OK) {
-                    showToast("Bluetooth has turned on ");
-                } else {
-                    showToast("Problem in BT Turning ON ");
-                }
-                break;
-            default:
-                break;
-        }
+        alert.show();*/
     }
 
+    Handler handler = new Handler();
+    Runnable runnable;
+    int delay = 5*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
+
+
+    @Override
+    protected void onResume() {
+        //start handler as activity become visible
+
+        handler.postDelayed( runnable = new Runnable() {
+            public void run() {
+                device_battery = (TextView) findViewById(R.id.device_battery);
+                device_battery.setText(uhf.getBattery() + "%");
+
+                handler.postDelayed(runnable, delay);
+            }
+        }, delay);
+
+        super.onResume();
+    }
+
+// If onPause() is not included the threads will double up when you
+// reload the activity
+
+    @Override
+    protected void onPause() {
+        handler.removeCallbacks(runnable); //stop handler when activity not visible
+        super.onPause();
+    }
 
     protected void initUI() {
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -241,7 +257,6 @@ public class MainActivity extends BaseActivity {
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_update)).setIndicator(getString(R.string.title_update)), UHFUpdataFragment.class, null);
 
         mTabHost.addTab(mTabHost.newTabSpec(getString(R.string.title_2d_Scan)).setIndicator(getString(R.string.title_2d_Scan)), BarcodeFragment.class, null);
-
 
     }
 
