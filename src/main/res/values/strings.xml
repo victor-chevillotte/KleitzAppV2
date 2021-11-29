@@ -1007,7 +1007,7 @@
     <string name="title_buzzer_open">Buzzer Open</string>
     <string name="title_buzzer_close">Buzzer Close</string>
     <string name="title_bt_rename">Nom de l\'antenne</string>
-    <string name="title_new_name">new name</string>
+    <string name="title_new_name">Nouveau nom</string>
     <string name="file_title_sel_file">Choose file</string>
     <string name="file_title_sel_file_confirm">Are you sure to select the file?</string>
     <string name="title_R2000">R2000</string>
@@ -1073,4 +1073,5 @@
     <string name="ActivateBluetooth">Activer le bluetooth</string>
     <string name="titleActivateBluetooth">Bienvenue sur l app Kleitz ! Veuillez activer le bluetooth sur votre téléphone pour continuer.</string>
     <string name="btn_update_device">Mettre à jour l\'antenne</string>
+    <string name="bluetooth_version">Version du Bluetooth</string>
 </resources>

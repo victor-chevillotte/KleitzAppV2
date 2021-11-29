@@ -4,12 +4,17 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -17,9 +22,14 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.uhf_bt.utils.SPUtils;
+import com.example.uhf_bt.utils.Utils;
+import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
+
+import java.util.HashMap;
 
 
 public class UHFSettingsActivity extends BaseActivity implements View.OnClickListener {
@@ -39,6 +49,11 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
     Button btnbeepOpen;
     Button btnbeepClose;
     CheckBox cbTagFocus;
+    private TextView device_battery;
+    private TextView device_temperature;
+    private TextView device_version;
+    private TextView bluetooth_version;
+    private Spinner spDisconnectTime;
 
     private Spinner spProtocol;
     private Button btnSetProtocol;
@@ -138,64 +153,6 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
     EditText etOldName;
     Button btSet;
 
-
-    /*  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-      super.onOptionsItemSelected(item);
-      if (!isScanning) {
-          if (item.getItemId() == R.id.UHF_Battery) {
-              String ver = getString(R.string.action_uhf_bat) + ":" + uhf.getBattery() + "%";
-              Utils.alert(ScanListActivity.this, R.string.action_uhf_bat, ver, R.drawable.webtext);
-          } else if (item.getItemId() == R.id.UHF_T) {
-              String temp = getString(R.string.title_about_Temperature) + ":" + uhf.getTemperature() + "℃";
-              Utils.alert(ScanListActivity.this, R.string.title_about_Temperature, temp, R.drawable.webtext);
-          } else if (item.getItemId() == R.id.UHF_ver) {
-              String ver = uhf.getVersion();
-              Utils.alert(ScanListActivity.this, R.string.action_uhf_ver, ver, R.drawable.webtext);
-          } else if (item.getItemId() == R.id.ble_ver) {
-              HashMap<String, String> versionMap = uhf.getBluetoothVersion();
-              if (versionMap != null) {
-                  String verMsg = "固件版本：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_FIRMWARE)
-                          + "\n硬件版本：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_HARDWARE)
-                          + "\n软件版本：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_SOFTWARE);
-                  Utils.alert(ScanListActivity.this, R.string.action_ble_ver, verMsg, R.drawable.webtext);
-              }
-          } else if (item.getItemId() == R.id.ble_disconnectTime) {
-              View view = LayoutInflater.from(ScanListActivity.this).inflate(R.layout.dialog_disconnect_time, null);
-              final Spinner spDisconnectTime = view.findViewById(R.id.spDisconnectTime);
-              int index = SPUtils.getInstance(getApplicationContext()).getSPInt(SPUtils.DISCONNECT_TIME_INDEX, 0);
-              spDisconnectTime.setSelection(index);
-              Utils.alert(this, R.string.disconnectTime, view, R.drawable.webtext, new DialogInterface.OnClickListener() {
-                  @Override
-                  public void onClick(DialogInterface dialog, int which) {
-                      int index = spDisconnectTime.getSelectedItemPosition();
-                      long time = 1000 * 60 * 60 * index;
-                      SPUtils.getInstance(getApplicationContext()).setSPInt(SPUtils.DISCONNECT_TIME_INDEX, index);
-                      SPUtils.getInstance(getApplicationContext()).setSPLong(SPUtils.DISCONNECT_TIME, time);
-                      switch (index) {
-                          case 0:
-                              //cancelDisconnectTimer();
-                              break;
-                          case 1:
-                          case 2:
-                          case 3:
-                          case 4:
-                          case 5:
-                          case 6:
-                              if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-                                  //cancelDisconnectTimer();
-                                  //startDisconnectTimer(time);
-                              }
-                              break;
-                      }
-                  }
-              });
-          }
-      } else {
-          showToast(R.string.title_stop_read_card);
-      }
-      return true;
-  }*/
   @Override
   protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -228,15 +185,63 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
               }
           }
       });
-      addConnectStatusNotice(new ConnectDeviceActivity.IConnectStatus(){
+      addConnectStatusNotice(new ConnectDeviceActivity.IConnectStatus() {
           @Override
           public void getStatus(ConnectionStatus connectionStatus) {
-              if(connectionStatus==ConnectionStatus.CONNECTED){
+              if (connectionStatus == ConnectionStatus.CONNECTED) {
                   etNewName.setText(remoteBTName);
               }
           }
       });
+      device_version.setText(uhf.getVersion());
+      HashMap<String, String> versionMap = uhf.getBluetoothVersion();
+      if (versionMap != null) {
+          bluetooth_version.setText("Version du firmware：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_FIRMWARE)
+                  + "\nVersion du hardware：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_HARDWARE)
+                  + "\nVersion du logiciel：" + versionMap.get(RFIDWithUHFBLE.VERSION_BT_SOFTWARE));
+      }
+      int index = SPUtils.getInstance(getApplicationContext()).getSPInt(SPUtils.DISCONNECT_TIME_INDEX, 0);
+      spDisconnectTime =(Spinner) findViewById(R.id.spDisconnectTime);
+      spDisconnectTime.setSelection(index);
+      spDisconnectTime.setOnItemSelectedListener(
+              new AdapterView.OnItemSelectedListener() {
+                  public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                      //long time = 1000 * 60 * 60 * position;
+                      long time = 1000 * 60 * position;
+                      SPUtils.getInstance(getApplicationContext()).setSPInt(SPUtils.DISCONNECT_TIME_INDEX, position);
+                      SPUtils.getInstance(getApplicationContext()).setSPLong(SPUtils.DISCONNECT_TIME, time);
+                      switch (position) {
+                          case 0:
+                              cancelDisconnectTimer();
+                              break;
+                          case 1:
+                          case 2:
+                          case 3:
+                          case 4:
+                          case 5:
+                          case 6:
+                              if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
+                                  cancelDisconnectTimer();
+                                  startDisconnectTimer(time);
+                              }
+                              break;
+                      }
+                  }
+                  public void onNothingSelected(AdapterView<?> parent) {
+                  }
+              });
   }
+
+    Handler handlerRefreshBattery = new Handler();
+    Runnable runnable;
+    int delay = 1*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
+
+    @Override
+    public void onPause() {
+        handlerRefreshBattery.removeCallbacks(runnable); //stop handler when activity not visible
+        super.onPause();
+    }
+
 
   private void initUI() {
       btnGetPower = (Button) findViewById(R.id.btnGetPower);
@@ -247,6 +252,10 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
       arrayPower = getResources().getStringArray(R.array.arrayPower);
       ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayPower);
       spPower.setAdapter(adapter);
+      device_battery = (TextView) findViewById(R.id.device_battery);
+      device_temperature = (TextView) findViewById(R.id.device_temperature);
+      device_version = (TextView) findViewById(R.id.device_version);
+      bluetooth_version = (TextView) findViewById(R.id.bluetooth_version);
 
       SpinnerMode = (Spinner) findViewById(R.id.SpinnerMode);
       BtSetFre = (Button) findViewById(R.id.BtSetFre);
@@ -325,6 +334,14 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
               getCW(false);
           }
       }.start();
+      handlerRefreshBattery.postDelayed( runnable = new Runnable() {
+          public void run() {
+              device_battery.setText(uhf.getBattery() + "%");
+              device_temperature.setText(uhf.getTemperature() + "℃");
+              handlerRefreshBattery.postDelayed(runnable, delay);
+          }
+      }, delay);
+
   }
 
   @Override
@@ -385,6 +402,8 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
               } else {
                   showToast(R.string.setting_fail);
               }
+              break;
+          default:
               break;
       }
   }
@@ -553,5 +572,4 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
         spFreHop.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
-
 }

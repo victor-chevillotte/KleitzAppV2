@@ -11,10 +11,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.os.Process;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.uhf_bt.utils.FileUtils;
+import com.example.uhf_bt.utils.SPUtils;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback;
 import com.rscja.deviceapi.interfaces.ScanBTCallback;
@@ -35,15 +38,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ConnectDeviceActivity extends BaseActivity implements View.OnClickListener {
 
     ConnectDeviceActivity.BTStatus btStatus = new ConnectDeviceActivity.BTStatus();
-    private boolean mIsActiveDisconnect = true; // 是否主动断开连接
     private static final int RECONNECT_NUM = 1; // 重连次数
     private int mReConnectCount = RECONNECT_NUM; // 重新连接次数
     private TextView tvAddress;
-
 
     private final static String ACTIVATEBLE = "ACTIVATEBLE";
     public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
@@ -86,7 +89,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private Handler mHandler = new Handler();
     private boolean mScanning;
-    public boolean isScanning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +115,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         unregisterReceiver(bluetoothBroadcastReceiver);
         uhf.free();
         connectStatusList.clear();
-        //cancelDisconnectTimer();//ici
+        cancelDisconnectTimer();
         android.os.Process.killProcess(Process.myPid());
     }
 
@@ -270,7 +272,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             uhf.stopScanBTDevices();
-            //unregisterReceiver(bluetoothBroadcastReceiver);
             MyDevice device = deviceList.get(position);
             String address = device.getAddress().trim();
             if(!TextUtils.isEmpty(address)) {
@@ -302,11 +303,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             }
         }
     };
-
-    public void disconnect(boolean isActiveDisconnect) {
-        mIsActiveDisconnect = isActiveDisconnect; // 主动断开为true
-        uhf.disconnect();
-    }
 
     public void connect(String deviceAddress) {
         if (uhf.getConnectStatus() == ConnectionStatus.CONNECTING) {
@@ -370,8 +366,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                             if (UHFSettingsActivity.faset != null)
                                 UHFSettingsActivity.faset.finish();
                         }
-                        //showToast(R.string.disconnect);
-
                         /*boolean reconnect = SPUtils.getInstance(getApplicationContext()).getSPBoolean(SPUtils.AUTO_RECONNECT, false);
                         if (mDevice != null && reconnect) {
                             reConnect(mDevice.getAddress()); // 重连
@@ -415,18 +409,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            /*case REQUEST_SELECT_DEVICE:
-                //When the DeviceListActivity return, with the selected device address
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-                        disconnect(true);
-                    }
-                    String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
-                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-                    //tvAddress.setText(String.format("%s(%s)\nconnecting", mDevice.getName(), deviceAddress));
-                    connect(deviceAddress);
-                }
-                break;*/
             case REQUEST_ENABLE_BT:
                 if (resultCode == Activity.RESULT_OK) {
                     showToast("Le bluetooth a bien été activé !");

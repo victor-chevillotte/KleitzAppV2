@@ -249,6 +249,65 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:padding="5dp"
+                android:text="Informations : "
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:id="@+id/bluetooth_version"
+                android:text="@string/bluetooth_version"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/device_version"
+                android:text="device_version"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/device_battery"
+                android:text="Batterie"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/device_temperature"
+                android:text="Temperature"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:text="@string/chooseTime" />
+
+                <Spinner
+                    android:id="@+id/spDisconnectTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/disconnect_time_array" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:padding="5dp"
+                android:visibility="gone"
                 android:text="@string/workMode"
                 android:textSize="16sp" />
 
@@ -256,6 +315,7 @@
                 android:id="@+id/rgWorkingMode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:orientation="horizontal">
 
                 <RadioButton
@@ -278,21 +338,22 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:showText="true"
-                android:text="@string/continuous_wave"
-                android:visibility="visible" />
+                android:visibility="gone"
+                android:text="@string/continuous_wave" />
 
             <CheckBox
                 android:id="@+id/cbAutoReconnect"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/autoReconnect"
-                android:visibility="visible" />
+                android:visibility="gone" />
 
             <CheckBox
                 android:id="@+id/cbTagFocus"
                 android:text="TagFocus Mode"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:layout_marginTop="20dp"

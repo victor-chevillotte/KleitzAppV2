@@ -46,7 +46,6 @@ import java.util.concurrent.Executors;
 public class ScanListActivity extends BaseActivity implements View.OnClickListener {
 
     public static ScanListActivity fa;
-    public boolean isScanning = false;
     public String remoteBTName = "";
     public String remoteBTAdd = "";
     private final static String TAG = "ScanListActivity";
@@ -84,18 +83,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
         }
     };
-
-    private boolean mIsActiveDisconnect = true; // 是否主动断开连接
-    private static final int RECONNECT_NUM = Integer.MAX_VALUE; // 重连次数
-    private int mReConnectCount = RECONNECT_NUM; // 重新连接次数
-
-    private Timer mDisconnectTimer = new Timer();
-    private long timeCountCur; // 断开时间选择
-    private long period = 1000 * 30; // 隔多少时间更新一次
-    private long lastTouchTime = System.currentTimeMillis(); // 上次接触屏幕操作的时间戳
-
-    private static final int RUNNING_DISCONNECT_TIMER = 10;
-
     private boolean loopFlag = false;
     private ListView LvTags;
     private Button InventoryLoop, btInventory, btStop;//
@@ -258,6 +245,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private void initUI() {
         setContentView(R.layout.fragment_uhf_new_read_tag);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+        device_battery = (TextView) findViewById(R.id.device_battery);
 
         settings_button = (ImageButton) findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
@@ -415,7 +403,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
-    int delay = 5*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
+    int delay = 1*1000; //Delay for 1 seconds  One second = 1000 milliseconds.
 
     @Override
     public void onResume() {
@@ -423,7 +411,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
         handlerRefreshBattery.postDelayed( runnable = new Runnable() {
             public void run() {
-                device_battery = (TextView) findViewById(R.id.device_battery);
                 device_battery.setText(uhf.getBattery() + "%");
 
                 handlerRefreshBattery.postDelayed(runnable, delay);
