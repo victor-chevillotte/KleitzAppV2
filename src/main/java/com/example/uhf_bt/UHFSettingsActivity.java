@@ -18,9 +18,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 
+import com.example.uhf_bt.utils.SPUtils;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
-
-import java.util.zip.Deflater;
 
 
 public class UHFSettingsActivity extends BaseActivity implements View.OnClickListener {

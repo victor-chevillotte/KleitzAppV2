@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.example.uhf_bt.ScanListActivity;
 import com.example.uhf_bt.R;
-import com.example.uhf_bt.Utils;
+import com.example.uhf_bt.utils.Utils;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
 

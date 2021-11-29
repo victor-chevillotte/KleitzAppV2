@@ -1,4 +1,4 @@
-package com.example.uhf_bt;
+package com.example.uhf_bt.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;

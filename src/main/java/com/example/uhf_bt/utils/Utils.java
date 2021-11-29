@@ -1,4 +1,4 @@
-package com.example.uhf_bt;
+package com.example.uhf_bt.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -7,9 +7,9 @@ import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 
+import com.example.uhf_bt.R;
 import com.rscja.deviceapi.DeviceConfiguration;
 import com.rscja.utility.StringUtility;
 

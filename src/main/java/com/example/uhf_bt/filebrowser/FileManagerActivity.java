@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 
 import com.example.uhf_bt.R;
-import com.example.uhf_bt.Utils;
 
 import java.io.File;
 import java.util.ArrayList;

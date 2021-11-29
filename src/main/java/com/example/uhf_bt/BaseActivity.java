@@ -9,12 +9,12 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.uhf_bt.utils.FileUtils;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.Deflater;
 
 /**
  * Created by WuShengjun on 2019/7/3.

@@ -1,7 +1,6 @@
 package com.example.uhf_bt;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -30,6 +29,8 @@ import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.example.uhf_bt.utils.NumberTool;
+import com.example.uhf_bt.utils.Utils;
 import com.rscja.deviceapi.RFIDWithUHFUART;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
@@ -41,10 +42,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.zip.Deflater;
-
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTabHost;
 
 public class ScanListActivity extends BaseActivity implements View.OnClickListener {
 
