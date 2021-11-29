@@ -23,7 +23,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
@@ -86,7 +85,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private boolean loopFlag = false;
     private ListView LvTags;
     private Button InventoryLoop, btInventory, btStop;//
-    private Button btClear;
+    private Button btClear, settings_button;
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
     private long total = 0;
@@ -95,7 +94,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private ArrayList<HashMap<String, String>> tagList;
     private List<String> tempDatas = new ArrayList<>();
     private RadioButton rbEPC, rbEPC_TID, rbEPC_TID_USER;
-    private ImageButton settings_button;
 
     private AlertDialog mDialog;
     private EditText etUserPtr, etUserLen;
@@ -247,7 +245,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         device_battery = (TextView) findViewById(R.id.device_battery);
 
-        settings_button = (ImageButton) findViewById(R.id.settings_button);
+        settings_button = (Button) findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
 
         executorService = Executors.newFixedThreadPool(3);
@@ -432,6 +430,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.settings_button:
+                showToast("Chargement des réglages...");
+                Intent intent=new Intent(ScanListActivity.this, UHFSettingsActivity.class);
+                intent.putExtra("BTMode",true);
+                ScanListActivity.this.startActivity(intent);
+                break;
             case R.id.btClear:
                 clearData();
                 break;
@@ -455,10 +459,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             case R.id.rbEPC_TID_USER:
                 alertSet();
                 break;
-            case R.id.settings_button:
-                Intent intent=new Intent(ScanListActivity.this, UHFSettingsActivity.class);
-                intent.putExtra("BTMode",true);
-                ScanListActivity.this.startActivity(intent);
+            default:
                 break;
         }
     }
@@ -557,17 +558,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
         if (!mDialog.isShowing()) {
             mDialog.show();
-        }
-    }
-
-    private AlertDialog tipsDialog;
-    private void alertTips() {
-        if (tipsDialog == null) {
-            String tips = getString(R.string.inventory_epc_tid_user_tips);
-            tipsDialog = getAlert(null, getString(R.string.tips), tips, true, null);
-        }
-        if (!tipsDialog.isShowing()) {
-            tipsDialog.show();
         }
     }
 

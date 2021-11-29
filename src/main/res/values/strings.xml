@@ -82,9 +82,9 @@
     <string name="Clear">Clear</string>
     <string name="not_connected">Please connect the bluetooth printer</string>
     <string name="bt_not_enabled_leaving">Please select a device!!</string>
-    <string name="title_connecting">Connecting...</string>
-    <string name="title_connected_to">Connected: </string>
-    <string name="title_not_connected">Not connected</string>
+    <string name="title_connecting">Connexion...</string>
+    <string name="title_connected_to">Connecté: </string>
+    <string name="title_not_connected">Déconnecté</string>
     <string name="default_font_gray_scale">4</string>
     <string name="fontGrayscaleName">Grayscale</string>
     <string name="fontGrayScaleRange">(1~8)</string>

@@ -15,19 +15,18 @@
             android:paddingRight="16dp"
             android:text="100%" />
 
-        <ImageButton
+        <Button
             android:id="@+id/settings_button"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="left"
-            android:icon="@android:drawable/ic_dialog_info" />
-
+            android:text="Réglages" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="100dp"
         android:orientation="vertical">
 
         <RadioGroup

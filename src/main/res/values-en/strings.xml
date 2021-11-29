@@ -1014,7 +1014,7 @@
     <string name="title_stm32">STM32</string>
     <string name="title_stm32_version">stm32 version</string>
     <string name="title_stop_read_card">Please stop reading cards!</string>
-    <string name="connecting">Connecting....</string>
+    <string name="connecting">Connexion....</string>
     <string name="connect_success">Successful connection</string>
     <string name="disconnect">Disconnected</string>
 

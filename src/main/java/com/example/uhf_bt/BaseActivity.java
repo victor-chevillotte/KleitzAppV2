@@ -116,7 +116,6 @@ public class BaseActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            Log.e(TAG, "timeCountCur = " + timeCountCur);
             if(isScanning) {
                 resetDisconnectTime();
             } else if (timeCountCur <= 0){

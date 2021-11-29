@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Process;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -206,8 +207,7 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
       spDisconnectTime.setOnItemSelectedListener(
               new AdapterView.OnItemSelectedListener() {
                   public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                      //long time = 1000 * 60 * 60 * position;
-                      long time = 1000 * 60 * position;
+                      long time = 1000 * 60 * 60 * position;
                       SPUtils.getInstance(getApplicationContext()).setSPInt(SPUtils.DISCONNECT_TIME_INDEX, position);
                       SPUtils.getInstance(getApplicationContext()).setSPLong(SPUtils.DISCONNECT_TIME, time);
                       switch (position) {
@@ -242,6 +242,11 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
         super.onPause();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(bluetoothBroadcastReceiver);
+    }
 
   private void initUI() {
       btnGetPower = (Button) findViewById(R.id.btnGetPower);
