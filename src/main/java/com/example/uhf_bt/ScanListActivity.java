@@ -241,8 +241,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             finish();
         remoteBTAdd = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
-        IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         initUI();
+        IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
         //checkLocationEnable(); à mettre en place ulterieurement
         Utils.initSound(getApplicationContext());

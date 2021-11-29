@@ -1,6 +1,7 @@
 package com.example.uhf_bt;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -69,11 +70,35 @@ public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClic
 
     private static final int SELECT_FILE_REQ = 11;
 
+    public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                switch(state) {
+                    case BluetoothAdapter.STATE_OFF:
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        finish();
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        break;
+                }
+
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         faup = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_uhfupdata);
+        IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
         tvPath = (TextView) findViewById(R.id.tvPath);
         tvMsg = (TextView) findViewById(R.id.tvMsg);
         btSelect = (Button) findViewById(R.id.btSelect);

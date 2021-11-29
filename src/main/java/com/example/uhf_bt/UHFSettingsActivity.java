@@ -1,6 +1,11 @@
 package com.example.uhf_bt;
 
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -51,7 +56,31 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
     private final static int GET_POWER = 2;
     private final static int GET_PROTOCOL = 3;
     private final static int GET_CW = 4;
+
+    public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                switch(state) {
+                    case BluetoothAdapter.STATE_OFF:
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        finish();
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        break;
+                }
+
+            }
+        }
+    };
+
     private Handler mHandler = new Handler() {
+        @SuppressLint("HandlerLeak")
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -174,6 +203,8 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
       faset = this;
       setContentView(R.layout.activity_uhf_settings);
       initUI();
+      IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+      registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
       etNewName = (EditText) findViewById(R.id.etNewName);
       etOldName = (EditText) findViewById(R.id.etOldName);
       etNewName.setText(remoteBTName);
