@@ -1,4 +1,4 @@
-package com.example.uhf_bt.fragment;
+package com.example.uhf_bt;
 
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -22,12 +22,15 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.uhf_bt.BaseActivity;
 import com.example.uhf_bt.ConnectDeviceActivity;
 import com.example.uhf_bt.ScanListActivity;
 import com.example.uhf_bt.R;
+import com.example.uhf_bt.UHFSettingsActivity;
 import com.example.uhf_bt.filebrowser.FileManagerActivity;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
+import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,15 +47,15 @@ import no.nordicsemi.android.error.GattError;
 import no.nordicsemi.android.nrftoolbox.dfu.DfuService;
 
 
-public class UHFUpdataFragment extends Fragment implements View.OnClickListener {
+public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClickListener {
 
-    ScanListActivity mContext;
     TextView tvPath, tvMsg;
     Button btSelect;
     Button btnUpdata, btnReadVere;
     String TAG = "DeviceAPI_UHFUpdata";
     RadioButton rbSTM32, rbR2000, rbBLE;
     String version;
+    ScanListActivity mContext;
 
     private ProgressDialog progressDialog = null;
     private String mFilePath;
@@ -65,24 +68,18 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
     private static final int SELECT_FILE_REQ = 11;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_uhfupdata, container, false);
-    }
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_uhfupdata);
+        tvPath = (TextView) findViewById(R.id.tvPath);
+        tvMsg = (TextView) findViewById(R.id.tvMsg);
+        btSelect = (Button) findViewById(R.id.btSelect);
+        btnUpdata = (Button) findViewById(R.id.btnUpdata);
+        btnReadVere = (Button) findViewById(R.id.btnReadVere);
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mContext = (ScanListActivity) getActivity();
-
-        tvPath = (TextView) mContext.findViewById(R.id.tvPath);
-        tvMsg = (TextView) mContext.findViewById(R.id.tvMsg);
-        btSelect = (Button) mContext.findViewById(R.id.btSelect);
-        btnUpdata = (Button) mContext.findViewById(R.id.btnUpdata);
-        btnReadVere = (Button) mContext.findViewById(R.id.btnReadVere);
-
-        rbSTM32 = (RadioButton) mContext.findViewById(R.id.rbSTM32);
-        rbR2000 = (RadioButton) mContext.findViewById(R.id.rbR2000);
-        rbBLE = (RadioButton) mContext.findViewById(R.id.rbBLE);
+        rbSTM32 = (RadioButton) findViewById(R.id.rbSTM32);
+        rbR2000 = (RadioButton) findViewById(R.id.rbR2000);
+        rbBLE = (RadioButton) findViewById(R.id.rbBLE);
 
         btSelect.setOnClickListener(this);
         btnUpdata.setOnClickListener(this);
@@ -90,7 +87,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
 
         registerProgressListener();
         init();
-        mContext.addConnectStatusNotice(iConnectStatus);
+        addConnectStatusNotice(iConnectStatus);
     }
 
     private ConnectDeviceActivity.IConnectStatus iConnectStatus = new ConnectDeviceActivity.IConnectStatus() {
@@ -99,7 +96,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
             Log.e(TAG, "reconnected>connectionStatus=" + connectionStatus);
             if(connectionStatus == ConnectionStatus.CONNECTED) {
                 sleep(1000);
-                latestVerMap = mContext.uhf.getBluetoothVersion();
+                latestVerMap = uhf.getBluetoothVersion();
                 showBTVersion();
             } else if(connectionStatus == ConnectionStatus.DISCONNECTED) {
 
@@ -111,20 +108,20 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btSelect:
-                Intent intent = new Intent(mContext, FileManagerActivity.class);
+                Intent intent = new Intent(this, FileManagerActivity.class);
                 startActivity(intent);
                 /*if (rbBLE.isChecked()) {
                     final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/zip");
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    if (intent.resolveActivity(mContext.getPackageManager()) != null) {
+                    if (intent.resolveActivity(getPackageManager()) != null) {
                         startActivityForResult(intent, SELECT_FILE_REQ);
                     }
                 } else {
                     final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/octet-stream");
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    if (intent.resolveActivity(mContext.getPackageManager()) != null) {
+                    if (intent.resolveActivity(getPackageManager()) != null) {
                         startActivityForResult(intent, SELECT_FILE_REQ);
                     }
                 }*/
@@ -133,47 +130,47 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
                 update();
                 break;
             case R.id.btnReadVere:
-                String v = mContext.uhf.getSTM32Version();//获取版本号
+                String v = uhf.getSTM32Version();//获取版本号
                 tvMsg.setText("version:" + v);
                 break;
         }
     }
 
     @Override
-    public void onDestroyView() {
-        mContext.unregisterReceiver(pathReceiver);
+    public void onDestroy() {
+        unregisterReceiver(pathReceiver);
         unregisterProgressListener();
-        mContext.removeConnectStatusNotice(iConnectStatus);
-        super.onDestroyView();
+        removeConnectStatusNotice(iConnectStatus);
+        super.onDestroy();
     }
 
     public void update() {
-        if (!(mContext.uhf.getConnectStatus() == ConnectionStatus.CONNECTED)) {
-            Toast.makeText(mContext, "请先连接蓝牙!", Toast.LENGTH_SHORT).show();
+        if (!(uhf.getConnectStatus() == ConnectionStatus.CONNECTED)) {
+            showToast("Veuillez d'abord connecter Bluetooth");
             return;
         }
         String filePath = tvPath.getText().toString();
         if (TextUtils.isEmpty(filePath)) {
-            Toast.makeText(mContext, R.string.up_msg_sel_file, Toast.LENGTH_SHORT).show();
+            showToast(R.string.up_msg_sel_file);
             return;
         }
         if (!rbR2000.isChecked() && !rbSTM32.isChecked() && !rbBLE.isChecked()) {
-            Toast.makeText(mContext, "请选择射频模块或者主板升级!", Toast.LENGTH_SHORT).show();
+            showToast("Veuillez sélectionner le module RF ou la mise à niveau de la carte mère");
             return;
         }
         if (rbR2000.isChecked() || rbSTM32.isChecked()) {
             if (filePath.toLowerCase().lastIndexOf(".bin") < 0) {
-                Toast.makeText(mContext, "文件格式错误", Toast.LENGTH_SHORT).show();
+                showToast("Erreur de format de fichier");
                 return;
             }
 
             File file = new File(filePath);
 //            Log.e(TAG, "totalSpace=" + file.getTotalSpace() + ", freeSpace=" + file.getFreeSpace() + ", length=" + file.length());
             if(rbR2000.isChecked() && file.length() < 100 * 1024) {
-                Toast.makeText(mContext, "请选择正确的升级文件", Toast.LENGTH_SHORT).show();
+                showToast("Veuillez sélectionner le bon fichier de mise à niveau");
                 return;
             } else if(rbSTM32.isChecked() && file.length() >= 100 * 1024) {
-                Toast.makeText(mContext, "请选择正确的升级文件", Toast.LENGTH_SHORT).show();
+                showToast("Veuillez sélectionner le bon fichier de mise à niveau");
                 return;
             }
 
@@ -181,19 +178,19 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
             int flag = rbR2000.isChecked() ? 0 : 1;
 
             if (flag == 0)
-                version = mContext.uhf.getVersion();//获取版本号
+                version = uhf.getVersion();//获取版本号
             else
-                version = mContext.uhf.getSTM32Version();//获取版本号
+                version = uhf.getSTM32Version();//获取版本号
             tvMsg.setText("version:" + version);
             Log.d(TAG, "version=" + version);
 
             new UpdateTask(filePath, flag).execute();
         } else if (rbBLE.isChecked()) {
             if (filePath.toLowerCase().lastIndexOf(".zip") < 0) {
-                Toast.makeText(mContext, "文件格式错误", Toast.LENGTH_SHORT).show();
+                showToast("Erreur de format de fichier");
                 return;
             }
-            updateBLE(mContext, mFilePath, mFileStreamUri, mContext.mDevice);
+            updateBLE(this, mFilePath, mFileStreamUri, mDevice);
         }
     }
 
@@ -220,11 +217,11 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
             } else if(rbBLE.isChecked()) {
                 msg = "准备升级蓝牙固件...";
             }
-            progressDialog = new ProgressDialog(mContext);
+            /*progressDialog = new ProgressDialog(dthis);
             progressDialog.setMessage(msg);
             progressDialog.setCancelable(false);
             progressDialog.setCanceledOnTouchOutside(false);
-            progressDialog.show();
+            progressDialog.show();*/
         }
 
         @Override
@@ -246,12 +243,12 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
             }
 
             if(flag==0) {
-                if (!mContext.uhf.uhfJump2Boot()) {
+                if (!uhf.uhfJump2Boot()) {
                     Log.d(TAG, "uhfJump2Boot 失败");
                     return false;
                 }
             }else{
-                if (!mContext.uhf.uhfJump2BootSTM32()) {
+                if (!uhf.uhfJump2BootSTM32()) {
                     Log.d(TAG, "uhfJump2BootSTM32 失败");
                     return false;
                 }
@@ -259,7 +256,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
 
             sleep(2000);
             Log.d(TAG, "UHF uhfStartUpdate");
-            if (!mContext.uhf.uhfStartUpdate()) {
+            if (!uhf.uhfStartUpdate()) {
                 Log.d(TAG, "uhfStartUpdate 失败");
                 return false;
             }
@@ -276,7 +273,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
                 }
                 byte[] data = Arrays.copyOfRange(currData, index, index + pakeSize);
 //                Log.d(TAG,"data="+ StringUtility.bytes2HexString(data,data.length));
-                if (mContext.uhf.uhfUpdating(data)) {
+                if (uhf.uhfUpdating(data)) {
                     result = true;
                     publishProgress(index + pakeSize, (int) uFileSize);
                 } else {
@@ -296,7 +293,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
                     stop();
                     return false;
                 }
-                if (mContext.uhf.uhfUpdating(Arrays.copyOfRange(currData, index, index + len))) {
+                if (uhf.uhfUpdating(Arrays.copyOfRange(currData, index, index + len))) {
                     result = true;
                     publishProgress((int) uFileSize, (int) uFileSize);
                 } else {
@@ -312,7 +309,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            progressDialog.setMessage((values[0] * 100 / values[1]) + "% " + mContext.getString(R.string.app_msg_Upgrade));
+            progressDialog.setMessage((values[0] * 100 / values[1]) + "% " + getString(R.string.app_msg_Upgrade));
             tvMsg.setText("version:" + version);
         }
 
@@ -320,21 +317,21 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
         protected void onPostExecute(Boolean result) {
             super.onPostExecute(result);
             if (!result) {
-                Toast.makeText(mContext, R.string.uhf_msg_upgrade_fail, Toast.LENGTH_SHORT).show();
+                showToast(R.string.uhf_msg_upgrade_fail);
                 tvMsg.setText(R.string.uhf_msg_upgrade_fail);
                 tvMsg.setTextColor(Color.RED);
             } else {
-                Toast.makeText(mContext, R.string.uhf_msg_upgrade_succ, Toast.LENGTH_SHORT).show();
+                showToast(R.string.uhf_msg_upgrade_succ);
                 tvMsg.setText(R.string.uhf_msg_upgrade_succ);
                 tvMsg.setTextColor(Color.GREEN);
             }
-            tvMsg.setText(tvMsg.getText() + " version=" + (flag == 0 ? mContext.uhf.getVersion() : mContext.uhf.getSTM32Version()));
+            tvMsg.setText(tvMsg.getText() + " version=" + (flag == 0 ? uhf.getVersion() : uhf.getSTM32Version()));
             progressDialog.dismiss();
         }
 
         private void stop() {
             Log.d(TAG, "UHF uhfStopUpdate");
-            if (!mContext.uhf.uhfStopUpdate())
+            if (!uhf.uhfStopUpdate())
                 Log.d(TAG, "uhfStopUpdate 失败");
             sleep(2000);
         }
@@ -354,11 +351,11 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
     public void init() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(FileManagerActivity.Path_ACTION);
-        mContext.registerReceiver(pathReceiver, intentFilter);
+        registerReceiver(pathReceiver, intentFilter);
     }
 
     private void reconnect() {
-        mContext.uhf.connect(mContext.mDevice.getAddress());
+        uhf.connect(mDevice.getAddress());
     }
 
     public class PathReceiver extends BroadcastReceiver {
@@ -404,13 +401,13 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
                             break;
                         case DfuBaseService.PROGRESS_COMPLETED:
                             setMsg("Done");
-                            Toast.makeText(mContext, "success", Toast.LENGTH_SHORT).show();
+                            showToast("Succès !");
                             hideDialog();
                             reconnect();
                             break;
                         case DfuBaseService.PROGRESS_ABORTED:
                             setMsg("Uploading of the application has been canceled.");
-                            Toast.makeText(mContext, "canceled", Toast.LENGTH_SHORT).show();
+                            showToast("Annulée ");
                             hideDialog();
                             reconnect();
                             break;
@@ -425,21 +422,21 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
                     switch (errorType) {
                         case DfuBaseService.ERROR_TYPE_COMMUNICATION_STATE:
                             setMsg(GattError.parseConnectionError(error));
-                            Toast.makeText(mContext, "fail", Toast.LENGTH_SHORT).show();
+                            showToast("Echec");
                             hideDialog();
                             Log.e(TAG, String.format("error=%d,type=%d,msg=%s", error, errorType, GattError.parseConnectionError(error)));
 //                            reconnect();
                             break;
                         case DfuBaseService.ERROR_TYPE_DFU_REMOTE:
                             setMsg(GattError.parseConnectionError(error));
-                            Toast.makeText(mContext, "fail", Toast.LENGTH_SHORT).show();
+                            showToast("Echec");
                             hideDialog();
                             Log.e(TAG, String.format("error=%d,type=%d,msg=%s", error, errorType, GattError.parseConnectionError(error)));
 //                            reconnect();
                             break;
                         default:
                             setMsg(GattError.parse(error));
-                            Toast.makeText(mContext, "fail", Toast.LENGTH_SHORT).show();
+                            showToast("Echec");
                             Log.e(TAG, String.format("error=%d,type=%d,msg=%s", error, errorType, GattError.parse(error)));
                             hideDialog();
 //                            reconnect();
@@ -458,7 +455,7 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
                     final Uri uri = data.getData();
                     if (uri != null && uri.getScheme().equals("content")) {
                         mFileStreamUri = uri;
-                        mFilePath = getRealPathFromURI(mContext, mFileStreamUri);
+                        mFilePath = getRealPathFromURI(this, mFileStreamUri);
                         tvPath.setText(mFilePath);
                     }
                 }
@@ -472,13 +469,13 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
             final IntentFilter filter = new IntentFilter();
             filter.addAction(DfuBaseService.BROADCAST_PROGRESS);
             filter.addAction(DfuBaseService.BROADCAST_ERROR);
-            LocalBroadcastManager.getInstance(mContext).registerReceiver(mProgressBroadcastReceiver, filter);
+            LocalBroadcastManager.getInstance(this).registerReceiver(mProgressBroadcastReceiver, filter);
         }
     }
 
     public void unregisterProgressListener() {
         if (mProgressBroadcastReceiver != null) {
-            LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mProgressBroadcastReceiver);
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mProgressBroadcastReceiver);
             mProgressBroadcastReceiver = null;
         }
     }
@@ -490,15 +487,15 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
         Log.e(TAG, "mFilePath=" + mFilePath);
         Log.e(TAG, "mSelectedDevice=" + mSelectedDevice);
         tvMsg.setText("");
-        beforeVerMap = mContext.uhf.getBluetoothVersion();
+        beforeVerMap = uhf.getBluetoothVersion();
         Log.e(TAG, "beforeVerMap=" + beforeVerMap);
-        mContext.uhf.setStatusCallback(null);
+        uhf.setStatusCallback(null);
         if (TextUtils.isEmpty(mFilePath) || mFileStreamUri == null) {
-            Toast.makeText(mContext, "请选择要升级的文件!", Toast.LENGTH_LONG).show();
+            showToast("Veuillez sélectionner le fichier de mise à jour");
             return;
         }
         if (mSelectedDevice == null) {
-            Toast.makeText(mContext, "请选择蓝牙设备!", Toast.LENGTH_LONG).show();
+            showToast("Veuillez sélectionner un appareil Bluetooth");
             return;
         }
         final DfuServiceInitiator starter = new DfuServiceInitiator(mSelectedDevice.getAddress())
@@ -536,10 +533,10 @@ public class UHFUpdataFragment extends Fragment implements View.OnClickListener 
             progressDialog.setMessage(msg);
     }
 
-    private void setProgress(int pro) {
+   /* public void setProgress(int pro) {
         if (progressDialog != null)
             progressDialog.setMessage(pro + "%");
-    }
+    }*/
 
     private void showBTVersion() {
         Log.e(TAG, "beforeVerMap=" + beforeVerMap + ", lastestVerMap=" + latestVerMap);

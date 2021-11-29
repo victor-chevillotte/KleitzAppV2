@@ -37,7 +37,6 @@ import java.util.Map;
 
 public class ConnectDeviceActivity extends BaseActivity implements View.OnClickListener {
 
-    public BluetoothDevice mDevice = null;
     ConnectDeviceActivity.BTStatus btStatus = new ConnectDeviceActivity.BTStatus();
     private boolean mIsActiveDisconnect = true; // 是否主动断开连接
     private static final int RECONNECT_NUM = 1; // 重连次数

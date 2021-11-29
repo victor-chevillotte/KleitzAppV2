@@ -1,5 +1,6 @@
 package com.example.uhf_bt;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -30,6 +31,7 @@ public class BaseActivity extends AppCompatActivity {
     public String remoteBTName = "";
     public String remoteBTAdd = "";
     private Toast toast;
+    public BluetoothDevice mDevice = null;
 
 
     public void showToast(String text) {

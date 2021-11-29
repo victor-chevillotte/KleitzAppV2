@@ -664,8 +664,8 @@
     <string name="uhf_msg_tab_kill">Kill</string>
     <string name="uhf_msg_tab_lock">Lock</string>
     <string name="app_msg_Upgrade">升级中...\n请勿退出，以免损坏硬件！</string>
-    <string name="uhf_msg_upgrade_fail">超高频升级失败</string>
-    <string name="uhf_msg_upgrade_succ">超高频升级成功</string>
+    <string name="uhf_msg_upgrade_fail">Echec de la mise à jour</string>
+    <string name="uhf_msg_upgrade_succ">Mise à jour effectuée avec succès</string>
     <string name="uhf_msg_tab_set">Réglages</string>
     <string name="rfid_msg_scan_fail">Scan failed</string>
     <string name="rfid_msg_scan_continuous">Auto Scan</string>
