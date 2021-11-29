@@ -15,9 +15,12 @@ import android.widget.Spinner;
 
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
+import java.util.zip.Deflater;
+
 
 public class UHFSettingsActivity extends BaseActivity implements View.OnClickListener {
 
+    public static UHFSettingsActivity faset;
     Button btnGetPower;
     Button btnSetPower;
     Spinner spPower;
@@ -168,6 +171,7 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
   @Override
   protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+      faset = this;
       setContentView(R.layout.activity_uhf_settings);
       initUI();
       etNewName = (EditText) findViewById(R.id.etNewName);

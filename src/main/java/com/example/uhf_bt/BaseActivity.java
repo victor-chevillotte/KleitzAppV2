@@ -14,6 +14,7 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.Deflater;
 
 /**
  * Created by WuShengjun on 2019/7/3.
@@ -21,6 +22,7 @@ import java.util.List;
  */
 
 public class BaseActivity extends AppCompatActivity {
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

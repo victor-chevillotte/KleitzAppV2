@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.zip.Deflater;
 
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -49,6 +50,7 @@ import no.nordicsemi.android.nrftoolbox.dfu.DfuService;
 
 public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClickListener {
 
+    public static UHFUpdateDeviceActivity faup;
     TextView tvPath, tvMsg;
     Button btSelect;
     Button btnUpdata, btnReadVere;
@@ -69,6 +71,7 @@ public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClic
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        faup = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_uhfupdata);
         tvPath = (TextView) findViewById(R.id.tvPath);

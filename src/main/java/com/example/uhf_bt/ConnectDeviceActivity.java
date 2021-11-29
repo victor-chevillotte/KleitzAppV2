@@ -124,6 +124,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         btn_activate_bluetooth.setOnClickListener(this);
     }
 
+
     private void set_activity_connect_device() {
         setContentView(R.layout.device_list);
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -325,8 +326,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             runOnUiThread(new Runnable() {
                 public void run() {
                     BluetoothDevice device = (BluetoothDevice) device1;
-                    remoteBTName = "";
-                    remoteBTAdd = "";
 
                     if (connectionStatus == ConnectionStatus.CONNECTED) {
                         remoteBTName = device.getName();
@@ -348,19 +347,27 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                             saveConnectedDevice(remoteBTAdd, remoteBTName);
                         }
 
-                        mIsActiveDisconnect = false;
+                        mIsActiveDisconnect = true;
                     } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                         if (device != null) {
                             remoteBTName = device.getName();
                             remoteBTAdd = device.getAddress();
-                            if (shouldShowDisconnected())
+                            if (shouldShowDisconnected()) {
                                 tvAddress.setText(String.format("%s(%s)\ndisconnected", remoteBTName, remoteBTAdd));
+                            }
                         } else {
                             if (shouldShowDisconnected())
-                            {
                                 tvAddress.setText("disconnected");
+                        }
+                        if (shouldShowDisconnected())
+                        {
+                            showToast("Antenne déconnectée");
+                            if (ScanListActivity.fa != null)
                                 ScanListActivity.fa.finish();
-                            }
+                            if (UHFUpdateDeviceActivity.faup != null)
+                                UHFUpdateDeviceActivity.faup.finish();
+                            if (UHFSettingsActivity.faset != null)
+                                UHFSettingsActivity.faset.finish();
                         }
                         //showToast(R.string.disconnect);
 

@@ -41,22 +41,20 @@ import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.Deflater;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTabHost;
 
 public class ScanListActivity extends BaseActivity implements View.OnClickListener {
 
+    public static ScanListActivity fa;
     public boolean isScanning = false;
     public String remoteBTName = "";
     public String remoteBTAdd = "";
     private final static String TAG = "ScanListActivity";
     private static final int REQUEST_ENABLE_BT = 2;
-    public static Activity fa;
 
-    public BluetoothDevice mDevice = null;
-    private FragmentTabHost mTabHost;
-    private FragmentManager fm;
     public BluetoothAdapter mBtAdapter = null;
 
     public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
@@ -249,6 +247,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         //checkLocationEnable(); à mettre en place ulterieurement
         Utils.initSound(getApplicationContext());
     }
+
 
     @Override
     protected void onDestroy() {
