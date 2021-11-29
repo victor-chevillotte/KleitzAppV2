@@ -217,7 +217,7 @@ public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClic
             } else if(rbBLE.isChecked()) {
                 msg = "准备升级蓝牙固件...";
             }
-            /*progressDialog = new ProgressDialog(dthis);
+            /*eprogressDialog = new ProgressDialog(dthis);
             progressDialog.setMessage(msg);
             progressDialog.setCancelable(false);
             progressDialog.setCanceledOnTouchOutside(false);

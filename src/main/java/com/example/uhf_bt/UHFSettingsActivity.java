@@ -1,5 +1,6 @@
 package com.example.uhf_bt;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,6 +36,7 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
     private Spinner spProtocol;
     private Button btnSetProtocol;
     private Button btnGetProtocol;
+    private Button btn_update_device;
 
     private RadioGroup rgWorkingMode;
 
@@ -205,7 +207,8 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
   private void initUI() {
       btnGetPower = (Button) findViewById(R.id.btnGetPower);
       btnSetPower = (Button) findViewById(R.id.btnSetPower);
-
+      btn_update_device = (Button) findViewById(R.id.btn_update_device);
+      btn_update_device.setOnClickListener(this);
       spPower = (Spinner) findViewById(R.id.spPower);
       arrayPower = getResources().getStringArray(R.array.arrayPower);
       ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayPower);
@@ -295,6 +298,11 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
       switch (view.getId()) {
           case R.id.btnGetPower:
               getPower(true);
+              break;
+          case R.id.btn_update_device:
+              Intent intent=new Intent(this, UHFUpdateDeviceActivity.class);
+              this.startActivity(intent);
+              finish();
               break;
           case R.id.btnSetPower:
               setPower();
