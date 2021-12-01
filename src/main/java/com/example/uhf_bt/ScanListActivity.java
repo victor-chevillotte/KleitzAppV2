@@ -249,13 +249,13 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         tv_total = (TextView) findViewById(R.id.tv_total);
         tv_time = (TextView) findViewById(R.id.tv_time);
 
-        rbEPC = (RadioButton) findViewById(R.id.rbEPC);
+     /*   rbEPC = (RadioButton) findViewById(R.id.rbEPC);
         rbEPC.setOnClickListener(this);
         rbEPC_TID = (RadioButton) findViewById(R.id.rbEPC_TID);
         rbEPC_TID.setOnClickListener(this);
         rbEPC_TID_USER = (RadioButton) findViewById(R.id.rbEPC_TID_USER);
         rbEPC_TID_USER.setOnClickListener(this);
-
+*/
         InventoryLoop.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
@@ -398,9 +398,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private void setViewsEnabled(boolean enabled) {
         InventoryLoop.setEnabled(enabled);
 //        cbFilter.setEnabled(enabled);
-        rbEPC.setEnabled(enabled);
-        rbEPC_TID.setEnabled(enabled);
-        rbEPC_TID_USER.setEnabled(enabled);
+//        rbEPC.setEnabled(enabled);
+//        rbEPC_TID.setEnabled(enabled);
+//        rbEPC_TID_USER.setEnabled(enabled);
     }
 
     Handler handlerRefreshBattery = new Handler();
