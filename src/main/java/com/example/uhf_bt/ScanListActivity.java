@@ -55,7 +55,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
     public static final String TAG_DATA = "tagData";
     public static final String TAG_EPC = "tagEpc";
-    public static final String TAG_TID = "tagTid";
     public static final String TAG_LEN = "tagLen";
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
@@ -93,10 +92,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private HashMap<String, String> map;
     private ArrayList<HashMap<String, String>> tagList;
     private List<String> tempDatas = new ArrayList<>();
-    private RadioButton rbEPC, rbEPC_TID, rbEPC_TID_USER;
-
-    private AlertDialog mDialog;
-    private EditText etUserPtr, etUserLen;
 
     private long mStrTime;
     private ExecutorService executorService;
@@ -155,30 +150,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     break;
                 case FLAG_SET_FAIL:
                     showToast("fail");
-                    break;
-                case FLAG_GET_MODE:
-                    byte[] data = (byte[]) msg.obj;
-                    if (data != null) {
-                        if (data[0] == 0) {
-                            rbEPC.setChecked(true);
-                        } else if (data[0] == 1) {
-                            rbEPC_TID.setChecked(true);
-                        } else if (data.length >= 3 && data[0] == 2) {
-                            rbEPC_TID_USER.setChecked(true);
-                            etUserPtr.setText(String.valueOf(data[1]));
-                            etUserLen.setText(String.valueOf(data[2]));
-                        } else {
-                            rbEPC.setChecked(false);
-                            rbEPC_TID.setChecked(false);
-                            rbEPC_TID_USER.setChecked(false);
-                        }
-                        if (showToastFlag) showToast("success");
-                    } else {
-                        if (showToastFlag) showToast("fail");
-                        rbEPC.setChecked(false);
-                        rbEPC_TID.setChecked(false);
-                        rbEPC_TID_USER.setChecked(false);
-                    }
                     break;
             }
         }
@@ -249,13 +220,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         tv_total = (TextView) findViewById(R.id.tv_total);
         tv_time = (TextView) findViewById(R.id.tv_time);
 
-     /*   rbEPC = (RadioButton) findViewById(R.id.rbEPC);
-        rbEPC.setOnClickListener(this);
-        rbEPC_TID = (RadioButton) findViewById(R.id.rbEPC_TID);
-        rbEPC_TID.setOnClickListener(this);
-        rbEPC_TID_USER = (RadioButton) findViewById(R.id.rbEPC_TID_USER);
-        rbEPC_TID_USER.setOnClickListener(this);
-*/
         InventoryLoop.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
@@ -269,7 +233,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Log.e(TAG, "hhehhehe");
+                Log.e(TAG, String.valueOf(tagList.get(position)));
                 Intent newIntent = new Intent(ScanListActivity.this, ScanFocusedTagActivity.class);
                 Bundle b = new Bundle();
                 b.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTAdd);
@@ -284,123 +248,10 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
         });
         clearData();
-        //initFilter();
     }
-
-    private CheckBox cbFilter;
-    private ViewGroup layout_filter;
-    private Button btnSetFilter;
-    private void initFilter() {
-        layout_filter = (ViewGroup) findViewById(R.id.layout_filter);
-        layout_filter.setVisibility(View.GONE);
-        cbFilter = (CheckBox) findViewById(R.id.cbFilter);
-        cbFilter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                layout_filter.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            }
-        });
-
-        final EditText etLen = (EditText) findViewById(R.id.etLen);
-        final EditText etPtr = (EditText) findViewById(R.id.etPtr);
-        final EditText etData = (EditText) findViewById(R.id.etData);
-        final RadioButton rbEPC = (RadioButton) findViewById(R.id.rbEPC_filter);
-        final RadioButton rbTID = (RadioButton) findViewById(R.id.rbTID_filter);
-        final RadioButton rbUser = (RadioButton) findViewById(R.id.rbUser_filter);
-        btnSetFilter = (Button) findViewById(R.id.btSet);
-
-        btnSetFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int filterBank = RFIDWithUHFUART.Bank_EPC;
-                if (rbEPC.isChecked()) {
-                    filterBank = RFIDWithUHFUART.Bank_EPC;
-                } else if (rbTID.isChecked()) {
-                    filterBank = RFIDWithUHFUART.Bank_TID;
-                } else if (rbUser.isChecked()) {
-                    filterBank = RFIDWithUHFUART.Bank_USER;
-                }
-                if (etLen.getText().toString() == null || etLen.getText().toString().isEmpty()) {
-                    showToast("数据长度不能为空");
-                    return;
-                }
-                if (etPtr.getText().toString() == null || etPtr.getText().toString().isEmpty()) {
-                    showToast("起始地址不能为空");
-                    return;
-                }
-                int ptr = Utils.toInt(etPtr.getText().toString(), 0);
-                int len = Utils.toInt(etLen.getText().toString(), 0);
-                String data = etData.getText().toString().trim();
-                if (len > 0) {
-                    String rex = "[\\da-fA-F]*"; //匹配正则表达式，数据为十六进制格式
-                    if (data == null || data.isEmpty() || !data.matches(rex)) {
-                        showToast("过滤的数据必须是十六进制数据");
-//                        playSound(2);
-                        return;
-                    }
-
-                    int l = data.replace(" ", "").length();
-                    if (len <= l * 4) {
-                        if(l % 2 != 0)
-                            data += "0";
-                    } else {
-                        showToast(R.string.uhf_msg_set_filter_fail2);
-                        return;
-                    }
-
-                    if (uhf.setFilter(filterBank, ptr, len, data)) {
-                        showToast(R.string.uhf_msg_set_filter_succ);
-                    } else {
-                        showToast(R.string.uhf_msg_set_filter_fail);
-                    }
-                } else {
-                    //禁用过滤
-                    String dataStr = "00";
-                    if (uhf.setFilter(RFIDWithUHFUART.Bank_EPC, 0, 0, dataStr)
-                            && uhf.setFilter(RFIDWithUHFUART.Bank_TID, 0, 0, dataStr)
-                            && uhf.setFilter(RFIDWithUHFUART.Bank_USER, 0, 0, dataStr)) {
-                        showToast(R.string.msg_disable_succ);
-                    } else {
-                        showToast(R.string.msg_disable_fail);
-                    }
-                }
-                cbFilter.setChecked(false);
-            }
-        });
-
-        rbEPC.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (rbEPC.isChecked()) {
-                    etPtr.setText("32");
-                }
-            }
-        });
-        rbTID.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (rbTID.isChecked()) {
-                    etPtr.setText("0");
-                }
-            }
-        });
-        rbUser.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (rbUser.isChecked()) {
-                    etPtr.setText("0");
-                }
-            }
-        });
-    }
-
 
     private void setViewsEnabled(boolean enabled) {
         InventoryLoop.setEnabled(enabled);
-//        cbFilter.setEnabled(enabled);
-//        rbEPC.setEnabled(enabled);
-//        rbEPC_TID.setEnabled(enabled);
-//        rbEPC_TID_USER.setEnabled(enabled);
     }
 
     Handler handlerRefreshBattery = new Handler();
@@ -450,114 +301,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     stopInventory();
                 }
                 break;
-            case R.id.rbEPC:
-                executorService.execute(epcModeRunnable);
-                break;
-            case R.id.rbEPC_TID:
-                executorService.execute(epcTidModeRunnable);
-                break;
-            case R.id.rbEPC_TID_USER:
-                alertSet();
-                break;
             default:
                 break;
-        }
-    }
-
-    private Runnable epcModeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            setMode(Mode.EPC);
-        }
-    };
-
-    private Runnable epcTidModeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            setMode(Mode.EPC_TID);
-        }
-    };
-
-    private Runnable epcTidUserModeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            setMode(Mode.EPC_TID_USER);
-        }
-    };
-
-    public enum  Mode {
-        EPC, EPC_TID, EPC_TID_USER
-    }
-
-    private void setMode(Mode mode) {
-        switch (mode) {
-            case EPC:
-                if (uhf.setEPCMode()) {
-                    handler.sendEmptyMessage(FLAG_SET_SUCC);
-                } else {
-                    handler.sendEmptyMessage(FLAG_SET_FAIL);
-                }
-                break;
-            case EPC_TID:
-                if (uhf.setEPCAndTIDMode()) {
-                    handler.sendEmptyMessage(FLAG_SET_SUCC);
-                } else {
-                    handler.sendEmptyMessage(FLAG_SET_FAIL);
-                }
-                break;
-            case EPC_TID_USER:
-                String strUserPtr = etUserPtr.getText().toString();
-                String strUserLen = etUserLen.getText().toString();
-                int userPtr = 0;
-                int userLen = 6;
-                if (!TextUtils.isEmpty(strUserPtr)) {
-                    userPtr = Integer.valueOf(strUserPtr);
-                }
-                if (!TextUtils.isEmpty(strUserLen)) {
-                    userLen = Integer.valueOf(strUserLen);
-                }
-                if (uhf.setEPCAndTIDUserMode(userPtr, userLen)) {
-                    handler.sendEmptyMessage(FLAG_SET_SUCC);
-                } else {
-                    handler.sendEmptyMessage(FLAG_SET_FAIL);
-                }
-                break;
-        }
-    }
-
-    private AlertDialog getAlert(View view, String title, String message, boolean cancelable, DialogInterface.OnClickListener positiveListener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title);
-        builder.setIcon(R.drawable.webtext);
-        if(view != null) {
-            builder.setView(view);
-        } else {
-            builder.setMessage(message);
-        }
-        builder.setCancelable(cancelable);
-        if(positiveListener != null) {
-            builder.setPositiveButton(R.string.ok, positiveListener);
-        } else {
-            builder.setNegativeButton(R.string.close, null);
-        }
-        return builder.create();
-    }
-
-    private void alertSet() {
-        if (mDialog == null) {
-            View view = LayoutInflater.from(this).inflate(R.layout.dialog_epc_tid_user, null);
-            etUserPtr = view.findViewById(R.id.etUserPtr);
-            etUserLen = view.findViewById(R.id.etUserLen);
-            DialogInterface.OnClickListener positiveListener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    executorService.execute(epcTidUserModeRunnable);
-                }
-            };
-            mDialog = getAlert(view, "EPC+TID+USER", null, false, positiveListener);
-        }
-        if (!mDialog.isShowing()) {
-            mDialog.show();
         }
     }
 
@@ -598,25 +343,20 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    getMode(false);
+                    getMode();
                     setViewsEnabled(true);
                 }
 
-                cbFilter.setEnabled(true);
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                 loopFlag = false;
                 isScanning = false;
                 btClear.setEnabled(true);
                 btStop.setEnabled(false);
                 setViewsEnabled(false);
-
-                cbFilter.setChecked(false);
-                cbFilter.setEnabled(false);
             }
         }
     }
 
-    private boolean showToastFlag;
     private Runnable getModeRunnable = new Runnable() {
         @Override
         public void run() {
@@ -628,8 +368,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     };
 
-    private void getMode(boolean showToast) {
-        showToastFlag = showToast;
+    private void getMode() {
         executorService.execute(getModeRunnable);
     }
 
@@ -638,7 +377,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return;
         }
         isRunning = true;
-//        cbFilter.setChecked(false);
         new TagThread().start();
     }
 
@@ -695,14 +433,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("EPC:");
                 stringBuilder.append(uhftagInfo.getEPC());
-                if (!TextUtils.isEmpty(uhftagInfo.getTid())) {
-                    stringBuilder.append("\r\nTID:");
-                    stringBuilder.append(uhftagInfo.getTid());
-                }
-                if (!TextUtils.isEmpty(uhftagInfo.getUser())) {
-                    stringBuilder.append("\r\nUSER:");
-                    stringBuilder.append(uhftagInfo.getUser());
-                }
 
                 map = new HashMap<String, String>();
                 map.put(ScanListActivity.TAG_EPC, uhftagInfo.getEPC());
