@@ -228,7 +228,7 @@
 
     <Button
         android:id="@+id/InventoryLoop"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="70dp"
         android:layout_marginEnd="60dp"
@@ -241,7 +241,7 @@
 
     <Button
         android:id="@+id/btStop"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="105dp"
         android:layout_marginBottom="71dp"

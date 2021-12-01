@@ -284,7 +284,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
         });
         clearData();
-        initFilter();
+        //initFilter();
     }
 
     private CheckBox cbFilter;
@@ -397,7 +397,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     private void setViewsEnabled(boolean enabled) {
         InventoryLoop.setEnabled(enabled);
-        cbFilter.setEnabled(enabled);
+//        cbFilter.setEnabled(enabled);
         rbEPC.setEnabled(enabled);
         rbEPC_TID.setEnabled(enabled);
         rbEPC_TID_USER.setEnabled(enabled);
@@ -638,7 +638,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return;
         }
         isRunning = true;
-        cbFilter.setChecked(false);
+//        cbFilter.setChecked(false);
         new TagThread().start();
     }
 
