@@ -47,6 +47,12 @@
         </activity>
 
         <activity
+            android:name=".AddTagNameActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:configChanges="orientation|screenSize">
+        </activity>
+
+        <activity
             android:name=".UHFSettingsActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:configChanges="orientation|screenSize">

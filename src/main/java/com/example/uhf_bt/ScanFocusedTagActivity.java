@@ -1,12 +1,10 @@
 package com.example.uhf_bt;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
@@ -15,29 +13,23 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.RadioButton;
+import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.example.uhf_bt.utils.NumberTool;
 import com.example.uhf_bt.utils.Utils;
-import com.rscja.deviceapi.RFIDWithUHFUART;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,11 +40,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public String remoteBTAdd = "";
     public String focusedTagEPC = "";
     private final static String TAG = "ScanListActivity";
-    private static final int REQUEST_ENABLE_BT = 2;
-
     public BluetoothAdapter mBtAdapter = null;
 
-    public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
     public static final String TAG_DATA = "tagData";
     public static final String TAG_EPC = "tagEpc";
     public static final String TAG_LEN = "tagLen";
@@ -82,12 +71,11 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     };
     private boolean loopFlag = false;
-    private ListView LvTags;
-    private Button InventoryLoop, btStop;//
-    private Button settings_button;
-    private TextView tv_count, tv_total, tv_time;
+    private Button InventoryLoop, btStop, settings_button;
+    private ProgressBar pb_distance;
+    private TextView tv_FocusTagNbDetect, tv_time, tv_distance;
     private boolean isExit = false;
-    private long total = 0;
+    private long totalFocusTagDetect = 0;
     private SimpleAdapter adapter;
     private HashMap<String, String> map;
     private ArrayList<HashMap<String, String>> tagList;
@@ -137,11 +125,15 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     break;
                 case FLAG_UHFINFO_LIST:
                     List<UHFTAGInfo> list = ( List<UHFTAGInfo>) msg.obj;
-                    addEPCToList(list);
+                    try {//ici
+                        addEPCToList(list);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case FLAG_UPDATE_TIME:
                     float useTime = (System.currentTimeMillis() - mStrTime) / 1000.0F;
-                    tv_time.setText(NumberTool.getPointDouble(loopFlag ? 1 : 3, useTime) + "s");
+                    //tv_time.setText(NumberTool.getPointDouble(loopFlag ? 1 : 3, useTime) + "s");
                     break;
                 case FLAG_SET_SUCC:
                     showToast("success");
@@ -183,7 +175,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         remoteBTAdd = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         focusedTagEPC = getIntent().getStringExtra(TAG_EPC);
-        showToast(focusedTagEPC);
         initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
@@ -202,7 +193,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     }
 
     private void initUI() {
-        setContentView(R.layout.activity2inventoryfocus);
+        setContentView(R.layout.activity_uhf_scan_focused_tag);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         device_battery = (TextView) findViewById(R.id.device_battery);
 
@@ -211,12 +202,13 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
-        LvTags = (ListView) findViewById(R.id.LvTags);
         InventoryLoop = (Button) findViewById(R.id.InventoryLoop);
         btStop = (Button) findViewById(R.id.btStop);
         btStop.setEnabled(false);
-        /*tv_count = (TextView) findViewById(R.id.tv_count);
-        tv_total = (TextView) findViewById(R.id.tv_total);
+        tv_FocusTagNbDetect = (TextView) findViewById(R.id.tv_FocusTagNbDetect);
+        pb_distance=(ProgressBar) findViewById(R.id.progressBar);
+        tv_distance= (TextView) findViewById(R.id.FocusTagDistance);//ici
+        /*
         tv_time = (TextView) findViewById(R.id.tv_time);*/
 
         InventoryLoop.setOnClickListener(this);
@@ -226,8 +218,19 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 new String[]{ScanFocusedTagActivity.TAG_DATA, ScanFocusedTagActivity.TAG_LEN, ScanFocusedTagActivity.TAG_COUNT, ScanFocusedTagActivity.TAG_RSSI},
                 new int[]{R.id.TvTagUii, R.id.TvTagLen, R.id.TvTagCount,
                         R.id.TvTagRssi});
-        //LvTags.setAdapter(adapter);
-        clearData();
+
+        findViewById(R.id.InventoryFocusAddModifyTag).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(ScanFocusedTagActivity.this, AddTagNameActivity.class);
+                myIntent.putExtra("uii", focusedTagEPC);
+                /*myIntent.putExtra("name", name);
+                myIntent.putExtra("room", room);
+                myIntent.putExtra("workplace", workplace);
+                myIntent.putExtra("newTag", newTag);*/
+                ScanFocusedTagActivity.this.startActivity(myIntent);
+            }
+        });
     }
 
 
@@ -284,36 +287,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     }
 
-
-    private AlertDialog getAlert(View view, String title, String message, boolean cancelable, DialogInterface.OnClickListener positiveListener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title);
-        builder.setIcon(R.drawable.webtext);
-        if(view != null) {
-            builder.setView(view);
-        } else {
-            builder.setMessage(message);
-        }
-        builder.setCancelable(cancelable);
-        if(positiveListener != null) {
-            builder.setPositiveButton(R.string.ok, positiveListener);
-        } else {
-            builder.setNegativeButton(R.string.close, null);
-        }
-        return builder.create();
-    }
-
-
-    private void clearData() {
-//        tv_count.setText("0");
-//        tv_total.setText("0");
-//        tv_time.setText("0s");
-        tagList.clear();
-        tempDatas.clear();
-        total = 0;
-        adapter.notifyDataSetChanged();
-    }
-
     /**
      * 停止识别
      */
@@ -341,7 +314,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    getMode(false);
+                    getMode();
                     setViewsEnabled(true);
                 }
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
@@ -353,7 +326,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    private boolean showToastFlag;
     private Runnable getModeRunnable = new Runnable() {
         @Override
         public void run() {
@@ -365,8 +337,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     };
 
-    private void getMode(boolean showToast) {
-        showToastFlag = showToast;
+    private void getMode() {
         executorService.execute(getModeRunnable);
     }
 
@@ -421,12 +392,11 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
      *
      * @param
      */
-    private void addEPCToList(List<UHFTAGInfo> list) {
+    private void addEPCToList(List<UHFTAGInfo> list) throws ParseException {
         for(int k=0;k<list.size();k++){
             UHFTAGInfo uhftagInfo=list.get(k);
             if (!TextUtils.isEmpty(uhftagInfo.getEPC()) && uhftagInfo.getEPC().equals(focusedTagEPC)) {//ici
                 int index = checkIsExist(uhftagInfo.getEPC());
-                showToast(uhftagInfo.getEPC());
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("EPC:");
                 stringBuilder.append(uhftagInfo.getEPC());
@@ -436,17 +406,23 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 map.put(ScanFocusedTagActivity.TAG_DATA, stringBuilder.toString());
                 map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(1));
                 map.put(ScanFocusedTagActivity.TAG_RSSI, uhftagInfo.getRssi());
-                // getAppContext().uhfQueue.offer(epc + "\t 1");
                 if (index == -1) {
                     tagList.add(map);
                     tempDatas.add(uhftagInfo.getEPC());
-                    tv_count.setText("" + adapter.getCount());
                 } else {
                     int tagCount = Integer.parseInt(tagList.get(index).get(ScanFocusedTagActivity.TAG_COUNT), 10) + 1;
                     map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(tagCount));
                     tagList.set(index, map);
                 }
-                tv_total.setText(String.valueOf(++total));
+                NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+                Number number = format.parse(tagList.get(0).get(ScanFocusedTagActivity.TAG_RSSI));
+                int distance = (int) (- number.doubleValue() - 40);
+                if (distance<=0){
+                    distance=0;
+                }
+                tv_distance.setText(distance + " cm");
+                pb_distance.setProgress( 100 - distance);
+                tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
             }
         }
         adapter.notifyDataSetChanged();

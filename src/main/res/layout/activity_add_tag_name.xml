@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#1b2243"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/logonotext"
+        android:layout_width="140dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="0dp"
+        android:src="@drawable/logoshrink"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/AddTagTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.20"
+        android:text="@string/addTagTitle"
+        android:gravity="center"
+        android:textColor="#f6b101"
+        android:textSize="24dp"
+        android:textAlignment="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.30"
+        android:textColor="#007DD6"
+        android:id="@+id/AddTagUii"
+        android:gravity="center"
+        android:textAlignment="center"/>
+
+    <AutoCompleteTextView
+        android:id="@+id/AddTagName"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.4"
+        android:text=""
+        android:hint="Nom"
+        android:textSize="20dp"
+        android:inputType="textCapSentences"
+        android:imeOptions="actionNext"
+        android:singleLine="true"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/AddTagUii" />
+
+    <TextView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.44"
+        android:id="@+id/AddTagNameAlert"
+        android:textColor="@color/red"
+        android:textAlignment="textStart"
+        android:layout_marginLeft="10dp"
+        />
+
+    <AutoCompleteTextView
+        android:id="@+id/AddTagRoom"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        android:text=""
+        android:hint="Pièce"
+        android:textSize="20dp"
+        android:inputType="textCapSentences"
+        android:nextFocusDown="@+id/AddTagWorkplace"
+        android:imeOptions="actionNext"
+        android:singleLine="true"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/AddTagName" />
+
+    <TextView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.54"
+        android:id="@+id/AddTagRoomAlert"
+        android:textColor="@color/red"
+        android:textAlignment="textStart"
+        android:layout_marginLeft="10dp"
+        />
+
+    <AutoCompleteTextView
+        android:id="@+id/AddTagWorkplace"
+        android:layout_width="250dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.6"
+        android:text=""
+        android:inputType="textCapSentences"
+        android:imeOptions="actionDone"
+        android:hint="Chantier"
+        android:textSize="20dp"
+        android:singleLine="true"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/AddTagRoom"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.64"
+        android:id="@+id/AddTagWorkplaceAlert"
+        android:textColor="@color/red"
+        android:layout_marginLeft="10dp"
+        android:textAlignment="textStart"
+        />
+
+
+    <Button
+        android:id="@+id/AddTagSubmitBtn"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.75"
+        android:text="Ajouter"
+        android:onClick="AddTagbuttonHandler"
+        android:elevation="20dp"
+        android:textSize="20dp"
+        android:background="#017b88"
+        android:textColor="@color/white"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
