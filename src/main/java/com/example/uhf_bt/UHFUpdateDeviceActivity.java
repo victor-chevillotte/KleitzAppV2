@@ -15,23 +15,14 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.uhf_bt.BaseActivity;
-import com.example.uhf_bt.ConnectDeviceActivity;
-import com.example.uhf_bt.ScanListActivity;
-import com.example.uhf_bt.R;
-import com.example.uhf_bt.UHFSettingsActivity;
 import com.example.uhf_bt.filebrowser.FileManagerActivity;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
-import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,9 +30,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.zip.Deflater;
 
-import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import no.nordicsemi.android.dfu.DfuBaseService;
 import no.nordicsemi.android.dfu.DfuServiceInitiator;
@@ -96,7 +85,7 @@ public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClic
     protected void onCreate(Bundle savedInstanceState) {
         faup = this;
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_uhfupdata);
+        setContentView(R.layout.activity_uhfupdatedevice);
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
         tvPath = (TextView) findViewById(R.id.tvPath);

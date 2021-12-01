@@ -105,7 +105,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     //--------------------------------------获取 解析数据-------------------------------------------------
     final int FLAG_START = 0;//开始
     final int FLAG_STOP = 1;//停止
-    final int FLAG_UHFINFO = 2;
     final int FLAG_UHFINFO_LIST = 5;
     final int FLAG_UPDATE_TIME = 3; // 更新时间
     final int FLAG_GET_MODE = 4; // 获取模式
@@ -147,11 +146,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 case FLAG_UHFINFO_LIST:
                     List<UHFTAGInfo> list = ( List<UHFTAGInfo>) msg.obj;
                     addEPCToList(list);
-                    break;
-                case FLAG_UHFINFO:
-                    UHFTAGInfo info = (UHFTAGInfo) msg.obj;
-                    addEPCToList(info);
-                    Utils.playSound(1);
                     break;
                 case FLAG_UPDATE_TIME:
                     float useTime = (System.currentTimeMillis() - mStrTime) / 1000.0F;
@@ -238,7 +232,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     }
 
     private void initUI() {
-        setContentView(R.layout.fragment_uhf_new_read_tag);
+        setContentView(R.layout.activity_uhf_scan_list);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         device_battery = (TextView) findViewById(R.id.device_battery);
 
@@ -454,9 +448,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             case R.id.InventoryLoop:
                 startThread();
                 break;
-            case R.id.btInventory:
-                inventory();
-                break;
             case R.id.btStop:
                 if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
                     stopInventory();
@@ -645,17 +636,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         executorService.execute(getModeRunnable);
     }
 
-    private void inventory() {
-        mStrTime = System.currentTimeMillis();
-        UHFTAGInfo uhftagInfo = uhf.inventorySingleTag();
-        if (uhftagInfo != null) {
-            Message msg = handler.obtainMessage(FLAG_UHFINFO);
-            msg.obj = uhftagInfo;
-            handler.sendMessage(msg);
-        }
-        handler.sendEmptyMessage(FLAG_UPDATE_TIME);
-    }
-
     public synchronized void startThread() {
         if (isRunning) {
             return;
@@ -706,43 +686,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     /**
      * 添加EPC到列表中
      *
-     * @param uhftagInfo
+     * @param
      */
-    private void addEPCToList(UHFTAGInfo uhftagInfo) {
-        if (!TextUtils.isEmpty(uhftagInfo.getEPC())) {
-            int index = checkIsExist(uhftagInfo.getEPC());
 
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("EPC:");
-            stringBuilder.append(uhftagInfo.getEPC());
-            if (!TextUtils.isEmpty(uhftagInfo.getTid())) {
-                stringBuilder.append("\r\nTID:");
-                stringBuilder.append(uhftagInfo.getTid());
-            }
-            if (!TextUtils.isEmpty(uhftagInfo.getUser())) {
-                stringBuilder.append("\r\nUSER:");
-                stringBuilder.append(uhftagInfo.getUser());
-            }
-
-            map = new HashMap<String, String>();
-            map.put(ScanListActivity.TAG_EPC, uhftagInfo.getEPC());
-            map.put(ScanListActivity.TAG_DATA, stringBuilder.toString());
-            map.put(ScanListActivity.TAG_COUNT, String.valueOf(1));
-            map.put(ScanListActivity.TAG_RSSI, uhftagInfo.getRssi());
-            // getAppContext().uhfQueue.offer(epc + "\t 1");
-            if (index == -1) {
-                tagList.add(map);
-                tempDatas.add(uhftagInfo.getEPC());
-                tv_count.setText("" + adapter.getCount());
-            } else {
-                int tagCount = Integer.parseInt(tagList.get(index).get(ScanListActivity.TAG_COUNT), 10) + 1;
-                map.put(ScanListActivity.TAG_COUNT, String.valueOf(tagCount));
-                tagList.set(index, map);
-            }
-            tv_total.setText(String.valueOf(++total));
-            adapter.notifyDataSetChanged();
-        }
-    }
     private void addEPCToList(List<UHFTAGInfo> list) {
         for(int k=0;k<list.size();k++){
             UHFTAGInfo uhftagInfo=list.get(k);
