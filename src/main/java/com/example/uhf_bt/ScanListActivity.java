@@ -204,6 +204,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private void initUI() {
         setContentView(R.layout.activity_uhf_scan_list);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBtAdapter.isEnabled())
+            finish();
         device_battery = (TextView) findViewById(R.id.device_battery);
 
         settings_button = (Button) findViewById(R.id.settings_button);

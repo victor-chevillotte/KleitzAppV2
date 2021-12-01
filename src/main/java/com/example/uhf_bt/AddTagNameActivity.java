@@ -1,5 +1,7 @@
 package com.example.uhf_bt;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -76,66 +78,50 @@ public class AddTagNameActivity extends BaseActivity{
 
     public void AddTagbuttonHandler(View view) {
         Button addModifyTagBtn = (Button) findViewById(R.id.AddTagSubmitBtn);
+
+        EditText tagNameEditText = findViewById(R.id.AddTagName);
+        name = tagNameEditText.getText().toString();
+
+        EditText tagRoomEditText = findViewById(R.id.AddTagRoom);
+        room = tagRoomEditText.getText().toString();
+
+        EditText tagWorkplaceEditText = findViewById(R.id.AddTagWorkplace);
+        workplace = tagWorkplaceEditText.getText().toString();
+        if (name.equals("")){
+            TextView tagNameAlert = findViewById(R.id.AddTagNameAlert);
+            tagNameAlert.setText("Veuillez entrer un nom.");
+            return;
+        }
+        if (room.equals("")){
+            TextView tagRoomAlert = findViewById(R.id.AddTagRoomAlert);
+            tagRoomAlert.setText("Veuillez entrer une pièce.");
+            return;
+        }
+        if (workplace.equals("")){
+            TextView tagWorkplaceAlert = findViewById(R.id.AddTagWorkplaceAlert);
+            tagWorkplaceAlert.setText("Veuillez entrer un chantier.");
+            return;
+        }
         if(addModifyTagBtn.getText()=="Modifier"){
             //Decide what happens when the user clicks the Modify Tag button
-            TextView uiiTextView = findViewById(R.id.AddTagUii);
-            String tagUii = uiiTextView.getText().toString();
-
-            EditText tagNameEditText = findViewById(R.id.AddTagName);
-            String tagName = tagNameEditText.getText().toString();
-
-            EditText tagRoomEditText = findViewById(R.id.AddTagRoom);
-            String tagRoom = tagRoomEditText.getText().toString();
-
-            EditText tagWorkplaceEditText = findViewById(R.id.AddTagWorkplace);
-            String tagWorkplace = tagWorkplaceEditText.getText().toString();
-            if (tagName.equals("")){
-                TextView tagNameAlert = findViewById(R.id.AddTagNameAlert);
-                tagNameAlert.setText("Veuillez entrer un nom.");
-                return;
-            }
-            if (tagRoom.equals("")){
-                TextView tagRoomAlert = findViewById(R.id.AddTagRoomAlert);
-                tagRoomAlert.setText("Veuillez entrer une pièce.");
-                return;
-            }
-            if (tagWorkplace.equals("")){
-                TextView tagWorkplaceAlert = findViewById(R.id.AddTagWorkplaceAlert);
-                tagWorkplaceAlert.setText("Veuillez entrer un chantier.");
-                return;
-            }
-            mydb.updateTag(tagUii,tagName,tagRoom,tagWorkplace);
+            mydb.updateTag(uiiOfFocus,name,room,workplace);
         }
         else {
             //Decide what happens when the user clicks the Add Tag button
-            TextView uiiTextView = findViewById(R.id.AddTagUii);
-            String tagUii = uiiTextView.getText().toString();
-
-            EditText tagNameEditText = findViewById(R.id.AddTagName);
-            String tagName = tagNameEditText.getText().toString();
-
-            EditText tagRoomEditText = findViewById(R.id.AddTagRoom);
-            String tagRoom = tagRoomEditText.getText().toString();
-
-            EditText tagWorkplaceEditText = findViewById(R.id.AddTagWorkplace);
-            String tagWorkplace = tagWorkplaceEditText.getText().toString();
-            if (tagName.equals("")){
-                TextView tagNameAlert = findViewById(R.id.AddTagNameAlert);
-                tagNameAlert.setText("Veuillez entrer un nom.");
-                return;
-            }
-            if (tagRoom.equals("")){
-                TextView tagRoomAlert = findViewById(R.id.AddTagRoomAlert);
-                tagRoomAlert.setText("Veuillez entrer une pièce.");
-                return;
-            }
-            if (tagWorkplace.equals("")){
-                TextView tagWorkplaceAlert = findViewById(R.id.AddTagWorkplaceAlert);
-                tagWorkplaceAlert.setText("Veuillez entrer un chantier.");
-                return;
-            }
-            mydb.insertTag(tagUii,tagName,tagRoom,tagWorkplace);
+            mydb.insertTag(uiiOfFocus,name,room,workplace);
         }
+        Bundle b = new Bundle();
+        b.putString("NewFocusedTagName", name);
+        Bundle b1 = new Bundle();
+        b1.putString("NewFocusedTagRoom", room);
+        Bundle b2 = new Bundle();
+        b2.putString("NewFocusedTagWorkPlace", workplace);
+
+        Intent result = new Intent();
+        result.putExtras(b);
+        result.putExtras(b1);
+        result.putExtras(b2);
+        setResult(Activity.RESULT_OK, result);
         finish();
     }
     @Override

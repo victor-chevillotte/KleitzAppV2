@@ -1,12 +1,14 @@
 package com.example.uhf_bt;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.example.uhf_bt.utils.DBHelper;
 import com.example.uhf_bt.utils.Utils;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
@@ -39,15 +42,21 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public String remoteBTName = "";
     public String remoteBTAdd = "";
     public String focusedTagEPC = "";
+    public String focusedTagName = "";
+    public String focusedTagRoom = "";
+    public String focusedTagWorkPlace = "";
     private final static String TAG = "ScanListActivity";
     public BluetoothAdapter mBtAdapter = null;
+    private static final int NEW_TAG_NAME = 1;
+
+    public TextView nameTV, roomTV, workplaceTV, EPCTV, device_battery;;
 
     public static final String TAG_DATA = "tagData";
     public static final String TAG_EPC = "tagEpc";
     public static final String TAG_LEN = "tagLen";
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
-    private TextView device_battery;
+    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1,this);
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
@@ -71,9 +80,9 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     };
     private boolean loopFlag = false;
-    private Button InventoryLoop, btStop, settings_button;
+    private Button InventoryLoop, btStop, settings_button, nameTag;
     private ProgressBar pb_distance;
-    private TextView tv_FocusTagNbDetect, tv_time, tv_distance;
+    private TextView tv_FocusTagNbDetect, tv_distance;
     private boolean isExit = false;
     private long totalFocusTagDetect = 0;
     private SimpleAdapter adapter;
@@ -90,7 +99,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     final int FLAG_START = 0;//开始
     final int FLAG_STOP = 1;//停止
     final int FLAG_UHFINFO_LIST = 5;
-    final int FLAG_UPDATE_TIME = 3; // 更新时间
     final int FLAG_GET_MODE = 4; // 获取模式
     final int FLAG_SUCCESS = 10;//成功
     final int FLAG_FAIL = 11;//失败
@@ -130,10 +138,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-                    break;
-                case FLAG_UPDATE_TIME:
-                    float useTime = (System.currentTimeMillis() - mStrTime) / 1000.0F;
-                    //tv_time.setText(NumberTool.getPointDouble(loopFlag ? 1 : 3, useTime) + "s");
                     break;
                 case FLAG_SET_SUCC:
                     showToast("success");
@@ -195,6 +199,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private void initUI() {
         setContentView(R.layout.activity_uhf_scan_focused_tag);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBtAdapter.isEnabled())
+            finish();
         device_battery = (TextView) findViewById(R.id.device_battery);
 
         settings_button = (Button) findViewById(R.id.settings_button);
@@ -207,9 +213,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         btStop.setEnabled(false);
         tv_FocusTagNbDetect = (TextView) findViewById(R.id.tv_FocusTagNbDetect);
         pb_distance=(ProgressBar) findViewById(R.id.progressBar);
-        tv_distance= (TextView) findViewById(R.id.FocusTagDistance);//ici
-        /*
-        tv_time = (TextView) findViewById(R.id.tv_time);*/
+        tv_distance= (TextView) findViewById(R.id.FocusTagDistance);
 
         InventoryLoop.setOnClickListener(this);
         btStop.setOnClickListener(this);
@@ -219,20 +223,61 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 new int[]{R.id.TvTagUii, R.id.TvTagLen, R.id.TvTagCount,
                         R.id.TvTagRssi});
 
-        findViewById(R.id.InventoryFocusAddModifyTag).setOnClickListener(new View.OnClickListener() {
+        nameTag = (Button) findViewById(R.id.InventoryFocusAddModifyTag);
+        Cursor cursor = mydb.selectATag(focusedTagEPC);
+        if (cursor.moveToFirst() && cursor.getCount() != 0) {
+            nameTag.setText("Modifier l'étiquette");
+            focusedTagName = cursor.getString(cursor.getColumnIndex("name"));
+            focusedTagRoom = cursor.getString(cursor.getColumnIndex("room"));
+            focusedTagWorkPlace = cursor.getString(cursor.getColumnIndex("workplace"));
+        }
+
+        EPCTV= (TextView) findViewById(R.id.FocusTagUii);
+        EPCTV.setText(focusedTagEPC);
+        nameTV= (TextView) findViewById(R.id.FocusTagName);
+        nameTV.setText(focusedTagName);
+        roomTV= (TextView) findViewById(R.id.FocusTagRoom);
+        roomTV.setText(focusedTagRoom);
+        workplaceTV= (TextView) findViewById(R.id.FocusTagWorkplace);
+        workplaceTV.setText(focusedTagWorkPlace);
+
+        nameTag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent myIntent = new Intent(ScanFocusedTagActivity.this, AddTagNameActivity.class);
                 myIntent.putExtra("uii", focusedTagEPC);
-                /*myIntent.putExtra("name", name);
-                myIntent.putExtra("room", room);
-                myIntent.putExtra("workplace", workplace);
-                myIntent.putExtra("newTag", newTag);*/
-                ScanFocusedTagActivity.this.startActivity(myIntent);
+                myIntent.putExtra("name", focusedTagName);
+                myIntent.putExtra("room", focusedTagRoom);
+                myIntent.putExtra("workplace", focusedTagWorkPlace);
+                boolean newTag=true;
+                if(!focusedTagName.equals("")){
+                    newTag=false;
+                }
+                myIntent.putExtra("newTag", newTag);
+                startActivityForResult(myIntent, NEW_TAG_NAME);
             }
         });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case NEW_TAG_NAME:
+                //When the DeviceListActivity return, with the selected device address
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    focusedTagName = data.getStringExtra("NewFocusedTagName");
+                    focusedTagRoom = data.getStringExtra("NewFocusedTagRoom");
+                    focusedTagWorkPlace = data.getStringExtra("NewFocusedTagWorkPlace");
+                    nameTV.setText(focusedTagName);
+                    roomTV.setText(focusedTagRoom);
+                    workplaceTV.setText(focusedTagWorkPlace);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     private void setViewsEnabled(boolean enabled) {
         InventoryLoop.setEnabled(enabled);
@@ -363,7 +408,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             }
             handler.sendMessage(msg);
             isRunning = false;//执行完成设置成false
-            long startTime=System.currentTimeMillis();
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
                 if(list==null || list.size()==0){
@@ -371,10 +415,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 }else{
                     Utils.playSound(1);
                     handler.sendMessage(handler.obtainMessage(FLAG_UHFINFO_LIST, list));
-                }
-                if(System.currentTimeMillis()-startTime>100){
-                    startTime=System.currentTimeMillis();
-                    handler.sendEmptyMessage(FLAG_UPDATE_TIME);
                 }
 
             }
