@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +38,6 @@ import com.rscja.deviceapi.interfaces.KeyEventCallback;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -280,13 +278,13 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Intent newIntent = new Intent(ScanListActivity.this, ScanTagActivity.class);
+                Intent newIntent = new Intent(ScanListActivity.this, ScanFocusedTagActivity.class);
                 Bundle b = new Bundle();
                 b.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTAdd);
                 Bundle b2 = new Bundle();
                 b2.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTName);
                 Bundle b3 = new Bundle();
-                b2.putString("TagName", tagList.get(position).get(ScanListActivity.TAG_EPC));
+                b2.putString(TAG_EPC, tagList.get(position).get(ScanListActivity.TAG_EPC));
                 newIntent.putExtras(b);
                 newIntent.putExtras(b2);
                 newIntent.putExtras(b3);

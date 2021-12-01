@@ -11,12 +11,10 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.os.Process;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -27,7 +25,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.uhf_bt.utils.FileUtils;
-import com.example.uhf_bt.utils.SPUtils;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback;
 import com.rscja.deviceapi.interfaces.ScanBTCallback;
@@ -38,8 +35,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class ConnectDeviceActivity extends BaseActivity implements View.OnClickListener {
 
@@ -362,8 +357,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                                 UHFUpdateDeviceActivity.faup.finish();
                             if (UHFSettingsActivity.faset != null)
                                 UHFSettingsActivity.faset.finish();
-                            if (ScanTagActivity.fa != null)
-                                ScanTagActivity.fa.finish();
+                            if (ScanFocusedTagActivity.fa != null)
+                                ScanFocusedTagActivity.fa.finish();
                         }
                         /*boolean reconnect = SPUtils.getInstance(getApplicationContext()).getSPBoolean(SPUtils.AUTO_RECONNECT, false);
                         if (mDevice != null && reconnect) {

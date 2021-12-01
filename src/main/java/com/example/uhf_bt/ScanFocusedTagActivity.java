@@ -41,12 +41,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ScanTagActivity extends BaseActivity implements View.OnClickListener {
+public class ScanFocusedTagActivity extends BaseActivity implements View.OnClickListener {
 
-    public static ScanTagActivity fa;
+    public static ScanFocusedTagActivity fa;
     public String remoteBTName = "";
     public String remoteBTAdd = "";
-    public String tagUID = "";
+    public String focusedTagEPC = "";
     private final static String TAG = "ScanListActivity";
     private static final int REQUEST_ENABLE_BT = 2;
 
@@ -223,7 +223,8 @@ public class ScanTagActivity extends BaseActivity implements View.OnClickListene
             finish();
         remoteBTAdd = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
-        tagUID = getIntent().getStringExtra("TAGUID");
+        focusedTagEPC = getIntent().getStringExtra(TAG_EPC);
+        showToast(focusedTagEPC);
         initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
@@ -274,7 +275,7 @@ public class ScanTagActivity extends BaseActivity implements View.OnClickListene
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
-                new String[]{ScanTagActivity.TAG_DATA, ScanTagActivity.TAG_LEN, ScanTagActivity.TAG_COUNT, ScanTagActivity.TAG_RSSI},
+                new String[]{ScanFocusedTagActivity.TAG_DATA, ScanFocusedTagActivity.TAG_LEN, ScanFocusedTagActivity.TAG_COUNT, ScanFocusedTagActivity.TAG_RSSI},
                 new int[]{R.id.TvTagUii, R.id.TvTagLen, R.id.TvTagCount,
                         R.id.TvTagRssi});
         LvTags.setAdapter(adapter);
@@ -433,8 +434,8 @@ public class ScanTagActivity extends BaseActivity implements View.OnClickListene
         switch (view.getId()) {
             case R.id.settings_button:
                 showToast("Chargement des réglages...");
-                Intent intent=new Intent(ScanTagActivity.this, UHFSettingsActivity.class);
-                ScanTagActivity.this.startActivity(intent);
+                Intent intent=new Intent(ScanFocusedTagActivity.this, UHFSettingsActivity.class);
+                ScanFocusedTagActivity.this.startActivity(intent);
                 break;
             case R.id.btClear:
                 clearData();
@@ -697,7 +698,7 @@ public class ScanTagActivity extends BaseActivity implements View.OnClickListene
      * @param uhftagInfo
      */
     private void addEPCToList(UHFTAGInfo uhftagInfo) {
-        if (!TextUtils.isEmpty(uhftagInfo.getEPC()) && uhftagInfo.getEPC() != tagUID) {
+        if (!TextUtils.isEmpty(uhftagInfo.getEPC()) && uhftagInfo.getEPC() != focusedTagEPC) {
             int index = checkIsExist(uhftagInfo.getEPC());
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -713,18 +714,18 @@ public class ScanTagActivity extends BaseActivity implements View.OnClickListene
             }
 
             map = new HashMap<String, String>();
-            map.put(ScanTagActivity.TAG_EPC, uhftagInfo.getEPC());
-            map.put(ScanTagActivity.TAG_DATA, stringBuilder.toString());
-            map.put(ScanTagActivity.TAG_COUNT, String.valueOf(1));
-            map.put(ScanTagActivity.TAG_RSSI, uhftagInfo.getRssi());
+            map.put(ScanFocusedTagActivity.TAG_EPC, uhftagInfo.getEPC());
+            map.put(ScanFocusedTagActivity.TAG_DATA, stringBuilder.toString());
+            map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(1));
+            map.put(ScanFocusedTagActivity.TAG_RSSI, uhftagInfo.getRssi());
             // getAppContext().uhfQueue.offer(epc + "\t 1");
             if (index == -1) {
                 tagList.add(map);
                 tempDatas.add(uhftagInfo.getEPC());
                 tv_count.setText("" + adapter.getCount());
             } else {
-                int tagCount = Integer.parseInt(tagList.get(index).get(ScanTagActivity.TAG_COUNT), 10) + 1;
-                map.put(ScanTagActivity.TAG_COUNT, String.valueOf(tagCount));
+                int tagCount = Integer.parseInt(tagList.get(index).get(ScanFocusedTagActivity.TAG_COUNT), 10) + 1;
+                map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(tagCount));
                 tagList.set(index, map);
             }
             tv_total.setText(String.valueOf(++total));
@@ -750,18 +751,18 @@ public class ScanTagActivity extends BaseActivity implements View.OnClickListene
                 }
 
                 map = new HashMap<String, String>();
-                map.put(ScanTagActivity.TAG_EPC, uhftagInfo.getEPC());
-                map.put(ScanTagActivity.TAG_DATA, stringBuilder.toString());
-                map.put(ScanTagActivity.TAG_COUNT, String.valueOf(1));
-                map.put(ScanTagActivity.TAG_RSSI, uhftagInfo.getRssi());
+                map.put(ScanFocusedTagActivity.TAG_EPC, uhftagInfo.getEPC());
+                map.put(ScanFocusedTagActivity.TAG_DATA, stringBuilder.toString());
+                map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(1));
+                map.put(ScanFocusedTagActivity.TAG_RSSI, uhftagInfo.getRssi());
                 // getAppContext().uhfQueue.offer(epc + "\t 1");
                 if (index == -1) {
                     tagList.add(map);
                     tempDatas.add(uhftagInfo.getEPC());
                     tv_count.setText("" + adapter.getCount());
                 } else {
-                    int tagCount = Integer.parseInt(tagList.get(index).get(ScanTagActivity.TAG_COUNT), 10) + 1;
-                    map.put(ScanTagActivity.TAG_COUNT, String.valueOf(tagCount));
+                    int tagCount = Integer.parseInt(tagList.get(index).get(ScanFocusedTagActivity.TAG_COUNT), 10) + 1;
+                    map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(tagCount));
                     tagList.set(index, map);
                 }
                 tv_total.setText(String.valueOf(++total));

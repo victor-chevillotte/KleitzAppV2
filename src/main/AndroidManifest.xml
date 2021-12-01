@@ -41,7 +41,7 @@
         </activity>
 
         <activity
-            android:name=".ScanTagActivity"
+            android:name=".ScanFocusedTagActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:configChanges="orientation|screenSize">
         </activity>
