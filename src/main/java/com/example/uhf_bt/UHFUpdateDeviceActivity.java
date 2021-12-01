@@ -182,7 +182,6 @@ public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClic
             }
 
             File file = new File(filePath);
-//            Log.e(TAG, "totalSpace=" + file.getTotalSpace() + ", freeSpace=" + file.getFreeSpace() + ", length=" + file.length());
             if(rbR2000.isChecked() && file.length() < 100 * 1024) {
                 showToast("Veuillez sélectionner le bon fichier de mise à niveau");
                 return;

@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Process;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -417,7 +416,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "scanLeDevice==============>");
         scanLeDevice(false);
     }
 
@@ -514,7 +512,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             tvadd.setText(device.getAddress());
             tvadd.setTextColor(Color.BLACK);
             if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                Log.i(TAG, "device::" + device.getName());
                 tvpaired.setText(R.string.paired);
                 tvpaired.setTextColor(Color.RED);
                 tvpaired.setVisibility(View.VISIBLE);

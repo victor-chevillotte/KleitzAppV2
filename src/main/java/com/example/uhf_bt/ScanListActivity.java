@@ -1,12 +1,10 @@
 package com.example.uhf_bt;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
@@ -15,23 +13,15 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.example.uhf_bt.utils.NumberTool;
 import com.example.uhf_bt.utils.Utils;
-import com.rscja.deviceapi.RFIDWithUHFUART;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
@@ -235,7 +225,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Log.e(TAG, String.valueOf(tagList.get(position)));
                 Intent newIntent = new Intent(ScanListActivity.this, ScanFocusedTagActivity.class);
                 Bundle b = new Bundle();
                 b.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTAdd);
