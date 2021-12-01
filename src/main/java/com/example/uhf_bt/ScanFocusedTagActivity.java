@@ -84,8 +84,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     };
     private boolean loopFlag = false;
     private ListView LvTags;
-    private Button InventoryLoop, btInventory, btStop;//
-    private Button btClear, settings_button;
+    private Button InventoryLoop, btStop;//
+    private Button settings_button;
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
     private long total = 0;
@@ -122,10 +122,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 case FLAG_STOP:
                     if (msg.arg1 == FLAG_SUCCESS) {
                         //停止成功
-                        btClear.setEnabled(true);
                         btStop.setEnabled(false);
                         InventoryLoop.setEnabled(true);
-                        btInventory.setEnabled(true);
                     } else {
                         //停止失败
                         Utils.playSound(2);
@@ -135,10 +133,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 case FLAG_START:
                     if (msg.arg1 == FLAG_SUCCESS) {
                         //开始读取标签成功
-                        btClear.setEnabled(false);
                         btStop.setEnabled(true);
                         InventoryLoop.setEnabled(false);
-                        btInventory.setEnabled(false);
                     } else {
                         //开始读取标签失败
                         Utils.playSound(2);
@@ -197,11 +193,9 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "UHFReadTagFragment.onActivityCreated");
         uhf.setKeyEventCallback(new KeyEventCallback() {
             @Override
             public void onKeyDown(int keycode) {
-                Log.d(TAG, "  keycode =" + keycode + "   ,isExit=" + isExit);
                 if (!isExit && uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
                     if (loopFlag) {
                         stopInventory();
@@ -237,7 +231,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     }
 
     private void initUI() {
-        setContentView(R.layout.activity_uhf_scan_list);
+        setContentView(R.layout.activity2inventoryfocus);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         device_battery = (TextView) findViewById(R.id.device_battery);
 
@@ -247,11 +241,9 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         LvTags = (ListView) findViewById(R.id.LvTags);
-        btInventory = (Button) findViewById(R.id.btInventory);
         InventoryLoop = (Button) findViewById(R.id.InventoryLoop);
         btStop = (Button) findViewById(R.id.btStop);
         btStop.setEnabled(false);
-        btClear = (Button) findViewById(R.id.btClear);
         tv_count = (TextView) findViewById(R.id.tv_count);
         tv_total = (TextView) findViewById(R.id.tv_total);
         tv_time = (TextView) findViewById(R.id.tv_time);
@@ -264,8 +256,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         rbEPC_TID_USER.setOnClickListener(this);
 
         InventoryLoop.setOnClickListener(this);
-        btInventory.setOnClickListener(this);
-        btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
@@ -388,7 +378,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
     private void setViewsEnabled(boolean enabled) {
         InventoryLoop.setEnabled(enabled);
-        btInventory.setEnabled(enabled);
         cbFilter.setEnabled(enabled);
         rbEPC.setEnabled(enabled);
         rbEPC_TID.setEnabled(enabled);
@@ -430,9 +419,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 showToast("Chargement des réglages...");
                 Intent intent=new Intent(ScanFocusedTagActivity.this, UHFSettingsActivity.class);
                 ScanFocusedTagActivity.this.startActivity(intent);
-                break;
-            case R.id.btClear:
-                clearData();
                 break;
             case R.id.InventoryLoop:
                 startThread();
@@ -598,7 +584,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                 loopFlag = false;
                 isScanning = false;
-                btClear.setEnabled(true);
                 btStop.setEnabled(false);
                 setViewsEnabled(false);
 

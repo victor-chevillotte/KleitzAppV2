@@ -83,7 +83,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     };
     private boolean loopFlag = false;
     private ListView LvTags;
-    private Button InventoryLoop, btInventory, btStop;//
+    private Button InventoryLoop, btStop;//
     private Button btClear, settings_button;
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
@@ -124,7 +124,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                         btClear.setEnabled(true);
                         btStop.setEnabled(false);
                         InventoryLoop.setEnabled(true);
-                        btInventory.setEnabled(true);
                     } else {
                         //停止失败
                         Utils.playSound(2);
@@ -137,7 +136,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                         btClear.setEnabled(false);
                         btStop.setEnabled(true);
                         InventoryLoop.setEnabled(false);
-                        btInventory.setEnabled(false);
                     } else {
                         //开始读取标签失败
                         Utils.playSound(2);
@@ -242,7 +240,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         LvTags = (ListView) findViewById(R.id.LvTags);
-        btInventory = (Button) findViewById(R.id.btInventory);
         InventoryLoop = (Button) findViewById(R.id.InventoryLoop);
         btStop = (Button) findViewById(R.id.btStop);
         btStop.setEnabled(false);
@@ -259,7 +256,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         rbEPC_TID_USER.setOnClickListener(this);
 
         InventoryLoop.setOnClickListener(this);
-        btInventory.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
@@ -399,7 +395,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     private void setViewsEnabled(boolean enabled) {
         InventoryLoop.setEnabled(enabled);
-        btInventory.setEnabled(enabled);
         cbFilter.setEnabled(enabled);
         rbEPC.setEnabled(enabled);
         rbEPC_TID.setEnabled(enabled);
