@@ -1074,4 +1074,5 @@
     <string name="titleActivateBluetooth">Bienvenue sur l app Kleitz ! Veuillez activer le bluetooth sur votre téléphone pour continuer.</string>
     <string name="btn_update_device">Mettre à jour l\'antenne</string>
     <string name="bluetooth_version">Version du Bluetooth</string>
+    <string name="addTagTitle">Nommer le tag</string>
 </resources>
