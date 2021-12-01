@@ -19,7 +19,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -39,15 +38,15 @@ import com.rscja.deviceapi.interfaces.KeyEventCallback;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ScanListActivity extends BaseActivity implements View.OnClickListener {
+public class ScanTagActivity extends BaseActivity implements View.OnClickListener {
 
-    public static ScanListActivity fa;
+    public static ScanTagActivity fa;
     public String remoteBTName = "";
     public String remoteBTAdd = "";
+    public String tagUID = "";
     private final static String TAG = "ScanListActivity";
     private static final int REQUEST_ENABLE_BT = 2;
 
@@ -204,9 +203,11 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "UHFReadTagFragment.onActivityCreated");
         uhf.setKeyEventCallback(new KeyEventCallback() {
             @Override
             public void onKeyDown(int keycode) {
+                Log.d(TAG, "  keycode =" + keycode + "   ,isExit=" + isExit);
                 if (!isExit && uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
                     if (loopFlag) {
                         stopInventory();
@@ -222,6 +223,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             finish();
         remoteBTAdd = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
+        tagUID = getIntent().getStringExtra("TAGUID");
         initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
@@ -235,7 +237,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         Utils.freeSound();
         unregisterReceiver(bluetoothBroadcastReceiver);
         isExit = true;
-        removeConnectStatusNotice((ScanListActivity.IConnectStatus) mConnectStatus);
+        removeConnectStatusNotice((IConnectStatus) mConnectStatus);
         super.onDestroy();
     }
 
@@ -272,28 +274,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
-                new String[]{ScanListActivity.TAG_DATA, ScanListActivity.TAG_LEN, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
+                new String[]{ScanTagActivity.TAG_DATA, ScanTagActivity.TAG_LEN, ScanTagActivity.TAG_COUNT, ScanTagActivity.TAG_RSSI},
                 new int[]{R.id.TvTagUii, R.id.TvTagLen, R.id.TvTagCount,
                         R.id.TvTagRssi});
         LvTags.setAdapter(adapter);
-        LvTags.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Intent newIntent = new Intent(ScanListActivity.this, ScanTagActivity.class);
-                Bundle b = new Bundle();
-                b.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTAdd);
-                Bundle b2 = new Bundle();
-                b2.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTName);
-                Bundle b3 = new Bundle();
-                b2.putString("TagName", tagList.get(position).get(ScanListActivity.TAG_EPC));
-                newIntent.putExtras(b);
-                newIntent.putExtras(b2);
-                newIntent.putExtras(b3);
-                ScanListActivity.this.startActivity(newIntent);
-            }
-        });
         clearData();
+
         initFilter();
     }
 
@@ -447,8 +433,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         switch (view.getId()) {
             case R.id.settings_button:
                 showToast("Chargement des réglages...");
-                Intent intent=new Intent(ScanListActivity.this, UHFSettingsActivity.class);
-                ScanListActivity.this.startActivity(intent);
+                Intent intent=new Intent(ScanTagActivity.this, UHFSettingsActivity.class);
+                ScanTagActivity.this.startActivity(intent);
                 break;
             case R.id.btClear:
                 clearData();
@@ -602,7 +588,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         handler.sendMessage(msg);
     }
 
-    class ConnectStatus implements ScanListActivity.IConnectStatus {
+    class ConnectStatus implements IConnectStatus {
         @Override
         public void getStatus(ConnectionStatus connectionStatus) {
             if (connectionStatus == ConnectionStatus.CONNECTED) {
@@ -711,7 +697,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
      * @param uhftagInfo
      */
     private void addEPCToList(UHFTAGInfo uhftagInfo) {
-        if (!TextUtils.isEmpty(uhftagInfo.getEPC())) {
+        if (!TextUtils.isEmpty(uhftagInfo.getEPC()) && uhftagInfo.getEPC() != tagUID) {
             int index = checkIsExist(uhftagInfo.getEPC());
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -727,18 +713,18 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
 
             map = new HashMap<String, String>();
-            map.put(ScanListActivity.TAG_EPC, uhftagInfo.getEPC());
-            map.put(ScanListActivity.TAG_DATA, stringBuilder.toString());
-            map.put(ScanListActivity.TAG_COUNT, String.valueOf(1));
-            map.put(ScanListActivity.TAG_RSSI, uhftagInfo.getRssi());
+            map.put(ScanTagActivity.TAG_EPC, uhftagInfo.getEPC());
+            map.put(ScanTagActivity.TAG_DATA, stringBuilder.toString());
+            map.put(ScanTagActivity.TAG_COUNT, String.valueOf(1));
+            map.put(ScanTagActivity.TAG_RSSI, uhftagInfo.getRssi());
             // getAppContext().uhfQueue.offer(epc + "\t 1");
             if (index == -1) {
                 tagList.add(map);
                 tempDatas.add(uhftagInfo.getEPC());
                 tv_count.setText("" + adapter.getCount());
             } else {
-                int tagCount = Integer.parseInt(tagList.get(index).get(ScanListActivity.TAG_COUNT), 10) + 1;
-                map.put(ScanListActivity.TAG_COUNT, String.valueOf(tagCount));
+                int tagCount = Integer.parseInt(tagList.get(index).get(ScanTagActivity.TAG_COUNT), 10) + 1;
+                map.put(ScanTagActivity.TAG_COUNT, String.valueOf(tagCount));
                 tagList.set(index, map);
             }
             tv_total.setText(String.valueOf(++total));
@@ -764,18 +750,18 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 }
 
                 map = new HashMap<String, String>();
-                map.put(ScanListActivity.TAG_EPC, uhftagInfo.getEPC());
-                map.put(ScanListActivity.TAG_DATA, stringBuilder.toString());
-                map.put(ScanListActivity.TAG_COUNT, String.valueOf(1));
-                map.put(ScanListActivity.TAG_RSSI, uhftagInfo.getRssi());
+                map.put(ScanTagActivity.TAG_EPC, uhftagInfo.getEPC());
+                map.put(ScanTagActivity.TAG_DATA, stringBuilder.toString());
+                map.put(ScanTagActivity.TAG_COUNT, String.valueOf(1));
+                map.put(ScanTagActivity.TAG_RSSI, uhftagInfo.getRssi());
                 // getAppContext().uhfQueue.offer(epc + "\t 1");
                 if (index == -1) {
                     tagList.add(map);
                     tempDatas.add(uhftagInfo.getEPC());
                     tv_count.setText("" + adapter.getCount());
                 } else {
-                    int tagCount = Integer.parseInt(tagList.get(index).get(ScanListActivity.TAG_COUNT), 10) + 1;
-                    map.put(ScanListActivity.TAG_COUNT, String.valueOf(tagCount));
+                    int tagCount = Integer.parseInt(tagList.get(index).get(ScanTagActivity.TAG_COUNT), 10) + 1;
+                    map.put(ScanTagActivity.TAG_COUNT, String.valueOf(tagCount));
                     tagList.set(index, map);
                 }
                 tv_total.setText(String.valueOf(++total));

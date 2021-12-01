@@ -103,7 +103,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
 
         /*Intent intent=new Intent(ConnectDeviceActivity.this,ScanListActivity.class);
-        intent.putExtra("BTMode",true);
         ConnectDeviceActivity.this.startActivity(intent);
         ConnectDeviceActivity.this.finish();*/
     }
@@ -284,7 +283,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
                     newIntent.putExtras(b);
                     newIntent.putExtras(b2);
-                    newIntent.putExtra("BTMode",true);
                     uhf.stopScanBTDevices();
                     ConnectDeviceActivity.this.startActivity(newIntent);
                 }
@@ -337,7 +335,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
                         newIntent.putExtras(b);
                         newIntent.putExtras(b2);
-                        newIntent.putExtra("BTMode",true);
                         uhf.stopScanBTDevices();
                         ConnectDeviceActivity.this.startActivity(newIntent);
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
@@ -365,6 +362,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                                 UHFUpdateDeviceActivity.faup.finish();
                             if (UHFSettingsActivity.faset != null)
                                 UHFSettingsActivity.faset.finish();
+                            if (ScanTagActivity.fa != null)
+                                ScanTagActivity.fa.finish();
                         }
                         /*boolean reconnect = SPUtils.getInstance(getApplicationContext()).getSPBoolean(SPUtils.AUTO_RECONNECT, false);
                         if (mDevice != null && reconnect) {
