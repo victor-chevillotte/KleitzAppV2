@@ -244,7 +244,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         InventoryLoop = (Button) findViewById(R.id.InventoryLoop);
         btStop = (Button) findViewById(R.id.btStop);
         btStop.setEnabled(false);
-        tv_count = (TextView) findViewById(R.id.tv_count);
+        /*tv_count = (TextView) findViewById(R.id.tv_count);
         tv_total = (TextView) findViewById(R.id.tv_total);
         tv_time = (TextView) findViewById(R.id.tv_time);
 
@@ -253,7 +253,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         rbEPC_TID = (RadioButton) findViewById(R.id.rbEPC_TID);
         rbEPC_TID.setOnClickListener(this);
         rbEPC_TID_USER = (RadioButton) findViewById(R.id.rbEPC_TID_USER);
-        rbEPC_TID_USER.setOnClickListener(this);
+        rbEPC_TID_USER.setOnClickListener(this);*/
 
         InventoryLoop.setOnClickListener(this);
         btStop.setOnClickListener(this);
@@ -262,7 +262,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 new String[]{ScanFocusedTagActivity.TAG_DATA, ScanFocusedTagActivity.TAG_LEN, ScanFocusedTagActivity.TAG_COUNT, ScanFocusedTagActivity.TAG_RSSI},
                 new int[]{R.id.TvTagUii, R.id.TvTagLen, R.id.TvTagCount,
                         R.id.TvTagRssi});
-        LvTags.setAdapter(adapter);
+        //LvTags.setAdapter(adapter);
         clearData();
 
         initFilter();
@@ -272,7 +272,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private ViewGroup layout_filter;
     private Button btnSetFilter;
     private void initFilter() {
-        layout_filter = (ViewGroup) findViewById(R.id.layout_filter);
+    /*    layout_filter = (ViewGroup) findViewById(R.id.layout_filter);
         layout_filter.setVisibility(View.GONE);
         cbFilter = (CheckBox) findViewById(R.id.cbFilter);
         cbFilter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -372,16 +372,16 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     etPtr.setText("0");
                 }
             }
-        });
+        });*/
     }
 
 
     private void setViewsEnabled(boolean enabled) {
         InventoryLoop.setEnabled(enabled);
-        cbFilter.setEnabled(enabled);
-        rbEPC.setEnabled(enabled);
-        rbEPC_TID.setEnabled(enabled);
-        rbEPC_TID_USER.setEnabled(enabled);
+//        cbFilter.setEnabled(enabled);
+ //       rbEPC.setEnabled(enabled);
+ //       rbEPC_TID.setEnabled(enabled);
+  //      rbEPC_TID_USER.setEnabled(enabled);
     }
 
     Handler handlerRefreshBattery = new Handler();
@@ -540,9 +540,9 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     }
 
     private void clearData() {
-        tv_count.setText("0");
-        tv_total.setText("0");
-        tv_time.setText("0s");
+//        tv_count.setText("0");
+//        tv_total.setText("0");
+//        tv_time.setText("0s");
         tagList.clear();
         tempDatas.clear();
         total = 0;
