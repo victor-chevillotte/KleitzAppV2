@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
