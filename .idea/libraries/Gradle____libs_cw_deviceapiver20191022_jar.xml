@@ -4,6 +4,8 @@
       <root url="jar://$PROJECT_DIR$/libs/cw-deviceapiver20191022.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/libs/cw-deviceapiver20191022.jar!/" />
+    </SOURCES>
   </library>
 </component>

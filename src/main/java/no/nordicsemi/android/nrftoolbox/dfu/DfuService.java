@@ -29,7 +29,8 @@ import no.nordicsemi.android.dfu.DfuBaseService;
 public class DfuService extends DfuBaseService {
 
 	@Override
-	protected Class<? extends Activity> getNotificationTarget() {
+	//protected Class<? extends Activity> getNotificationTarget() {
+	protected Class getNotificationTarget() {
 		return  null;
 	}
 

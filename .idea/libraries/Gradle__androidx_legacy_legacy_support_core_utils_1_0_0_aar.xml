@@ -1,9 +1,13 @@
 <component name="libraryTable">
   <library name="Gradle: androidx.legacy:legacy-support-core-utils:1.0.0@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/legacy-support-core-utils-1.0.0.aar/2706a2fb2ea47ecaee2d35480e98b69e/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/legacy-support-core-utils-1.0.0.aar/2706a2fb2ea47ecaee2d35480e98b69e/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/legacy-support-core-utils-1.0.0.aar/2706a2fb2ea47ecaee2d35480e98b69e/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/f0af584573e35a1a2b872f7896e3a300/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/legacy-support-core-utils-1.0.0.aar/1528c97fce2b1ecf6b42c887a86b9620/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/0177ae95eb987f61dcd916ca4d71ff48/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/6d6e532017af0c907cd34d38d04e17fc/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/6d6e532017af0c907cd34d38d04e17fc/transformed/legacy-support-core-utils-1.0.0/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/6d6e532017af0c907cd34d38d04e17fc/transformed/legacy-support-core-utils-1.0.0/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
