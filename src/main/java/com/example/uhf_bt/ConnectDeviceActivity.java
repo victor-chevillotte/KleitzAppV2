@@ -61,7 +61,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                switch(state) {
+                switch (state) {
                     case BluetoothAdapter.STATE_OFF:
                     case BluetoothAdapter.STATE_TURNING_OFF:
                         set_activity_activate_bluetooth();
@@ -137,7 +137,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private void init() {
         mEmptyList = (TextView) findViewById(R.id.empty);
-        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        spinner = (ProgressBar) findViewById(R.id.progressBar1);
 
         devRssiValues = new HashMap<String, Integer>();
         deviceList = new ArrayList<>();
@@ -148,8 +148,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             @Override
             public void onClick(View v) {
                 FileUtils.clearXmlList();
-                deviceList.clear();
-                deviceAdapter.notifyDataSetChanged();
+                clearDeviceList();
                 mEmptyList.setVisibility(View.VISIBLE);
             }
 
@@ -168,8 +167,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         });
         //boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
         List<String[]> deviceHistoryList = FileUtils.readXmlList();
-        Log.e("eeee", String.valueOf(deviceHistoryList));
-
         for (String[] device : deviceHistoryList) {
             MyDevice myDevice = new MyDevice(device[0], device[1], true);
             addDevice(myDevice, 0);
@@ -238,21 +235,27 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         }
 
         Collections.sort(deviceList, new Comparator<MyDevice>() {
-
             @Override
             public int compare(MyDevice device1, MyDevice device2) {
-                if (!device1.getIsHistory() && !device2.getIsHistory())
-                {
+                if (!device1.getIsHistory() && !device2.getIsHistory()) {
                     String s1 = device1.getName();
                     String s2 = device2.getName();
                     return s1.compareToIgnoreCase(s2);
-                }
-                else
+                } else
                     return 0;
             }
         });
-            deviceAdapter.notifyDataSetChanged();
+        deviceAdapter.notifyDataSetChanged();
+    }
 
+    private void clearDeviceList() {
+        for (MyDevice listDev : deviceList) {
+            if (listDev.getIsHistory()) {
+                deviceList.remove(listDev);
+                break;
+            }
+        }
+        deviceAdapter.notifyDataSetChanged();
     }
 
     private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
@@ -263,7 +266,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             spinner.setVisibility(View.GONE);
             MyDevice device = deviceList.get(position);
             String address = device.getAddress().trim();
-            if(!TextUtils.isEmpty(address)) {
+            if (!TextUtils.isEmpty(address)) {
                 String deviceAddress = device.getAddress();
                 if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && deviceAddress.equals(remoteBTAdd)) {
                     tryingToConnectAddress = "";
@@ -276,23 +279,19 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     newIntent.putExtras(b);
                     newIntent.putExtras(b2);
                     ConnectDeviceActivity.this.startActivity(newIntent);
-                }
-                else if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED)
-                {
+                } else if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
                     tryingToConnectAddress = "";
                     disconnecting = true;
                     deviceAdapter.notifyDataSetChanged();
                     disconnect(true);
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                     tryingToConnectAddress = deviceAddress;
-                }
-                else if (tryingToConnectAddress == "" && uhf.getConnectStatus() != ConnectionStatus.CONNECTING){
+                } else if (tryingToConnectAddress == "" && uhf.getConnectStatus() != ConnectionStatus.CONNECTING) {
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                     tryingToConnectAddress = deviceAddress;
                     deviceAdapter.notifyDataSetChanged();
                     connect(deviceAddress);
-                }
-                else
+                } else
                     showToast("Veuillez attendre la fin de la connexion precedente");
             } else {
                 showToast(R.string.invalid_bluetooth_address);
@@ -307,6 +306,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             uhf.connect(deviceAddress, btStatus);
         }
     }
+
     public void saveConnectedDevice(String address, String name) {
         List<String[]> list = FileUtils.readXmlList();
         for (int k = 0; k < list.size(); k++) {
@@ -350,17 +350,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         }
                         mIsActiveDisconnect = true;
                     } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
-                        if (disconnecting)
-                        {
+                        if (disconnecting) {
                             showToast("Antenne " + remoteBTName + " déconnectée");
                             remoteBTName = "";
                             remoteBTAdd = "";
                             disconnecting = false;
                             deviceAdapter.notifyDataSetChanged();
                             connect(tryingToConnectAddress);
-                        }
-                        else
-                        {
+                        } else {
                             tryingToConnectAddress = "";
                             remoteBTName = "";
                             remoteBTAdd = "";
@@ -397,7 +394,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_activate_bluetooth:
-                    activateBluetooth();
+                activateBluetooth();
                 break;
             default:
                 break;
@@ -405,8 +402,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void activateBluetooth() {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+        Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
     }
 
     @Override
@@ -431,7 +428,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         scanLeDevice(true);
     }
@@ -531,11 +528,10 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 //tvrssi.setText(String.format("Rssi = %d", rssival));
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
-            }
-            else
+            } else
                 tvrssi.setText("Historique");
-                tvrssi.setTextColor(Color.BLACK);
-                tvrssi.setVisibility(View.VISIBLE);
+            tvrssi.setTextColor(Color.BLACK);
+            tvrssi.setVisibility(View.VISIBLE);
             if (remoteBTAdd == String.valueOf(devices.get(position).getAddress()))
                 tvrssi.setText("Connecté");
             else if (tryingToConnectAddress == String.valueOf(devices.get(position).getAddress()))
