@@ -85,19 +85,6 @@ public class BaseActivity extends AppCompatActivity {
         void getStatus(ConnectionStatus connectionStatus);
     }
 
-    public void saveConnectedDevice(String address, String name) {
-        List<String[]> list = FileUtils.readXmlList();
-        for (int k = 0; k < list.size(); k++) {
-            if (address.equals(list.get(k)[0])) {
-                list.remove(list.get(k));
-                break;
-            }
-        }
-        String[] strArr = new String[]{address, name};
-        list.add(0, strArr);
-        FileUtils.saveXmlList(list);
-    }
-
     public void startDisconnectTimer(long time) {
         timeCountCur = time;
         timerTask = new DisconnectTimerTask();

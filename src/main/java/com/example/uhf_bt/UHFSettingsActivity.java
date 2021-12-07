@@ -25,12 +25,14 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.uhf_bt.utils.FileUtils;
 import com.example.uhf_bt.utils.SPUtils;
 import com.example.uhf_bt.utils.Utils;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
 import java.util.HashMap;
+import java.util.List;
 
 
 public class UHFSettingsActivity extends BaseActivity implements View.OnClickListener {
@@ -165,6 +167,7 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
       etOldName.setEnabled(false);
       etOldName.setVisibility(View.GONE);
       btSet = (Button) findViewById(R.id.btSet);
+
       btSet.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
@@ -232,7 +235,18 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
     Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
     int delay = 1*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
-
+    public void saveConnectedDevice(String address, String name) {
+        List<String[]> list = FileUtils.readXmlList();
+        for (int k = 0; k < list.size(); k++) {
+            if (address.equals(list.get(k)[0])) {
+                list.remove(list.get(k));
+                break;
+            }
+        }
+        String[] strArr = new String[]{address, name};
+        list.add(0, strArr);
+        FileUtils.saveXmlList(list);
+    }
     @Override
     public void onPause() {
         handlerRefreshBattery.removeCallbacks(runnable); //stop handler when activity not visible

@@ -162,20 +162,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     swipeContainer.setRefreshing(false);
             }
         });
-        boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
-        if (isHistoryList) {
-            mEmptyList.setText(R.string.no_history);
-            List<String[]> deviceList = FileUtils.readXmlList();
-            for (String[] device : deviceList) {
-                MyDevice myDevice = new MyDevice(device[0], device[1]);
+        //boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
+        List<String[]> deviceHistoryList = FileUtils.readXmlList();
+        for (String[] device : deviceHistoryList) {
+                MyDevice myDevice = new MyDevice(device[0], device[1], true);
                 addDevice(myDevice, 0);
             }
-        } else { // 搜索蓝牙设备
             mEmptyList.setText(R.string.scanning);
-            btnClearHistory.setVisibility(View.GONE);
             scanLeDevice(true);
-        }
-
         ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
@@ -202,11 +196,9 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         @Override
                         public void run() {
                             if (bluetoothDevice.getName() != null) {
-                                MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName());
+                                MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName(), false);
                                 addDevice(myDevice, rssi);
                             }
-                            else
-                                deviceAdapter.notifyDataSetChanged();
                         }
                     });
                 }
@@ -241,14 +233,18 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
             @Override
             public int compare(MyDevice device1, MyDevice device2) {
-                String s1 = device1.getName();
-                String s2 = device2.getName();
-                return s1.compareToIgnoreCase(s2);
+                if (!device1.getIsHistory() && !device2.getIsHistory())
+                {
+                    String s1 = device1.getName();
+                    String s2 = device2.getName();
+                    return s1.compareToIgnoreCase(s2);
+                }
+                else
+                    return 0;
             }
         });
-        if (!deviceFound) {
             deviceAdapter.notifyDataSetChanged();
-        }
+
     }
 
     private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
@@ -300,6 +296,18 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         } else {
             uhf.connect(deviceAddress, btStatus);
         }
+    }
+    public void saveConnectedDevice(String address, String name) {
+        List<String[]> list = FileUtils.readXmlList();
+        for (int k = 0; k < list.size(); k++) {
+            if (address.equals(list.get(k)[0])) {
+                list.remove(list.get(k));
+                break;
+            }
+        }
+        String[] strArr = new String[]{address, name};
+        list.add(0, strArr);
+        FileUtils.saveXmlList(list);
     }
 
     class BTStatus implements ConnectionStatusCallback<Object> {
@@ -413,19 +421,25 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     class MyDevice {
         private String address;
         private String name;
+        private boolean isHistory;
         private int bondState;
 
         public MyDevice() {
 
         }
 
-        public MyDevice(String address, String name) {
+        public MyDevice(String address, String name, Boolean isHistory) {
             this.address = address;
             this.name = name;
+            this.isHistory = isHistory;
         }
 
         public String getAddress() {
             return address;
+        }
+
+        public Boolean getIsHistory() {
+            return isHistory;
         }
 
         public void setAddress(String address) {
@@ -496,10 +510,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     tvrssi.setText("A proximité");
                 else
                     tvrssi.setText("Eloigné");
-                //tvrssi.setText(String.format("Rssi = %d", rssival));
+                tvrssi.setText(String.format("Rssi = %d", rssival));
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
             }
+            else
+                tvrssi.setText("Historique");
+                tvrssi.setTextColor(Color.BLACK);
+                tvrssi.setVisibility(View.VISIBLE);
             if (remoteBTAdd == String.valueOf(devices.get(position).getAddress()))
                 tvrssi.setText("Connecté");
             else if (tryingToConnectAddress == String.valueOf(devices.get(position).getAddress()))

@@ -29,6 +29,7 @@ import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.example.uhf_bt.utils.FileUtils;
 import com.example.uhf_bt.utils.NumberTool;
 import com.example.uhf_bt.utils.Utils;
 import com.rscja.deviceapi.RFIDWithUHFUART;
@@ -154,7 +155,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
         }
     };
-
 
     private void set_activity_activate_bluetooth() {
         uhf.free();
