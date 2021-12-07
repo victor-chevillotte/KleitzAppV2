@@ -76,7 +76,7 @@ public class BaseActivity extends AppCompatActivity {
 
     public void updateConnectMessage(String oldName, String newName) {
         if (!TextUtils.isEmpty(oldName) && !TextUtils.isEmpty(newName)) {
-            //tvAddress.setText(tvAddress.getText().toString().replace(oldName, newName));
+            //tvAddress.setText(tvAddress.getText().toString().replace(oldName, newName)); ICI
             remoteBTName = newName;
         }
     }

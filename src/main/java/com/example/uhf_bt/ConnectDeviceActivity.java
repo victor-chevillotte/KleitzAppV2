@@ -24,6 +24,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.example.uhf_bt.utils.FileUtils;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback;
@@ -39,10 +41,10 @@ import java.util.Map;
 public class ConnectDeviceActivity extends BaseActivity implements View.OnClickListener {
 
     ConnectDeviceActivity.BTStatus btStatus = new ConnectDeviceActivity.BTStatus();
-    private static final int RECONNECT_NUM = 1; // 重连次数
+    private static final int RECONNECT_NUM = 0; // 重连次数
     private int mReConnectCount = RECONNECT_NUM; // 重新连接次数
-    private TextView tvAddress;
-
+    private SwipeRefreshLayout swipeContainer;
+    private Boolean disconnecting = false;
     private final static String ACTIVATEBLE = "ACTIVATEBLE";
     public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
     private static final int REQUEST_ENABLE_BT = 2;
@@ -74,8 +76,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private TextView mEmptyList;
     public static final String TAG = "DeviceListActivity";
-
-    private TextView tvTitle;
+    private String tryingToConnectAddress = "";
 
     private List<MyDevice> deviceList;
     private DeviceAdapter deviceAdapter;
@@ -132,8 +133,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void init() {
-        tvAddress = (TextView) findViewById(R.id.title_devices);
-        tvTitle = findViewById(R.id.title_devices);
         mEmptyList = (TextView) findViewById(R.id.empty);
 
         devRssiValues = new HashMap<String, Integer>();
@@ -151,10 +150,20 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             }
 
         });
-
+        mScanning = true;
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swiperefreshlayout);
+        // Setup refresh listener which triggers new data loading
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (!mScanning)
+                    scanLeDevice(true);
+                else
+                    swipeContainer.setRefreshing(false);
+            }
+        });
         boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
         if (isHistoryList) {
-            tvTitle.setText(R.string.history_connected_device);
             mEmptyList.setText(R.string.no_history);
             List<String[]> deviceList = FileUtils.readXmlList();
             for (String[] device : deviceList) {
@@ -162,7 +171,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 addDevice(myDevice, 0);
             }
         } else { // 搜索蓝牙设备
-            tvTitle.setText(R.string.select_device);
             mEmptyList.setText(R.string.scanning);
             btnClearHistory.setVisibility(View.GONE);
             scanLeDevice(true);
@@ -172,6 +180,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
     }
+
 
     private void scanLeDevice(final boolean enable) {
 
@@ -184,7 +193,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     uhf.stopScanBTDevices();
                 }
             }, SCAN_PERIOD);
-
+            swipeContainer.setRefreshing(false);
             mScanning = true;
             uhf.startScanBTDevices(new ScanBTCallback() {
                 @Override
@@ -196,6 +205,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                                 MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName());
                                 addDevice(myDevice, rssi);
                             }
+                            else
+                                deviceAdapter.notifyDataSetChanged();
                         }
                     });
                 }
@@ -226,21 +237,13 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             mEmptyList.setVisibility(View.GONE);
         }
 
-        // 根据信号强度重新排序
         Collections.sort(deviceList, new Comparator<MyDevice>() {
+
             @Override
             public int compare(MyDevice device1, MyDevice device2) {
-                String key1 = device1.getAddress();
-                String key2 = device2.getAddress();
-                int v1 = devRssiValues.get(key1);
-                int v2 = devRssiValues.get(key2);
-                if (v1 > v2) {
-                    return -1;
-                } else if (v1 < v2) {
-                    return 1;
-                } else {
-                    return 0;
-                }
+                String s1 = device1.getName();
+                String s2 = device2.getName();
+                return s1.compareToIgnoreCase(s2);
             }
         });
         if (!deviceFound) {
@@ -258,6 +261,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             if(!TextUtils.isEmpty(address)) {
                 String deviceAddress = device.getAddress();
                 if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && deviceAddress.equals(remoteBTAdd)) {
+                    tryingToConnectAddress = "";
+                    deviceAdapter.notifyDataSetChanged();
                     Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
                     Bundle b = new Bundle();
                     b.putString(BluetoothDevice.EXTRA_DEVICE, deviceAddress);
@@ -270,12 +275,17 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 }
                 else if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED)
                 {
+                    tryingToConnectAddress = "";
+                    disconnecting = true;
+                    deviceAdapter.notifyDataSetChanged();
                     disconnect(true);
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-                    connect(deviceAddress);
+                    tryingToConnectAddress = deviceAddress;
                 }
-                else {
+                else if (tryingToConnectAddress == ""){
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
+                    tryingToConnectAddress = deviceAddress;
+                    deviceAdapter.notifyDataSetChanged();
                     connect(deviceAddress);
                 }
             } else {
@@ -288,13 +298,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         if (uhf.getConnectStatus() == ConnectionStatus.CONNECTING) {
             showToast("Veuillez attendre la fin de la connexion precedente");
         } else {
-            //tvAddress.setText(String.format("%s(%s)\nconnecting", mDevice.getName(), deviceAddress));
             uhf.connect(deviceAddress, btStatus);
         }
-    }
-
-    private boolean shouldShowDisconnected() {
-        return mIsActiveDisconnect || mReConnectCount == 0;
     }
 
     class BTStatus implements ConnectionStatusCallback<Object> {
@@ -307,8 +312,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     if (connectionStatus == ConnectionStatus.CONNECTED) {
                         remoteBTName = device.getName();
                         remoteBTAdd = device.getAddress();
-
-                        tvAddress.setText(String.format("%s(%s)\nconnected", remoteBTName, remoteBTAdd));
+                        deviceAdapter.notifyDataSetChanged();
                         showToast(R.string.connect_success);
                         Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
                         Bundle b = new Bundle();
@@ -322,31 +326,31 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
                             saveConnectedDevice(remoteBTAdd, remoteBTName);
                         }
-
                         mIsActiveDisconnect = true;
                     } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
-                        if (device != null) {
-                            remoteBTName = device.getName();
-                            remoteBTAdd = device.getAddress();
-                            if (shouldShowDisconnected()) {
-                                tvAddress.setText(String.format("%s(%s)\ndisconnected", remoteBTName, remoteBTAdd));
-                            }
-                        } else {
-                            if (shouldShowDisconnected())
-                                tvAddress.setText("disconnected");
-                        }
-                        if (shouldShowDisconnected())
+                        if (disconnecting)
                         {
-                            showToast("Antenne déconnectée");
-                            if (ScanListActivity.fa != null)
-                                ScanListActivity.fa.finish();
-                            if (UHFUpdateDeviceActivity.faup != null)
-                                UHFUpdateDeviceActivity.faup.finish();
-                            if (UHFSettingsActivity.faset != null)
-                                UHFSettingsActivity.faset.finish();
-                            if (ScanFocusedTagActivity.fa != null)
-                                ScanFocusedTagActivity.fa.finish();
+                            showToast("Antenne " + remoteBTName + " déconnectée");
+                            remoteBTName = "";
+                            remoteBTAdd = "";
+                            disconnecting = false;
+                            deviceAdapter.notifyDataSetChanged();
+                            connect(tryingToConnectAddress);
                         }
+                        else
+                        {
+                            tryingToConnectAddress = "";
+                            showToast("Echec de connexion à " + mDevice.getName());
+                        }
+                        if (ScanListActivity.fa != null)
+                            ScanListActivity.fa.finish();
+                        if (UHFUpdateDeviceActivity.faup != null)
+                            UHFUpdateDeviceActivity.faup.finish();
+                        if (UHFSettingsActivity.faset != null)
+                            UHFSettingsActivity.faset.finish();
+                        if (ScanFocusedTagActivity.fa != null)
+                            ScanFocusedTagActivity.fa.finish();
+
                         /*boolean reconnect = SPUtils.getInstance(getApplicationContext()).getSPBoolean(SPUtils.AUTO_RECONNECT, false);
                         if (mDevice != null && reconnect) {
                             reConnect(mDevice.getAddress()); // 重连
@@ -360,13 +364,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     }
                 }
             });
-        }
-    }
-
-    private void reConnect(String deviceAddress) {
-        if (!mIsActiveDisconnect && mReConnectCount > 0) {
-            mReConnectCount--;
-            connect(deviceAddress);
         }
     }
 
@@ -487,7 +484,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             } else {
                 vg = (ViewGroup) inflater.inflate(R.layout.device_element, null);
             }
-
             MyDevice device = devices.get(position);
             final TextView tvadd = ((TextView) vg.findViewById(R.id.address));
             final TextView tvname = ((TextView) vg.findViewById(R.id.name));
@@ -496,17 +492,24 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
             int rssival = devRssiValues.get(device.getAddress()).intValue();
             if (rssival != 0) {
-                tvrssi.setText(String.format("Rssi = %d", rssival));
+                if (rssival > -60)
+                    tvrssi.setText("A proximité");
+                else
+                    tvrssi.setText("Eloigné");
+                //tvrssi.setText(String.format("Rssi = %d", rssival));
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
             }
+            if (remoteBTAdd == String.valueOf(devices.get(position).getAddress()))
+                tvrssi.setText("Connecté");
+            else if (tryingToConnectAddress == String.valueOf(devices.get(position).getAddress()))
+                tvrssi.setText("Connexion...");
 
             tvname.setText(device.getName());
             tvname.setTextColor(Color.BLACK);
             tvadd.setText(device.getAddress());
             tvadd.setTextColor(Color.BLACK);
             if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                Log.i(TAG, "device::" + device.getName());
                 tvpaired.setText(R.string.paired);
                 tvpaired.setTextColor(Color.RED);
                 tvpaired.setVisibility(View.VISIBLE);
