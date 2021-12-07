@@ -21,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +51,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     private static final int REQUEST_ENABLE_BT = 2;
     public BluetoothAdapter mBtAdapter = null;
     private Button btn_activate_bluetooth;
+    private ProgressBar spinner;
 
     private final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
@@ -81,7 +83,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     private List<MyDevice> deviceList;
     private DeviceAdapter deviceAdapter;
     private Map<String, Integer> devRssiValues;
-    private static final long SCAN_PERIOD = 10000; //10 seconds
+    private static final long SCAN_PERIOD = 5000; //10 seconds
 
     private Handler mHandler = new Handler();
     private boolean mScanning;
@@ -125,6 +127,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private void set_activity_connect_device() {
         setContentView(R.layout.activity_connect_device);
+
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
@@ -134,6 +137,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private void init() {
         mEmptyList = (TextView) findViewById(R.id.empty);
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
 
         devRssiValues = new HashMap<String, Integer>();
         deviceList = new ArrayList<>();
@@ -185,6 +189,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 public void run() {
                     mScanning = false;
                     uhf.stopScanBTDevices();
+                    spinner.setVisibility(View.GONE);
                 }
             }, SCAN_PERIOD);
             swipeContainer.setRefreshing(false);
@@ -195,6 +200,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            spinner.setVisibility(View.VISIBLE);
                             if (bluetoothDevice.getName() != null) {
                                 MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName(), false);
                                 addDevice(myDevice, rssi);
@@ -252,6 +258,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             uhf.stopScanBTDevices();
+            spinner.setVisibility(View.GONE);
             MyDevice device = deviceList.get(position);
             String address = device.getAddress().trim();
             if(!TextUtils.isEmpty(address)) {
@@ -266,7 +273,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
                     newIntent.putExtras(b);
                     newIntent.putExtras(b2);
-                    uhf.stopScanBTDevices();
                     ConnectDeviceActivity.this.startActivity(newIntent);
                 }
                 else if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED)
@@ -278,12 +284,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                     tryingToConnectAddress = deviceAddress;
                 }
-                else if (tryingToConnectAddress == ""){
+                else if (tryingToConnectAddress == "" && uhf.getConnectStatus() != ConnectionStatus.CONNECTING){
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                     tryingToConnectAddress = deviceAddress;
                     deviceAdapter.notifyDataSetChanged();
                     connect(deviceAddress);
                 }
+                else
+                    showToast("Veuillez attendre la fin de la connexion precedente");
             } else {
                 showToast(R.string.invalid_bluetooth_address);
             }
@@ -330,6 +338,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         newIntent.putExtras(b);
                         newIntent.putExtras(b2);
                         uhf.stopScanBTDevices();
+                        spinner.setVisibility(View.GONE);
                         ConnectDeviceActivity.this.startActivity(newIntent);
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
                             saveConnectedDevice(remoteBTAdd, remoteBTName);
@@ -348,6 +357,10 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         else
                         {
                             tryingToConnectAddress = "";
+                            remoteBTName = "";
+                            remoteBTAdd = "";
+                            disconnecting = false;
+                            deviceAdapter.notifyDataSetChanged();
                             showToast("Echec de connexion à " + mDevice.getName());
                         }
                         if (ScanListActivity.fa != null)
@@ -510,7 +523,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     tvrssi.setText("A proximité");
                 else
                     tvrssi.setText("Eloigné");
-                tvrssi.setText(String.format("Rssi = %d", rssival));
+                //tvrssi.setText(String.format("Rssi = %d", rssival));
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
             }
