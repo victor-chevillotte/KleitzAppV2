@@ -1059,7 +1059,7 @@
 
     <string name="autoReconnect">Automatic reconnection</string>
     <string name="history_connected_device">Historique des antennes connectées</string>
-    <string name="clear_historical_records">Vider</string>
+    <string name="clear_historical_records">Vider H</string>
     <string name="no_history">pas d\'historique</string>
     <string name="invalid_bluetooth_address">Invalid Bluetooth address</string>
     <string name="disconnectTime">Temps avant déconnexion</string>
@@ -1075,4 +1075,5 @@
     <string name="btn_update_device">Mettre à jour l\'antenne</string>
     <string name="bluetooth_version">Version du Bluetooth</string>
     <string name="addTagTitle">Nommer le tag</string>
+    <string name="btnRefresh">Refresh</string>
 </resources>

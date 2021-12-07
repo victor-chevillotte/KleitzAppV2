@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -148,8 +149,16 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             @Override
             public void onClick(View v) {
                 FileUtils.clearXmlList();
-                clearDeviceList();
+                clearDeviceList(true);
                 mEmptyList.setVisibility(View.VISIBLE);
+            }
+
+        });
+        Button btnRefresh = findViewById(R.id.btnRefresh);
+        btnRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearDeviceList(false);
             }
 
         });
@@ -159,8 +168,9 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (!mScanning)
-                    scanLeDevice(true);
+                if (!mScanning){
+                    clearDeviceList(false);
+                }
                 else
                     swipeContainer.setRefreshing(false);
             }
@@ -248,13 +258,27 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         deviceAdapter.notifyDataSetChanged();
     }
 
-    private void clearDeviceList() {
-        for (MyDevice listDev : deviceList) {
-            if (listDev.getIsHistory()) {
-                deviceList.remove(listDev);
-                break;
+    private void clearDeviceList(boolean history) {
+        scanLeDevice(false);
+        if (history && tryingToConnectAddress == "")
+        {
+            for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
+                MyDevice value = iterator.next();
+                if (value.getIsHistory() && value.getAddress() != remoteBTAdd) {
+                    iterator.remove();
+                }
             }
         }
+        else if (tryingToConnectAddress == "")
+        {
+            for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
+                MyDevice value = iterator.next();
+                if (!value.getIsHistory() && value.getAddress() != remoteBTAdd) {
+                    iterator.remove();
+                }
+            }
+        }
+        scanLeDevice(true);
         deviceAdapter.notifyDataSetChanged();
     }
 
@@ -333,6 +357,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     if (connectionStatus == ConnectionStatus.CONNECTED) {
                         remoteBTName = device.getName();
                         remoteBTAdd = device.getAddress();
+                        tryingToConnectAddress = "";
                         deviceAdapter.notifyDataSetChanged();
                         showToast(R.string.connect_success);
                         Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
