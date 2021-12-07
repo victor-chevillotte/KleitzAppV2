@@ -168,12 +168,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         });
         //boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
         List<String[]> deviceHistoryList = FileUtils.readXmlList();
+        Log.e("eeee", String.valueOf(deviceHistoryList));
+
         for (String[] device : deviceHistoryList) {
-                MyDevice myDevice = new MyDevice(device[0], device[1], true);
-                addDevice(myDevice, 0);
-            }
-            mEmptyList.setText(R.string.scanning);
-            scanLeDevice(true);
+            MyDevice myDevice = new MyDevice(device[0], device[1], true);
+            addDevice(myDevice, 0);
+        }
+        mEmptyList.setText(R.string.scanning);
+        scanLeDevice(true);
         ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
@@ -314,7 +316,10 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             }
         }
         String[] strArr = new String[]{address, name};
+
         list.add(0, strArr);
+        Log.d("gggg", String.valueOf(list));
+
         FileUtils.saveXmlList(list);
     }
 
