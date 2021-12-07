@@ -1059,7 +1059,7 @@
 
     <string name="autoReconnect">Automatic reconnection</string>
     <string name="history_connected_device">Historique des antennes connectées</string>
-    <string name="clear_historical_records">Vider l\'historique</string>
+    <string name="clear_historical_records">Vider</string>
     <string name="no_history">pas d\'historique</string>
     <string name="invalid_bluetooth_address">Invalid Bluetooth address</string>
     <string name="disconnectTime">Temps avant déconnexion</string>
