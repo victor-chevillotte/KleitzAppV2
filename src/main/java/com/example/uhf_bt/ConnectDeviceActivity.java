@@ -180,7 +180,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
-        connect("FF:A9:45:D1:5F:F6");
     }
 
     private void scanLeDevice(final boolean enable) {
