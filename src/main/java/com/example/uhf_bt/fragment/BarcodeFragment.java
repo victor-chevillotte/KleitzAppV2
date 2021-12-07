@@ -68,6 +68,11 @@ public class BarcodeFragment extends Fragment implements View.OnClickListener{
                  if(!isExit_ && mContext.uhf.getConnectStatus() == ConnectionStatus.CONNECTED)
                      scan();
              }
+
+             @Override
+             public void onKeyUp(int i) {
+
+             }
          });
     }
 

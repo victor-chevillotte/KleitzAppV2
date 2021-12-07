@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -171,7 +172,12 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     }
                 }
             }
+            public void onKeyUp(int keycode) {
+                Log.d(TAG, "  keycode =" + keycode + "   ,isExit=" + isExit);
+                stopInventory();
+            }
         });
+        
         addConnectStatusNotice(mConnectStatus);
         fa = this;
         if (uhf.getConnectStatus() == ConnectionStatus.DISCONNECTED)

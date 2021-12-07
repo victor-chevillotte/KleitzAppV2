@@ -162,7 +162,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         finish();
     }
 
-    @TargetApi(Build.VERSION_CODES.GINGERBREAD_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -176,6 +175,11 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                         startThread();
                     }
                 }
+            }
+            @Override
+            public void onKeyUp(int keycode) {
+                Log.d(TAG, "  keycode =" + keycode + "   ,isExit=" + isExit);
+                stopInventory();
             }
         });
         addConnectStatusNotice(mConnectStatus);

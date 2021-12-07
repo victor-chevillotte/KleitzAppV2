@@ -157,6 +157,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 deviceAdapter.notifyDataSetChanged();
                 mEmptyList.setVisibility(View.VISIBLE);
             }
+
         });
 
         boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
@@ -173,12 +174,13 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             tvTitle.setText(R.string.select_device);
             mEmptyList.setText(R.string.scanning);
             btnClearHistory.setVisibility(View.GONE);
-            scanLeDevice(true);
+            //scanLeDevice(true);
         }
 
         ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+        connect("FF:A9:45:D1:5F:F6");
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -301,7 +303,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         if (uhf.getConnectStatus() == ConnectionStatus.CONNECTING) {
             showToast("Veuillez attendre la fin de la connexion precedente");
         } else {
-            tvAddress.setText(String.format("%s(%s)\nconnecting", mDevice.getName(), deviceAddress));
+            //tvAddress.setText(String.format("%s(%s)\nconnecting", mDevice.getName(), deviceAddress));
             uhf.connect(deviceAddress, btStatus);
         }
     }

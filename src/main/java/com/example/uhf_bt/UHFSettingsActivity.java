@@ -60,9 +60,6 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
     private Button btnSetProtocol;
     private Button btnGetProtocol;
     private Button btn_update_device;
-
-    private RadioGroup rgWorkingMode;
-
     private CheckBox cbContinuousWave, cbAutoReconnect;
 
     private String[] arrayPower;
@@ -294,18 +291,6 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
       btnSetProtocol.setOnClickListener(this);
       btnGetProtocol = (Button) findViewById(R.id.btnGetProtocol);
       btnGetProtocol.setOnClickListener(this);
-
-      rgWorkingMode = findViewById(R.id.rgWorkingMode);
-      rgWorkingMode.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-          @Override
-          public void onCheckedChanged(RadioGroup group, int checkedId) {
-              if(checkedId == R.id.rbReadTime) {
-                  setWorkingMode(0);
-              } else if(checkedId == R.id.rbOffline) {
-                  setWorkingMode(1);
-              }
-          }
-      });
 
       cbContinuousWave = (CheckBox) findViewById(R.id.cbContinuousWave);
       cbContinuousWave.setOnClickListener(new View.OnClickListener() {
@@ -548,17 +533,6 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
         sendMessage(GET_CW, flag, showToast ? 1 : 0);
     }
 
-    /**
-     * 设置工作模式
-     * @param mode 实时：0，脱机：1
-     */
-    private void setWorkingMode(int mode) {
-        if(uhf.setR6Workmode(mode)) {
-            showToast(R.string.setting_succ);
-        } else {
-            showToast(R.string.setting_fail);
-        }
-    }
 
     public void OnClick_rbUsHop() {
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.arrayFreHop_us, android.R.layout.simple_spinner_item);

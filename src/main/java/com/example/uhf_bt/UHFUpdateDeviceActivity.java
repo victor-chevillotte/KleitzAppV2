@@ -506,7 +506,7 @@ public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClic
         tvMsg.setText("");
         beforeVerMap = uhf.getBluetoothVersion();
         Log.e(TAG, "beforeVerMap=" + beforeVerMap);
-        uhf.setStatusCallback(null);
+        //uhf.setStatusCallback(null);
         if (TextUtils.isEmpty(mFilePath) || mFileStreamUri == null) {
             showToast("Veuillez sélectionner le fichier de mise à jour");
             return;
