@@ -123,7 +123,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
 
     private void set_activity_connect_device() {
-        setContentView(R.layout.device_list);
+        setContentView(R.layout.activity_connect_device);
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
@@ -139,14 +139,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         devRssiValues = new HashMap<String, Integer>();
         deviceList = new ArrayList<>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
-
-        Button cancelButton = (Button) findViewById(R.id.btn_cancel);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                scanLeDevice(true);
-            }
-        });
 
         Button btnClearHistory = findViewById(R.id.btnClearHistory);
         btnClearHistory.setOnClickListener(new View.OnClickListener() {
@@ -164,7 +156,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         if (isHistoryList) {
             tvTitle.setText(R.string.history_connected_device);
             mEmptyList.setText(R.string.no_history);
-            cancelButton.setVisibility(View.GONE);
             List<String[]> deviceList = FileUtils.readXmlList();
             for (String[] device : deviceList) {
                 MyDevice myDevice = new MyDevice(device[0], device[1]);
@@ -174,7 +165,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             tvTitle.setText(R.string.select_device);
             mEmptyList.setText(R.string.scanning);
             btnClearHistory.setVisibility(View.GONE);
-            //scanLeDevice(true);
+            scanLeDevice(true);
         }
 
         ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
@@ -183,17 +174,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void scanLeDevice(final boolean enable) {
-        final Button cancelButton = (Button) findViewById(R.id.btn_cancel);
 
         if (enable) {
-
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     mScanning = false;
                     uhf.stopScanBTDevices();
-                    cancelButton.setText(R.string.scan);
                 }
             }, SCAN_PERIOD);
 
@@ -212,11 +200,9 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     });
                 }
             });
-            cancelButton.setText(R.string.cancel);
         } else {
             mScanning = false;
             uhf.stopScanBTDevices();
-//            cancelButton.setText(R.string.scan); // fait crash
         }
     }
 
@@ -418,8 +404,13 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "scanLeDevice==============>");
         scanLeDevice(false);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        scanLeDevice(true);
     }
 
     class MyDevice {

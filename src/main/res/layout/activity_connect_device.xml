@@ -58,8 +58,7 @@
             android:id="@+id/new_devices"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:stackFromBottom="true" />
+            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/empty"
@@ -74,10 +73,5 @@
             android:layout_height="wrap_content"
             android:text="@string/clear_historical_records"/>
 
-        <Button
-            android:id="@+id/btn_cancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@android:string/cancel" />
     </LinearLayout>
 </LinearLayout>
