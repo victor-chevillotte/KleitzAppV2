@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -117,7 +118,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         uhf.stopScanBTDevices();
         unregisterReceiver(bluetoothBroadcastReceiver);
         uhf.free();
-        connectStatusList.clear();
         cancelDisconnectTimer();
         android.os.Process.killProcess(Process.myPid());
     }
@@ -294,7 +294,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 }
             }
             deviceAdapter.notifyDataSetChanged();
-            mEmptyList.setVisibility(View.GONE);
             newDevicesListView.setVisibility(View.VISIBLE);
         }
         scanLeDevice(true);
@@ -474,7 +473,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     @Override
     public void onResume() {
+        connectStatusList.clear();
         super.onResume();
+        List<String[]> deviceFavoritesList = FileUtils.readXmlList();
+        for (String[] device : deviceFavoritesList) {
+            MyDevice myDevice = new MyDevice(device[0], device[1], true);
+            addDevice(myDevice, 0);
+        }
+        deviceAdapter.notifyDataSetChanged();
         scanLeDevice(true);
     }
 
@@ -563,7 +569,9 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             final TextView tvname = ((TextView) vg.findViewById(R.id.name));
             final TextView tvpaired = (TextView) vg.findViewById(R.id.paired);
             final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
-
+            final ImageView favorite = (ImageView) vg.findViewById(R.id.favorite);
+            if (device.getIsFavorites())
+                favorite.setVisibility(View.VISIBLE);
             int rssival = devRssiValues.get(device.getAddress()).intValue();
             if (rssival != 0) {
                 if (rssival > -60)

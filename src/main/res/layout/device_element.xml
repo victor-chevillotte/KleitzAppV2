@@ -37,16 +37,26 @@
         android:layout_below="@+id/paired"
         android:textSize="15dp" />
 
+    <ImageView
+        android:id="@+id/favorite"
+        android:layout_width="wrap_content"
+        android:visibility="invisible"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/baseline_star_border_24" />
+
     <TextView
         android:id="@+id/name"
+        android:layout_marginLeft="36dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:fontFamily="@font/sanfransico"
-        android:textSize="18dp" />
+        android:textSize="16dp" />
 
     <TextView
         android:id="@+id/address"
+        android:layout_marginLeft="36dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/name"
