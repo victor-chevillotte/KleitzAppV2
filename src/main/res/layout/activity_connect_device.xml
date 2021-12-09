@@ -3,69 +3,65 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#1b2243">
+    android:layout_height="match_parent">
 
-    <Button
+    <soup.neumorphism.NeumorphImageButton
         android:id="@+id/btnClearFavorites"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="268dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="15dp"
-        android:text="@string/clear_favorites_records"
-        app:layout_constraintBottom_toTopOf="@+id/swiperefreshlayout"
+        style="@style/Widget.Neumorph.ImageButton"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_marginTop="16dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/baseline_star_border_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <soup.neumorphism.NeumorphImageButton
         android:id="@+id/btnRefresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="268dp"
-        android:layout_marginEnd="144dp"
-        android:layout_marginBottom="15dp"
-        android:text="@string/btnRefresh"
-        app:layout_constraintBottom_toTopOf="@+id/swiperefreshlayout"
+        style="@style/Widget.Neumorph.ImageButton"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="100dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/baseline_refresh_36"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ProgressBar
         android:id="@+id/progressBar1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="68dp"
-        android:layout_marginBottom="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/swiperefreshlayout"
-        app:layout_constraintStart_toStartOf="@+id/swiperefreshlayout" />
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swiperefreshlayout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#f0f0f0"
+        android:layout_width="417dp"
+        android:layout_height="342dp"
+        android:layout_marginTop="392dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnClearFavorites"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="-6dp">
 
 
         <ListView
             android:id="@+id/new_devices"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
             android:layout_weight="1" />
 
         <TextView
             android:id="@+id/empty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp"
+            android:background="#f0f0f0"
+            android:padding="28dp"
+
             android:text="@string/scanning" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
