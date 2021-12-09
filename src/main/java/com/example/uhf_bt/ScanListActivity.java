@@ -43,6 +43,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import soup.neumorphism.NeumorphButton;
+import soup.neumorphism.NeumorphImageButton;
+
 public class ScanListActivity extends BaseActivity implements View.OnClickListener {
 
     public static ScanListActivity fa;
@@ -60,6 +63,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
     private TextView device_battery;
+    private boolean isScanning = false;
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
@@ -84,8 +88,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     };
     private boolean loopFlag = false;
     private ListView LvTags;
-    private Button InventoryLoop, btStop;//
-    private Button btClear, settings_button;
+    private NeumorphButton  btnStart, btStop, btClear;
+    private NeumorphImageButton settings_button;
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
     private long total = 0;
@@ -110,7 +114,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     final int FLAG_SET_SUCC = 12;
     final int FLAG_SET_FAIL = 13;
 
-    boolean isRunning = false;
     Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -118,9 +121,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 case FLAG_STOP:
                     if (msg.arg1 == FLAG_SUCCESS) {
                         //停止成功
-                        btClear.setEnabled(true);
-                        btStop.setEnabled(false);
-                        InventoryLoop.setEnabled(true);
+                        btStop.setShapeType(1);
+                        btnStart.setShapeType(0);
                     } else {
                         //停止失败
                         Utils.playSound(2);
@@ -130,9 +132,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 case FLAG_START:
                     if (msg.arg1 == FLAG_SUCCESS) {
                         //开始读取标签成功
-                        btClear.setEnabled(false);
-                        btStop.setEnabled(true);
-                        InventoryLoop.setEnabled(false);
+                        btStop.setShapeType(0);
+                        btnStart.setShapeType(1);
                     } else {
                         //开始读取标签失败
                         Utils.playSound(2);
@@ -178,7 +179,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
             @Override
             public void onKeyUp(int keycode) {
-                Log.d(TAG, "  keycode =" + keycode + "   ,isExit=" + isExit);
                 stopInventory();
             }
         });
@@ -212,21 +212,21 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             finish();
         device_battery = (TextView) findViewById(R.id.device_battery);
 
-        settings_button = (Button) findViewById(R.id.settings_button);
+        settings_button = (NeumorphImageButton) findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
 
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         LvTags = (ListView) findViewById(R.id.LvTags);
-        InventoryLoop = (Button) findViewById(R.id.InventoryLoop);
-        btStop = (Button) findViewById(R.id.btStop);
-        btStop.setEnabled(false);
-        btClear = (Button) findViewById(R.id.btClear);
+        btnStart = findViewById(R.id.btnStart);
+        btStop =  findViewById(R.id.btStop);
+        btStop.setShapeType(1);
+        btClear =  findViewById(R.id.btClear);
         tv_count = (TextView) findViewById(R.id.tv_count);
         tv_total = (TextView) findViewById(R.id.tv_total);
         tv_time = (TextView) findViewById(R.id.tv_time);
 
-        InventoryLoop.setOnClickListener(this);
+        btnStart.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
@@ -239,7 +239,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Log.e(TAG, String.valueOf(tagList.get(position)));
                 Intent newIntent = new Intent(ScanListActivity.this, ScanFocusedTagActivity.class);
                 Bundle b = new Bundle();
                 b.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTAdd);
@@ -256,8 +255,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         clearData();
     }
 
-    private void setViewsEnabled(boolean enabled) {
-        InventoryLoop.setEnabled(enabled);
+    private void setViewsEnabled(int enabled) {
+        btnStart.setShapeType(enabled);
     }
 
     Handler handlerRefreshBattery = new Handler();
@@ -276,7 +275,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
         }, delay);
         super.onResume();
-        setViewsEnabled(true);
+        setViewsEnabled(0);
     }
 
     @Override
@@ -299,11 +298,14 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             case R.id.btClear:
                 clearData();
                 break;
-            case R.id.InventoryLoop:
-                startThread();
+            case R.id.btnStart:
+                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && !isScanning) {
+                    showToast("yo");
+                    startThread();
+                }
                 break;
             case R.id.btStop:
-                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
+                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && isScanning) {
                     stopInventory();
                 }
                 break;
@@ -350,15 +352,14 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                         e.printStackTrace();
                     }
                     getMode();
-                    setViewsEnabled(true);
+                    setViewsEnabled(0);
                 }
 
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                 loopFlag = false;
                 isScanning = false;
-                btClear.setEnabled(true);
-                btStop.setEnabled(false);
-                setViewsEnabled(false);
+                btStop.setShapeType(0);
+                setViewsEnabled(1);
             }
         }
     }
@@ -379,10 +380,10 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     }
 
     public synchronized void startThread() {
-        if (isRunning) {
+        if (isScanning) {
             return;
         }
-        isRunning = true;
+        isScanning = true;
         new TagThread().start();
     }
 
@@ -399,7 +400,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 msg.arg1 = FLAG_FAIL;
             }
             handler.sendMessage(msg);
-            isRunning = false;//执行完成设置成false
             long startTime=System.currentTimeMillis();
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();

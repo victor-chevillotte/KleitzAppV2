@@ -587,7 +587,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
             } else
-                tvrssi.setText("Favoris");
+                tvrssi.setText("Non détecté");
             tvrssi.setTextColor(Color.BLACK);
             tvrssi.setVisibility(View.VISIBLE);
             if (remoteBTAdd == String.valueOf(devices.get(position).getAddress()))
