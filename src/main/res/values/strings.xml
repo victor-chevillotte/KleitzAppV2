@@ -93,7 +93,7 @@
     <string name="rfid_mgs_erase_succ">Erase succ</string>
 
     <!-- DeviceListActivity -->
-    <string name="scanning">Scan en cours...</string>
+    <string name="scanning">Aucun équipement détécté</string>
     <string name="select_device">Selectionner un équipement</string>
     <string name="none_paired">No Matching</string>
     <string name="none_found">Not found</string>
@@ -1076,4 +1076,6 @@
     <string name="bluetooth_version">Version du Bluetooth</string>
     <string name="addTagTitle">Nommer le tag</string>
     <string name="btnRefresh">Refresh</string>
+    <string name="ConnectTitle">Connexion à votre antenne</string>
+    <string name="searching_device">Recherche d\'antenne</string>
 </resources>

@@ -32,6 +32,8 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback;
 import com.rscja.deviceapi.interfaces.ScanBTCallback;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,6 +41,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import soup.neumorphism.NeumorphImageButton;
 
 public class ConnectDeviceActivity extends BaseActivity implements View.OnClickListener {
 
@@ -53,6 +57,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     public BluetoothAdapter mBtAdapter = null;
     private Button btn_activate_bluetooth;
     private ProgressBar spinner;
+    private ListView newDevicesListView;
 
     private final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
@@ -77,7 +82,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         }
     };
 
-    private TextView mEmptyList;
+    private TextView mEmptyList, scanningDevice;
     public static final String TAG = "DeviceListActivity";
     private String tryingToConnectAddress = "";
 
@@ -143,8 +148,12 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         devRssiValues = new HashMap<String, Integer>();
         deviceList = new ArrayList<>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
-
-        Button btnClearFavorites = findViewById(R.id.btnClearFavorites);
+        mEmptyList.setText(R.string.scanning);
+        newDevicesListView = (ListView) findViewById(R.id.new_devices);
+        newDevicesListView.setAdapter(deviceAdapter);
+        newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+        scanningDevice = (TextView)  findViewById(R.id.scanningDevice);
+        NeumorphImageButton btnClearFavorites = findViewById(R.id.btnClearFavorites);
         btnClearFavorites.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -154,7 +163,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             }
 
         });
-        Button btnRefresh = findViewById(R.id.btnRefresh);
+        NeumorphImageButton btnRefresh = findViewById(R.id.btnRefresh);
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,7 +171,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             }
 
         });
-        mScanning = true;
+        mScanning = false;
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swiperefreshlayout);
         // Setup refresh listener which triggers new data loading
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -175,17 +184,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     swipeContainer.setRefreshing(false);
             }
         });
+
         //boolean isFavoritesList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
         List<String[]> deviceFavoritesList = FileUtils.readXmlList();
         for (String[] device : deviceFavoritesList) {
             MyDevice myDevice = new MyDevice(device[0], device[1], true);
             addDevice(myDevice, 0);
         }
-        mEmptyList.setText(R.string.scanning);
         scanLeDevice(true);
-        ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
-        newDevicesListView.setAdapter(deviceAdapter);
-        newDevicesListView.setOnItemClickListener(mDeviceClickListener);
     }
 
 
@@ -193,33 +199,41 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
         if (enable) {
             // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mScanning = false;
-                    uhf.stopScanBTDevices();
-                    if (spinner != null)
-                        spinner.setVisibility(View.GONE);
-                }
-            }, SCAN_PERIOD);
             if (swipeContainer != null)
                 swipeContainer.setRefreshing(false);
-            mScanning = true;
-            uhf.startScanBTDevices(new ScanBTCallback() {
-                @Override
-                public void getDevices(final BluetoothDevice bluetoothDevice, final int rssi, byte[] bytes) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            spinner.setVisibility(View.VISIBLE);
-                            if (bluetoothDevice.getName() != null) {
-                                MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName(), false);
-                                addDevice(myDevice, rssi);
-                            }
+            if (mScanning == false)
+            {
+                Log.e("yo","start");
+                mScanning = true;
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        uhf.stopScanBTDevices();
+                        if (spinner != null){
+                            Log.e("yo","stop");
+                            spinner.setVisibility(View.GONE);
+                            scanningDevice.setVisibility(View.GONE);
                         }
-                    });
-                }
-            });
+                        mScanning = false;
+                    }
+                }, SCAN_PERIOD);
+                scanningDevice.setVisibility(View.VISIBLE);
+                spinner.setVisibility(View.VISIBLE);
+                uhf.startScanBTDevices(new ScanBTCallback() {
+                    @Override
+                    public void getDevices(final BluetoothDevice bluetoothDevice, final int rssi, byte[] bytes) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (bluetoothDevice.getName() != null) {
+                                    MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName(), false);
+                                    addDevice(myDevice, rssi);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
         } else {
             mScanning = false;
             uhf.stopScanBTDevices();
@@ -244,6 +258,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         if (!deviceFound) {
             deviceList.add(device);
             mEmptyList.setVisibility(View.GONE);
+            newDevicesListView.setVisibility(View.VISIBLE);
         }
 
         Collections.sort(deviceList, new Comparator<MyDevice>() {
@@ -262,6 +277,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private void clearDeviceList(boolean favorites) {
         scanLeDevice(false);
+        showToast("hey");
         if (favorites && tryingToConnectAddress == "")
         {
             for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
@@ -270,18 +286,21 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     iterator.remove();
                 }
             }
+            deviceAdapter.notifyDataSetChanged();
         }
         else if (tryingToConnectAddress == "")
         {
-            for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
+            for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {//ici
                 MyDevice value = iterator.next();
                 if (!value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
                     iterator.remove();
                 }
             }
+            deviceAdapter.notifyDataSetChanged();
+            mEmptyList.setVisibility(View.GONE);
+            newDevicesListView.setVisibility(View.VISIBLE);
         }
         scanLeDevice(true);
-        deviceAdapter.notifyDataSetChanged();
     }
 
     private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
@@ -290,6 +309,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             uhf.stopScanBTDevices();
             spinner.setVisibility(View.GONE);
+            scanningDevice.setVisibility(View.GONE);
             MyDevice device = deviceList.get(position);
             String address = device.getAddress().trim();
             if (!TextUtils.isEmpty(address)) {
@@ -371,6 +391,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         newIntent.putExtras(b2);
                         uhf.stopScanBTDevices();
                         spinner.setVisibility(View.GONE);
+                        scanningDevice.setVisibility(View.GONE);
                         ConnectDeviceActivity.this.startActivity(newIntent);
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
                             saveConnectedDevice(remoteBTAdd, remoteBTName);
