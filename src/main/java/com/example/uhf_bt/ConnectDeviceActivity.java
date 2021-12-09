@@ -203,14 +203,12 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 swipeContainer.setRefreshing(false);
             if (mScanning == false)
             {
-                Log.e("yo","start");
                 mScanning = true;
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         uhf.stopScanBTDevices();
                         if (spinner != null){
-                            Log.e("yo","stop");
                             spinner.setVisibility(View.GONE);
                             scanningDevice.setVisibility(View.GONE);
                         }
@@ -277,7 +275,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private void clearDeviceList(boolean favorites) {
         scanLeDevice(false);
-        showToast("hey");
         if (favorites && tryingToConnectAddress == "")
         {
             for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
