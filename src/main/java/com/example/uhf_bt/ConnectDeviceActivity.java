@@ -48,7 +48,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     private SwipeRefreshLayout swipeContainer;
     private Boolean disconnecting = false;
     private final static String ACTIVATEBLE = "ACTIVATEBLE";
-    public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
+    public static final String SHOW_HISTORY_CONNECTED_LIST = "showFavoritesConnectedList";
     private static final int REQUEST_ENABLE_BT = 2;
     public BluetoothAdapter mBtAdapter = null;
     private Button btn_activate_bluetooth;
@@ -144,8 +144,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         deviceList = new ArrayList<>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
 
-        Button btnClearHistory = findViewById(R.id.btnClearHistory);
-        btnClearHistory.setOnClickListener(new View.OnClickListener() {
+        Button btnClearFavorites = findViewById(R.id.btnClearFavorites);
+        btnClearFavorites.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FileUtils.clearXmlList();
@@ -175,9 +175,9 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     swipeContainer.setRefreshing(false);
             }
         });
-        //boolean isHistoryList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
-        List<String[]> deviceHistoryList = FileUtils.readXmlList();
-        for (String[] device : deviceHistoryList) {
+        //boolean isFavoritesList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
+        List<String[]> deviceFavoritesList = FileUtils.readXmlList();
+        for (String[] device : deviceFavoritesList) {
             MyDevice myDevice = new MyDevice(device[0], device[1], true);
             addDevice(myDevice, 0);
         }
@@ -198,10 +198,12 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 public void run() {
                     mScanning = false;
                     uhf.stopScanBTDevices();
-                    spinner.setVisibility(View.GONE);
+                    if (spinner != null)
+                        spinner.setVisibility(View.GONE);
                 }
             }, SCAN_PERIOD);
-            swipeContainer.setRefreshing(false);
+            if (swipeContainer != null)
+                swipeContainer.setRefreshing(false);
             mScanning = true;
             uhf.startScanBTDevices(new ScanBTCallback() {
                 @Override
@@ -247,7 +249,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         Collections.sort(deviceList, new Comparator<MyDevice>() {
             @Override
             public int compare(MyDevice device1, MyDevice device2) {
-                if (!device1.getIsHistory() && !device2.getIsHistory()) {
+                if (!device1.getIsFavorites() && !device2.getIsFavorites()) {
                     String s1 = device1.getName();
                     String s2 = device2.getName();
                     return s1.compareToIgnoreCase(s2);
@@ -258,13 +260,13 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         deviceAdapter.notifyDataSetChanged();
     }
 
-    private void clearDeviceList(boolean history) {
+    private void clearDeviceList(boolean favorites) {
         scanLeDevice(false);
-        if (history && tryingToConnectAddress == "")
+        if (favorites && tryingToConnectAddress == "")
         {
             for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
                 MyDevice value = iterator.next();
-                if (value.getIsHistory() && value.getAddress() != remoteBTAdd) {
+                if (value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
                     iterator.remove();
                 }
             }
@@ -273,7 +275,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         {
             for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
                 MyDevice value = iterator.next();
-                if (!value.getIsHistory() && value.getAddress() != remoteBTAdd) {
+                if (!value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
                     iterator.remove();
                 }
             }
@@ -461,25 +463,25 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     class MyDevice {
         private String address;
         private String name;
-        private boolean isHistory;
+        private boolean isFavorites;
         private int bondState;
 
         public MyDevice() {
 
         }
 
-        public MyDevice(String address, String name, Boolean isHistory) {
+        public MyDevice(String address, String name, Boolean isFavorites) {
             this.address = address;
             this.name = name;
-            this.isHistory = isHistory;
+            this.isFavorites = isFavorites;
         }
 
         public String getAddress() {
             return address;
         }
 
-        public Boolean getIsHistory() {
-            return isHistory;
+        public Boolean getIsFavorites() {
+            return isFavorites;
         }
 
         public void setAddress(String address) {
@@ -554,7 +556,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
             } else
-                tvrssi.setText("Historique");
+                tvrssi.setText("Favoris");
             tvrssi.setTextColor(Color.BLACK);
             tvrssi.setVisibility(View.VISIBLE);
             if (remoteBTAdd == String.valueOf(devices.get(position).getAddress()))
