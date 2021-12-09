@@ -246,6 +246,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     private void addDevice(MyDevice device, int rssi) {
         boolean deviceFound = false;
+
         for (MyDevice listDev : deviceList) {
             if (listDev.getAddress().equals(device.getAddress())) {
                 deviceFound = true;
@@ -334,7 +335,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     deviceAdapter.notifyDataSetChanged();
                     connect(deviceAddress);
                 } else
-                    showToast("Veuillez attendre la fin de la connexion precedente");
+                    showToast("Veuillez attendre la fin de la connexion précédente");
             } else {
                 showToast(R.string.invalid_bluetooth_address);
             }
@@ -343,7 +344,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     public void connect(String deviceAddress) {
         if (uhf.getConnectStatus() == ConnectionStatus.CONNECTING) {
-            showToast("Veuillez attendre la fin de la connexion precedente");
+            showToast("Veuillez attendre la fin de la connexion précédente");
         } else {
             uhf.connect(deviceAddress, btStatus);
         }
@@ -475,13 +476,17 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     public void onResume() {
         connectStatusList.clear();
         super.onResume();
-        List<String[]> deviceFavoritesList = FileUtils.readXmlList();
-        for (String[] device : deviceFavoritesList) {
-            MyDevice myDevice = new MyDevice(device[0], device[1], true);
-            addDevice(myDevice, 0);
+        if (!mBtAdapter.isEnabled())
+            set_activity_activate_bluetooth();
+        else {
+            List<String[]> deviceFavoritesList = FileUtils.readXmlList();
+            for (String[] device : deviceFavoritesList) {
+                MyDevice myDevice = new MyDevice(device[0], device[1], true);
+                addDevice(myDevice, 0);
+            }
+            deviceAdapter.notifyDataSetChanged();
+            scanLeDevice(true);
         }
-        deviceAdapter.notifyDataSetChanged();
-        scanLeDevice(true);
     }
 
     class MyDevice {
