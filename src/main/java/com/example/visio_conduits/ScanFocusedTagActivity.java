@@ -354,7 +354,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         } else {
             msg.arg1 = FLAG_FAIL;
         }
-        isScanning = false;
+        isScanningTags = false;
         handler.sendMessage(msg);
     }
 
@@ -373,7 +373,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 }
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                 loopFlag = false;
-                isScanning = false;
+                isScanningTags = false;
                 btStop.setEnabled(false);
                 setViewsEnabled(false);
             }
@@ -409,7 +409,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             Message msg = handler.obtainMessage(FLAG_START);
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
-                isScanning = true;
+                isScanningTags = true;
                 mStrTime = System.currentTimeMillis();
                 msg.arg1 = FLAG_SUCCESS;
             } else {

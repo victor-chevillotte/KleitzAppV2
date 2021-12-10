@@ -46,7 +46,7 @@ public class BaseActivity extends AppCompatActivity {
     public BluetoothDevice mDevice = null;
     private final static String TAG = "BaseActivity";
 
-    public boolean isScanning = false;
+    public boolean isScanningTags = false; //is scanningTags
     public boolean mIsActiveDisconnect = true; // 是否主动断开连接
 
     private Timer mDisconnectTimer = new Timer();
@@ -108,7 +108,7 @@ public class BaseActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            if(isScanning) {
+            if(isScanningTags) {
                 resetDisconnectTime();
             } else if (timeCountCur <= 0){
                 disconnect(true);

@@ -268,7 +268,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void clearDeviceList() {
-        scanLeDevice(false);
+        if(mScanning)
+            scanLeDevice(false);
         if (tryingToConnectAddress == "")
         {
             for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {//ici
@@ -339,6 +340,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             if (address.equals(list.get(k)[0])) {
                 list.remove(list.get(k));
                 if (remove){
+                    Log.e("suppr", String.valueOf(list));
                     FileUtils.saveXmlList(list);
                     return;
                 }
