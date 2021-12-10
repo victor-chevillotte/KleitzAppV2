@@ -375,12 +375,13 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         uhf.stopScanBTDevices();
                         spinner.setVisibility(View.GONE);
                         scanningDevice.setVisibility(View.GONE);
-                        ConnectDeviceActivity.this.startActivity(newIntent);
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
-                            saveConnectedDevice(remoteBTAdd, remoteBTName, false);
+                            saveConnectedDevice(device.getAddress(), device.getName(), false);
                         }
                         deviceAdapter.notifyDataSetChanged();
                         mIsActiveDisconnect = true;
+                        ConnectDeviceActivity.this.startActivity(newIntent);
+
                     } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                         if (disconnecting) {
                             showToast("Antenne " + remoteBTName + " déconnectée");
