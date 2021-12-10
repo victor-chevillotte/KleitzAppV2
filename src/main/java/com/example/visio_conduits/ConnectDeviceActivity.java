@@ -253,7 +253,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             newDevicesListView.setVisibility(View.VISIBLE);
         }
 
-        Collections.sort(deviceList, new Comparator<MyDevice>() {
+        /*Collections.sort(deviceList, new Comparator<MyDevice>() {
             @Override
             public int compare(MyDevice device1, MyDevice device2) {
                 if (!device1.getIsFavorites() && !device2.getIsFavorites()) {
@@ -263,7 +263,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 } else
                     return 0;
             }
-        });
+        });*/
         deviceAdapter.notifyDataSetChanged();
     }
 
@@ -594,7 +594,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     tvrssi.setText("A proximité");
                 else
                     tvrssi.setText("Eloigné");
-                //tvrssi.setText(String.format("Rssi = %d", rssival));
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
             } else if (device.getBondState() != BluetoothDevice.BOND_BONDED)
