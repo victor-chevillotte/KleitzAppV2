@@ -282,15 +282,15 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         handlerRefreshBattery.postDelayed( runnable = new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             public void run() {
-                int precentage = 20;//uhf.getBattery();
+                int precentage = uhf.getBattery();
                 device_battery.setText(precentage + "%");
                 batteryPB.setProgress(precentage);
                 if (precentage <= 10)
                     batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                else if (precentage <= 10)
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
+                else if (precentage <= 20)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
                 else
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
 
                 handlerRefreshBattery.postDelayed(runnable, delay);
             }
