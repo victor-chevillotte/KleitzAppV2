@@ -381,6 +381,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         deviceAdapter.notifyDataSetChanged();
                         mIsActiveDisconnect = true;
                         ConnectDeviceActivity.this.startActivity(newIntent);
+                        clearDeviceList();
 
                     } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                         if (disconnecting) {
@@ -462,7 +463,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     @Override
     public void onResume() {
-        connectStatusList.clear();
+        deviceList.clear();
         super.onResume();
         if (!mBtAdapter.isEnabled())
             set_activity_activate_bluetooth();
@@ -596,13 +597,13 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 //tvrssi.setText(String.format("Rssi = %d", rssival));
                 tvrssi.setTextColor(Color.BLACK);
                 tvrssi.setVisibility(View.VISIBLE);
-            } else
+            } else if (device.getBondState() != BluetoothDevice.BOND_BONDED)
                 tvrssi.setText("Non détecté");
             tvrssi.setTextColor(Color.BLACK);
             tvrssi.setVisibility(View.VISIBLE);
-            if (remoteBTAdd == String.valueOf(devices.get(position).getAddress()))
+            if (remoteBTAdd.equals(device.getAddress()))
                 tvrssi.setText("Connecté");
-            else if (tryingToConnectAddress == String.valueOf(devices.get(position).getAddress()))
+            else if (tryingToConnectAddress.equals(device.getAddress()))
                 tvrssi.setText("Connexion...");
 
             tvname.setText(device.getName());
