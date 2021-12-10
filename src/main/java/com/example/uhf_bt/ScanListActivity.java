@@ -228,6 +228,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         settings_button = (NeumorphImageButton) findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
         batteryPB = (ProgressBar) findViewById(R.id.batteryPB);
+        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         LvTags = (ListView) findViewById(R.id.LvTags);
@@ -283,15 +284,16 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             @RequiresApi(api = Build.VERSION_CODES.M)
             public void run() {
                 int precentage = uhf.getBattery();
-                device_battery.setText(precentage + "%");
-                batteryPB.setProgress(precentage);
-                if (precentage <= 10)
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                else if (precentage <= 20)
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
-                else
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
-
+                if (precentage >= 0) {
+                    device_battery.setText(precentage + "%");
+                    batteryPB.setProgress(precentage);
+                    if (precentage <= 10)
+                        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                    else if (precentage <= 20)
+                        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
+                    else
+                        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
+                }
                 handlerRefreshBattery.postDelayed(runnable, delay);
             }
         }, delay);
