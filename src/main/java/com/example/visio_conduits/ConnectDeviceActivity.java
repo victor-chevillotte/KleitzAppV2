@@ -252,18 +252,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             mEmptyList.setVisibility(View.GONE);
             newDevicesListView.setVisibility(View.VISIBLE);
         }
-
-        /*Collections.sort(deviceList, new Comparator<MyDevice>() {
-            @Override
-            public int compare(MyDevice device1, MyDevice device2) {
-                if (!device1.getIsFavorites() && !device2.getIsFavorites()) {
-                    String s1 = device1.getName();
-                    String s2 = device2.getName();
-                    return s1.compareToIgnoreCase(s2);
-                } else
-                    return 0;
-            }
-        });*/
         deviceAdapter.notifyDataSetChanged();
     }
 
@@ -281,6 +269,17 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             deviceAdapter.notifyDataSetChanged();
             newDevicesListView.setVisibility(View.VISIBLE);
         }
+        Collections.sort(deviceList, new Comparator<MyDevice>() {
+            @Override
+            public int compare(MyDevice device1, MyDevice device2) {
+                if (device1.getIsFavorites() && device2.getIsFavorites()) {
+                    String s1 = device1.getName();
+                    String s2 = device2.getName();
+                    return s1.compareToIgnoreCase(s2);
+                } else
+                    return 0;
+            }
+        });
         scanLeDevice(true);
     }
 
