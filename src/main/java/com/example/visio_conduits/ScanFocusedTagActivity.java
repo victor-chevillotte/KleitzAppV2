@@ -240,7 +240,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
                 new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_DATA, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
-                new int[]{R.id.TvTagType, R.id.TvTagName, R.id.TvTagCount, R.id.TvTagRssi});
+                new int[]{R.id.type, R.id.name, R.id.count, R.id.rssi});
         nameTag = (Button) findViewById(R.id.InventoryFocusAddModifyTag);
         Cursor cursor = mydb.selectATag(focusedTagEPC);
         if (cursor.moveToFirst() && cursor.getCount() != 0) {

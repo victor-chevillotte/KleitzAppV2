@@ -83,7 +83,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                switch(state) {
+                switch (state) {
                     case BluetoothAdapter.STATE_OFF:
                     case BluetoothAdapter.STATE_TURNING_OFF:
                         set_activity_activate_bluetooth();
@@ -97,10 +97,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     };
 
-    private Map<String, String> devRssiValues;
     private boolean loopFlag = false;
     private ListView LvTags;
-    private NeumorphButton  btnStart, btStop, btClear;
+    private NeumorphButton btnStart, btStop, btClear;
     private NeumorphImageButton settings_button;
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
@@ -112,7 +111,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private Map<String, Integer> ValuessiValues;
     private long mStrTime;
     private ExecutorService executorService;
-    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1,this);
+    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1, this);
 
     private ConnectStatus mConnectStatus = new ConnectStatus();
 
@@ -152,7 +151,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     }
                     break;
                 case FLAG_UHFINFO_LIST:
-                    List<UHFTAGInfo> list = ( List<UHFTAGInfo>) msg.obj;
+                    List<UHFTAGInfo> list = (List<UHFTAGInfo>) msg.obj;
                     addEPCToList(list);
                     break;
                 case FLAG_UPDATE_TIME:
@@ -191,6 +190,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     }
                 }
             }
+
             @Override
             public void onKeyUp(int keycode) {
                 stopInventory();
@@ -204,7 +204,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         tagsList = new ArrayList<>();
         tagsAdapter = new TagsAdapter(this, tagsList);
-        devRssiValues = new HashMap<String, String>();
         initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
@@ -249,9 +248,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         LvTags.setAdapter(tagsAdapter);
         LvTags.setOnItemClickListener(mTagsListener);
         btnStart = findViewById(R.id.btnStart);
-        btStop =  findViewById(R.id.btStop);
+        btStop = findViewById(R.id.btStop);
         btStop.setShapeType(1);
-        btClear =  findViewById(R.id.btClear);
+        btClear = findViewById(R.id.btClear);
         tv_count = (TextView) findViewById(R.id.tv_count);
         tv_total = (TextView) findViewById(R.id.tv_total);
         tv_time = (TextView) findViewById(R.id.tv_time);
@@ -262,8 +261,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         clearData();
         List<String[]> deviceFavoritesList = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
         for (String[] device : deviceFavoritesList) {
-            MyTag favoriteTag = new MyTag(device[0], device[1], device[2], true);
-            addTag(favoriteTag, "0");
+            MyTag favoriteTag = new MyTag(device[0], device[1], device[2], "", true);
+            addTag(favoriteTag);
         }
     }
 
@@ -273,12 +272,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
-    int delay = 1*10000; //Delay for 1 seconds  One second = 1000 milliseconds.
+    int delay = 1 * 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
 
     @Override
     public void onResume() {
 
-        handlerRefreshBattery.postDelayed( runnable = new Runnable() {
+        handlerRefreshBattery.postDelayed(runnable = new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             public void run() {
                 int precentage = uhf.getBattery();
@@ -313,7 +312,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         switch (view.getId()) {
             case R.id.settings_button:
                 showToast("Chargement des réglages...");
-                Intent intent=new Intent(ScanListActivity.this, UHFSettingsActivity.class);
+                Intent intent = new Intent(ScanListActivity.this, UHFSettingsActivity.class);
                 ScanListActivity.this.startActivity(intent);
                 break;
             case R.id.btClear:
@@ -340,13 +339,13 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         tv_total.setText("0");
         tv_time.setText("0s");
 
-            for (Iterator<MyTag> iterator = tagsList.iterator(); iterator.hasNext(); ) {
-                MyTag tag = iterator.next();
-                if (!tag.getIsFavorites()) {
-                    iterator.remove();
-                }
+        for (Iterator<MyTag> iterator = tagsList.iterator(); iterator.hasNext(); ) {
+            MyTag tag = iterator.next();
+            if (!tag.getIsFavorites()) {
+                iterator.remove();
             }
-            tagsAdapter.notifyDataSetChanged();
+        }
+        tagsAdapter.notifyDataSetChanged();
 
         Collections.sort(tagsList, new Comparator<MyTag>() {
             @Override
@@ -438,17 +437,17 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 msg.arg1 = FLAG_FAIL;
             }
             handler.sendMessage(msg);
-            long startTime=System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
-                if(list==null || list.size()==0){
+                if (list == null || list.size() == 0) {
                     SystemClock.sleep(1);
-                }else{
+                } else {
                     Utils.playSound(1);
                     handler.sendMessage(handler.obtainMessage(FLAG_UHFINFO_LIST, list));
                 }
-                if(System.currentTimeMillis()-startTime>100){
-                    startTime=System.currentTimeMillis();
+                if (System.currentTimeMillis() - startTime > 100) {
+                    startTime = System.currentTimeMillis();
                     handler.sendEmptyMessage(FLAG_UPDATE_TIME);
                 }
 
@@ -457,11 +456,11 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    private synchronized   List<UHFTAGInfo> getUHFInfo() {
+    private synchronized List<UHFTAGInfo> getUHFInfo() {
         List<UHFTAGInfo> list = uhf.readTagFromBufferList_EpcTidUser();
         return list;
     }
-    
+
     public void saveFavoriteTags(String epc, String name, String type, Boolean remove) {
         List<String[]> list = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
         for (int k = 0; k < list.size(); k++) {
@@ -480,131 +479,53 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     }
 
     private void addEPCToList(List<UHFTAGInfo> list) {
-        for(int k=0;k<list.size();k++){
-            UHFTAGInfo uhftagInfo=list.get(k);
-            if (!TextUtils.isEmpty(uhftagInfo.getEPC())) {
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append(uhftagInfo.getEPC());
-                MyTag newTag = new MyTag(uhftagInfo.getEPC(), "","", false);
-                addTag(newTag, uhftagInfo.getRssi());
+        for (int k = 0; k < list.size(); k++) {
+            UHFTAGInfo uhftagInfo = list.get(k);
+            if (!TextUtils.isEmpty(uhftagInfo.getEPC()) /* || !uhftagInfo.getEPC().startsWith("AAAA")*/) {//block other tags no tours
+                boolean tagFound = false;
+                for (MyTag tag : tagsList) {
+                    if (tag.getEPC().equals(uhftagInfo.getEPC())) {
+                        tagFound = true;
+                        tag.setRssi( uhftagInfo.getRssi());
+                        tag.setNbrDetections();
+                        tv_total.setText(String.valueOf(++total));
+                        tagsAdapter.notifyDataSetChanged();
+                        break;
+                    }
+                }
+                if (!tagFound) {
+                    //mEmptyList.setVisibility(View.GONE);
+                    MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", uhftagInfo.getRssi(), false);
+                    addTag(newTag);
+                }
             }
         }
-        tagsAdapter.notifyDataSetChanged();
     }
 
-    public int checkIsExist(String epc) {
-        if (TextUtils.isEmpty(epc)) {
-            return -1;
-        }
-        return binarySearch(tempDatas, epc);
-    }
-
-    static int binarySearch(List<String> array, String src) {
-        int left = 0;
-        int right = array.size() - 1;
-        // 这里必须是 <=
-        while (left <= right) {
-            if (compareString(array.get(left), src)) {
-                return left;
-            } else if (left != right) {
-                if (compareString(array.get(right), src))
-                    return right;
-            }
-            left++;
-            right--;
-        }
-        return -1;
-    }
-
-    static boolean compareString(String str1, String str2) {
-        if (str1.length() != str2.length()) {
-            return false;
-        } else if (str1.hashCode() != str2.hashCode()) {
-            return false;
+    private void addTag(MyTag tag) {
+        if (tag.getEPC().startsWith("AAAAAA"))
+            tag.setType("Lumière");
+        else if (tag.getEPC().startsWith("AAAAEC"))
+            tag.setType("Chauffage Elec");
+        else if (tag.getEPC().startsWith("VC2021EP"))
+            tag.setType("Prise Elec");
+        else if (tag.getEPC().startsWith("VC2021EAR"))
+            tag.setType("Robinet Eau");
+        else if (tag.getEPC().startsWith("VC2021GR"))
+            tag.setType("Robinet Gaz");
+        Cursor cursor = mydb.selectATag(tag.getEPC());
+        if (cursor.moveToFirst() || cursor.getCount() != 0) {
+            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("name"));
+            @SuppressLint("Range") String room = cursor.getString(cursor.getColumnIndex("room"));
+            @SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
+            tag.setName(name + " " + room);
         } else {
-            char[] value1 = str1.toCharArray();
-            char[] value2 = str2.toCharArray();
-            int size = value1.length;
-            for (int k = 0; k < size; k++) {
-                if (value1[k] != value2[k]) {
-                    return false;
-                }
-            }
-            return true;
+            tagNumber++;
+            tag.setName(String.valueOf(tagNumber));
         }
-    }
-
-    private void addTag(MyTag tag, String rssi) {
-        boolean tagFound = false;
-
-        for (MyTag listTags : tagsList) {
-            if (listTags.getEPC().equals(tag.getEPC())) {
-                tagFound = true;
-                break;
-            }
-        }
-        devRssiValues.put(tag.getEPC(), rssi);
-        if (!tagFound) {
-            //mEmptyList.setVisibility(View.GONE);
-            //if (!TagEPC.startsWith("AAAA"))/:block other tags no tours
-            //    return;
-            if (tag.getEPC().startsWith("AAAAAA"))
-                tag.setType("Lumière");
-            else if (tag.getEPC().startsWith("AAAAEC"))
-                tag.setType("Chauffage Elec");
-            else if (tag.getEPC().startsWith("VC2021EP"))
-                tag.setType("Prise Elec");
-            else if (tag.getEPC().startsWith("VC2021EAR"))
-                tag.setType("Robinet Eau");
-            else if (tag.getEPC().startsWith("VC2021GR"))
-                tag.setType("Robinet Gaz");
-            Cursor cursor = mydb.selectATag(tag.getEPC());
-            if (cursor.moveToFirst() || cursor.getCount() != 0) {
-                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("name"));
-                @SuppressLint("Range") String room = cursor.getString(cursor.getColumnIndex("room"));
-                @SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
-                tag.setName(name + " " + room);
-            }
-            else {
-                tagNumber++;
-                tag.setName(String.valueOf(tagNumber));
-            }
-        }
-        tag.setNbrDetections(tag.getNbrDetections() + 1);
         tagsList.add(tag);
-
-        // getAppContext().uhfQueue.offer(epc + "\t 1");
-
         tv_count.setText("" + tagsAdapter.getCount());
-        tv_total.setText(String.valueOf(++total));
         tagsAdapter.notifyDataSetChanged();
-    }
-
-    private void clearTagList() {
-       /* if (isScanningTags)
-            scanLeDevice(false);
-        if (tryingToConnectAddress == "") {
-            for (Iterator<ConnectDeviceActivity.MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {//ici
-                ConnectDeviceActivity.MyDevice value = iterator.next();
-                if (!value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
-                    iterator.remove();
-                }
-            }
-            deviceAdapter.notifyDataSetChanged();
-            newDevicesListView.setVisibility(View.VISIBLE);
-        }
-        Collections.sort(deviceList, new Comparator<ConnectDeviceActivity.MyDevice>() {
-            @Override
-            public int compare(ConnectDeviceActivity.MyDevice device1, ConnectDeviceActivity.MyDevice device2) {
-                if (device1.getIsFavorites() && device2.getIsFavorites()) {
-                    String s1 = device1.getName();
-                    String s2 = device2.getName();
-                    return s1.compareToIgnoreCase(s2);
-                } else
-                    return 0;
-            }
-        });
-        scanLeDevice(true);*/
     }
 
     private AdapterView.OnItemClickListener mTagsListener = new AdapterView.OnItemClickListener() {
@@ -639,40 +560,17 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         private String detectionNumber;
         private boolean isFavorites;
 
-        public MyTag(String epc, String name, String type, Boolean isFavorites) {
+        public MyTag(String epc, String name, String type, String rssi, Boolean isFavorites) {
             this.epc = epc;
             this.name = name;
             this.type = type;
-            this.nbrDetections = 0;
+            this.rssi = rssi;
+            this.nbrDetections = 1;
             this.isFavorites = isFavorites;
         }
 
         public String getEPC() {
             return epc;
-        }
-
-        public Boolean getIsFavorites() {
-            return isFavorites;
-        }
-
-        public void setNbrDetections(int nbrDetections) {
-            this.nbrDetections = nbrDetections; ;
-        }
-
-        public int getNbrDetections() {
-            return nbrDetections;
-        }
-
-        public void setIsFavorites(boolean isFavorites) {
-            this.isFavorites = isFavorites;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getType() {
-            return type;
         }
 
         public void setEPC(String epc) {
@@ -686,6 +584,39 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         public void setName(String name) {
             this.name = name;
         }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setRssi(String rssi) {
+            this.rssi = rssi;
+        }
+
+        public String getRssi() {
+            return this.rssi;
+        }
+
+        public void setNbrDetections() {
+            this.nbrDetections++;
+        }
+
+        public int getNbrDetections() {
+            return nbrDetections;
+        }
+
+        public Boolean getIsFavorites() {
+            return isFavorites;
+        }
+
+        public void setIsFavorites(boolean isFavorites) {
+            this.isFavorites = isFavorites;
+        }
+
     }
 
     class TagsAdapter extends BaseAdapter {
@@ -721,11 +652,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             if (convertView != null) {
                 vg = (ViewGroup) convertView;
             } else {
-                vg = (ViewGroup) inflater.inflate(R.layout.device_element, null);
+                vg = (ViewGroup) inflater.inflate(R.layout.listtag_items, null);
             }
             MyTag tag = tags.get(position);
-            final TextView tvadd = ((TextView) vg.findViewById(R.id.address));
             final TextView tvname = ((TextView) vg.findViewById(R.id.name));
+            final TextView tvtype = ((TextView) vg.findViewById(R.id.type));
+            final TextView tvcount = ((TextView) vg.findViewById(R.id.count));
             final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
             final ImageView favoritefull = (ImageView) vg.findViewById(R.id.favoritefull);
             final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
@@ -735,29 +667,27 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             favorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (tag.getIsFavorites()){
+                    if (tag.getIsFavorites()) {
                         tag.setIsFavorites(false);
                         favoritefull.setVisibility(View.GONE);
                         showToast("Favoris supprimé");
                         saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), true);
-                    }
-                    else {
+                    } else {
                         showToast("Favoris ajouté");
                         tag.setIsFavorites(true);
-                        saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(),false);
+                        saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
                         favoritefull.setVisibility(View.VISIBLE);
                     }
                 }
             });
-            String rssival = devRssiValues.get(tag.getEPC());
-            tvrssi.setText(rssival);
+            tvrssi.setText(tag.getRssi());
             tvrssi.setTextColor(Color.BLACK);
-            tvrssi.setVisibility(View.VISIBLE);
-
+            tvcount.setText(String.valueOf(tag.getNbrDetections()));
+            tvcount.setTextColor(Color.BLACK);
             tvname.setText(tag.getName());
             tvname.setTextColor(Color.BLACK);
-            tvadd.setText(tag.getEPC());
-            tvadd.setTextColor(Color.BLACK);
+            tvtype.setText(tag.getType());
+            tvtype.setTextColor(Color.BLACK);
             return vg;
         }
     }

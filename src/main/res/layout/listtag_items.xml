@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-xmlns:android="http://schemas.android.com/apk/res/android"
-android:layout_width="match_parent"
-android:layout_height="60dp"
-android:gravity="left"
-android:orientation="horizontal"
-    >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:gravity="left"
+    android:orientation="horizontal">
+
     <RelativeLayout
-        android:layout_width="wrap_content"
         android:id="@+id/favorite"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content">
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:paddingLeft="10dp"
+            android:paddingTop="6dp"
             android:paddingRight="10dp"
             android:paddingBottom="6dp"
-            android:paddingTop="6dp"
             android:src="@drawable/baseline_star_border_24" />
 
         <ImageView
@@ -26,12 +26,13 @@ android:orientation="horizontal"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:paddingLeft="10dp"
+            android:paddingTop="6dp"
             android:paddingRight="10dp"
             android:paddingBottom="6dp"
-            android:paddingTop="6dp"
-            android:visibility="gone"
-            android:src="@drawable/outline_star_24" />
+            android:src="@drawable/outline_star_24"
+            android:visibility="gone" />
     </RelativeLayout>
+
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -39,60 +40,34 @@ android:orientation="horizontal"
         android:gravity="left"
         android:orientation="horizontal">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/type"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:paddingTop="3dp"
+            android:paddingBottom="2dp" />
+
+        <TextView
+            android:id="@+id/name"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:gravity="left"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:fontFamily="@font/sanfransico"
-                android:paddingTop="6dp"
-                android:textSize="16dp" />
-
-            <TextView
-                android:id="@+id/address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/name"
-                android:paddingBottom="6dp"
-                android:fontFamily="@font/sanfransico"
-                android:textSize="12dp" />
-
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:fontFamily="@font/sanfransico"
+            android:paddingTop="6dp"
+            android:textSize="16dp" />
 
         <TextView
-            android:id="@+id/TvTagType"
+            android:id="@+id/count"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:paddingTop="3dp"
-            android:paddingBottom="2dp" />
-
-        <TextView
-            android:id="@+id/TvTagName"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:paddingTop="3dp"
-            android:paddingBottom="2dp" />
-
-        <TextView
-            android:text="ss"
-            android:id="@+id/TvTagCount"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:gravity="center"
             android:layout_weight="2"
+            android:gravity="center"
             android:paddingTop="3dp"
             android:paddingBottom="2dp" />
 
         <TextView
-            android:id="@+id/TvTagRssi"
+            android:id="@+id/rssi"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="2"
