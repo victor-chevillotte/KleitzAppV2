@@ -16,10 +16,15 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -37,6 +42,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -87,6 +93,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
         }
     };
+
+    private Map<String, Integer> devRssiValues;
+
     private boolean loopFlag = false;
     private ListView LvTags;
     private NeumorphButton  btnStart, btStop, btClear;
@@ -98,7 +107,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private HashMap<String, String> map;
     private ArrayList<HashMap<String, String>> tagList;
     private List<String> tempDatas = new ArrayList<>();
-
+    private Map<String, Integer> ValuessiValues;
     private long mStrTime;
     private ExecutorService executorService;
     private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1,this);
@@ -561,5 +570,172 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return true;
         }
     }
+/*
+    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            uhf.stopScanBTDevices();
+            ScanListActivity.MyTag device = tagList.get(position);
+            String address = device.getAddress().trim();
+            if (!TextUtils.isEmpty(address)) {
+                String deviceAddress = device.getAddress();
+                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && deviceAddress.equals(remoteBTAdd)) {
+                    tryingToConnectAddress = "";
+                    deviceAdapter.notifyDataSetChanged();
+                    Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
+                    Bundle b = new Bundle();
+                    b.putString(BluetoothDevice.EXTRA_DEVICE, deviceAddress);
+                    Bundle b2 = new Bundle();
+                    b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
+                    newIntent.putExtras(b);
+                    newIntent.putExtras(b2);
+                    ConnectDeviceActivity.this.startActivity(newIntent);
+                } else if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
+                    tryingToConnectAddress = "";
+                    disconnecting = true;
+                    deviceAdapter.notifyDataSetChanged();
+                    disconnect(true);
+                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
+                    tryingToConnectAddress = deviceAddress;
+                } else if (tryingToConnectAddress == "" && uhf.getConnectStatus() != ConnectionStatus.CONNECTING) {
+                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
+                    tryingToConnectAddress = deviceAddress;
+                    deviceAdapter.notifyDataSetChanged();
+                    connect(deviceAddress);
+                } else
+                    showToast("Veuillez attendre la fin de la connexion précédente");
+            } else {
+                showToast(R.string.invalid_bluetooth_address);
+            }
+        }
+    };
+*/
 
+    class MyTag {
+        private String epc;
+        private String name;
+        private int rssi;
+        private String detectionNumber;
+        private boolean isFavorites;
+
+        public MyTag() {
+
+        }
+
+        public MyTag(String epc, String name, int rssi, Boolean isFavorites) {
+            this.epc = epc;
+            this.name = name;
+            this.rssi = rssi;
+            this.isFavorites = isFavorites;
+        }
+
+        public String getEPC() {
+            return epc;
+        }
+
+        public Boolean getIsFavorites() {
+            return isFavorites;
+        }
+
+        public void setIsFavorites(boolean isFavorites) {
+            this.isFavorites = isFavorites;
+        }
+
+        public void setEPC(String epc) {
+            this.epc = epc;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    class TagAdapter extends BaseAdapter {
+        Context context;
+        List<ConnectDeviceActivity.MyDevice> tags;
+        LayoutInflater inflater;
+
+        public TagAdapter(Context context, List<ConnectDeviceActivity.MyDevice> devices) {
+            this.context = context;
+            inflater = LayoutInflater.from(context);
+            this.tags = tags;
+        }
+
+        @Override
+        public int getCount() {
+            return tags.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return tags.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewGroup vg;
+
+            if (convertView != null) {
+                vg = (ViewGroup) convertView;
+            } else {
+                vg = (ViewGroup) inflater.inflate(R.layout.device_element, null);
+            }
+            ConnectDeviceActivity.MyDevice device = tags.get(position);
+            final TextView tvadd = ((TextView) vg.findViewById(R.id.address));
+            final TextView tvname = ((TextView) vg.findViewById(R.id.name));
+            final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
+            final ImageView favoritefull = (ImageView) vg.findViewById(R.id.favoritefull);
+            final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
+            if (device.getIsFavorites())
+                favoritefull.setVisibility(View.VISIBLE);
+
+            favorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (device.getIsFavorites()){
+                        device.setIsFavorites(false);
+                        favoritefull.setVisibility(View.GONE);
+                        showToast("Favoris supprimé");
+                        //saveFavoriteTags(device.getAddress(), device.getName(), true);
+                    }
+                    else {
+                        showToast("Favoris ajouté");
+                        device.setIsFavorites(true);
+                        //saveFavoriteTags(device.getAddress(), device.getName(), false);
+                        favoritefull.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+            int rssival = devRssiValues.get(device.getAddress()).intValue();
+            if (rssival != 0) {
+                if (rssival > -60)
+                    tvrssi.setText("A proximité");
+                else
+                    tvrssi.setText("Eloigné");
+                tvrssi.setTextColor(Color.BLACK);
+                tvrssi.setVisibility(View.VISIBLE);
+            } else if (device.getBondState() != BluetoothDevice.BOND_BONDED)
+                tvrssi.setText("Non détecté");
+            tvrssi.setTextColor(Color.BLACK);
+            tvrssi.setVisibility(View.VISIBLE);
+
+            tvname.setText(device.getName());
+            tvname.setTextColor(Color.BLACK);
+            tvadd.setText(device.getAddress());
+            tvadd.setTextColor(Color.BLACK);
+            if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+            } else {
+            }
+            return vg;
+        }
+    }
 }

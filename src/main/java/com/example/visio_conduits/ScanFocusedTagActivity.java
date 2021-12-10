@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,9 +18,15 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -35,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -92,6 +100,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private HashMap<String, String> map;
     private ArrayList<HashMap<String, String>> tagList;
     private List<String> tempDatas = new ArrayList<>();
+
 
     private long mStrTime;
     private ExecutorService executorService;
@@ -341,9 +350,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    /**
-     * 停止识别
-     */
     private void stopInventory() {
         loopFlag = false;
         ConnectionStatus connectionStatus = uhf.getConnectStatus();
@@ -526,5 +532,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             return true;
         }
     }
+
+
 
 }
