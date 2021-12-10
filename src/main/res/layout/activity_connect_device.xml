@@ -62,18 +62,18 @@
         android:scaleType="centerInside"
         android:src="@drawable/baseline_refresh_36"
         app:layout_constraintBottom_toTopOf="@+id/swiperefreshlayout"
-        app:layout_constraintEnd_toStartOf="@+id/btnClearFavorites" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <soup.neumorphism.NeumorphImageButton
-        android:id="@+id/btnClearFavorites"
+        android:id="@+id/info_button"
         style="@style/Widget.Neumorph.ImageButton"
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_marginBottom="2dp"
         android:scaleType="centerInside"
-        android:src="@drawable/baseline_star_border_24"
+        android:src="@drawable/outline_contact_support_24"
         app:layout_constraintBottom_toTopOf="@+id/swiperefreshlayout"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/btnRefresh" />
 
     <TextView
         android:id="@+id/empty"

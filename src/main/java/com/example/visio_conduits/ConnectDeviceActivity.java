@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -158,21 +159,11 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
         scanningDevice = (TextView)  findViewById(R.id.scanningDevice);
-        NeumorphImageButton btnClearFavorites = findViewById(R.id.btnClearFavorites);
-        btnClearFavorites.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FileUtils.clearXmlList();
-                clearDeviceList(true);
-                mEmptyList.setVisibility(View.VISIBLE);
-            }
-
-        });
         NeumorphImageButton btnRefresh = findViewById(R.id.btnRefresh);
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clearDeviceList(false);
+                clearDeviceList();
             }
 
         });
@@ -182,11 +173,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (!mScanning){
-                    clearDeviceList(false);
-                }
-                else
-                    swipeContainer.setRefreshing(false);
+                clearDeviceList();
+                swipeContainer.setRefreshing(false);
             }
         });
 
@@ -279,19 +267,9 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         deviceAdapter.notifyDataSetChanged();
     }
 
-    private void clearDeviceList(boolean favorites) {
+    private void clearDeviceList() {
         scanLeDevice(false);
-        if (favorites && tryingToConnectAddress == "")
-        {
-            for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
-                MyDevice value = iterator.next();
-                if (value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
-                    iterator.remove();
-                }
-            }
-            deviceAdapter.notifyDataSetChanged();
-        }
-        else if (tryingToConnectAddress == "")
+        if (tryingToConnectAddress == "")
         {
             for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {//ici
                 MyDevice value = iterator.next();
@@ -355,19 +333,21 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         }
     }
 
-    public void saveConnectedDevice(String address, String name) {
+    public void saveConnectedDevice(String address, String name, Boolean remove) {
         List<String[]> list = FileUtils.readXmlList();
         for (int k = 0; k < list.size(); k++) {
             if (address.equals(list.get(k)[0])) {
                 list.remove(list.get(k));
-                break;
+                if (remove){
+                    FileUtils.saveXmlList(list);
+                    return;
+                }
+                else
+                    break;
             }
         }
         String[] strArr = new String[]{address, name};
-
         list.add(0, strArr);
-        Log.d("gggg", String.valueOf(list));
-
         FileUtils.saveXmlList(list);
     }
 
@@ -382,7 +362,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         remoteBTName = device.getName();
                         remoteBTAdd = device.getAddress();
                         tryingToConnectAddress = "";
-                        deviceAdapter.notifyDataSetChanged();
                         showToast(R.string.connect_success);
                         Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
                         Bundle b = new Bundle();
@@ -396,8 +375,9 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         scanningDevice.setVisibility(View.GONE);
                         ConnectDeviceActivity.this.startActivity(newIntent);
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
-                            saveConnectedDevice(remoteBTAdd, remoteBTName);
+                            saveConnectedDevice(remoteBTAdd, remoteBTName, false);
                         }
+                        deviceAdapter.notifyDataSetChanged();
                         mIsActiveDisconnect = true;
                     } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                         if (disconnecting) {
@@ -518,6 +498,10 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             return isFavorites;
         }
 
+        public void setIsFavorites(boolean isFavorites) {
+            this.isFavorites = isFavorites;
+        }
+
         public void setAddress(String address) {
             this.address = address;
         }
@@ -577,11 +561,29 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             MyDevice device = devices.get(position);
             final TextView tvadd = ((TextView) vg.findViewById(R.id.address));
             final TextView tvname = ((TextView) vg.findViewById(R.id.name));
-            final TextView tvpaired = (TextView) vg.findViewById(R.id.paired);
             final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
-            final ImageView favorite = (ImageView) vg.findViewById(R.id.favorite);
+            final ImageView favoritefull = (ImageView) vg.findViewById(R.id.favoritefull);
+            final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
             if (device.getIsFavorites())
-                favorite.setVisibility(View.VISIBLE);
+                favoritefull.setVisibility(View.VISIBLE);
+
+            favorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (device.getIsFavorites()){
+                        device.setIsFavorites(false);
+                        favoritefull.setVisibility(View.GONE);
+                        showToast("Favoris supprimé");
+                        saveConnectedDevice(device.getAddress(), device.getName(), true);
+                    }
+                    else {
+                        showToast("Favoris ajouté");
+                        device.setIsFavorites(true);
+                        saveConnectedDevice(device.getAddress(), device.getName(), false);
+                        favoritefull.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
             int rssival = devRssiValues.get(device.getAddress()).intValue();
             if (rssival != 0) {
                 if (rssival > -60)
@@ -605,11 +607,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             tvadd.setText(device.getAddress());
             tvadd.setTextColor(Color.BLACK);
             if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                tvpaired.setText(R.string.paired);
-                tvpaired.setTextColor(Color.RED);
-                tvpaired.setVisibility(View.VISIBLE);
             } else {
-                tvpaired.setVisibility(View.GONE);
             }
             return vg;
         }
