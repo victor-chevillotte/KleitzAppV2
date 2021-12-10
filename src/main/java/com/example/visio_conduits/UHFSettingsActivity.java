@@ -229,9 +229,10 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
 
     Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
+
     int delay = 1*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
     public void saveConnectedDevice(String address, String name) {
-        List<String[]> list = FileUtils.readXmlList();
+        List<String[]> list = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
         for (int k = 0; k < list.size(); k++) {
             if (address.equals(list.get(k)[0])) {
                 list.remove(list.get(k));
@@ -240,7 +241,7 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
         }
         String[] strArr = new String[]{address, name};
         list.add(0, strArr);
-        FileUtils.saveXmlList(list);
+        FileUtils.saveXmlList(list, FAV_TAGS_FILE_NAME);
     }
     @Override
     public void onPause() {

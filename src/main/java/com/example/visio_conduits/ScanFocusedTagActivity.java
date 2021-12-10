@@ -442,11 +442,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         return list;
     }
 
-    /**
-     * 添加EPC到列表中
-     *
-     * @param
-     */
     private void addEPCToList(List<UHFTAGInfo> list) throws ParseException {
         for(int k=0;k<list.size();k++){
             UHFTAGInfo uhftagInfo=list.get(k);
@@ -482,12 +477,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
         adapter.notifyDataSetChanged();
     }
-    /**
-     * 判断EPC是否在列表中
-     *
-     * @param epc 索引
-     * @return
-     */
+
     public int checkIsExist(String epc) {
         if (TextUtils.isEmpty(epc)) {
             return -1;
@@ -495,13 +485,10 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         return binarySearch(tempDatas, epc);
     }
 
-    /**
-     * 二分查找，找到该值在数组中的下标，否则为-1
-     */
+
     static int binarySearch(List<String> array, String src) {
         int left = 0;
         int right = array.size() - 1;
-        // 这里必须是 <=
         while (left <= right) {
             if (compareString(array.get(left), src)) {
                 return left;

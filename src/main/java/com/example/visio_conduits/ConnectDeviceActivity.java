@@ -163,7 +163,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         });
 
         //boolean isFavoritesList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
-        List<String[]> deviceFavoritesList = FileUtils.readXmlList();
+        List<String[]> deviceFavoritesList = FileUtils.readXmlList(FAV_DEVICES_FILE_NAME);
         for (String[] device : deviceFavoritesList) {
             MyDevice myDevice = new MyDevice(device[0], device[1], true);
             addDevice(myDevice, 0);
@@ -240,7 +240,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         if (mScanning)
             scanLeDevice(false);
         if (tryingToConnectAddress == "") {
-            for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {//ici
+            for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
                 MyDevice value = iterator.next();
                 if (!value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
                     iterator.remove();
@@ -312,14 +312,14 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         }
     }
 
-    public void saveConnectedDevice(String address, String name, Boolean remove) {
-        List<String[]> list = FileUtils.readXmlList();
+    public void saveFavoriteDevices(String address, String name, Boolean remove) {
+        List<String[]> list = FileUtils.readXmlList(FAV_DEVICES_FILE_NAME);
         for (int k = 0; k < list.size(); k++) {
             if (address.equals(list.get(k)[0])) {
                 list.remove(list.get(k));
                 if (remove) {
                     Log.e("suppr", String.valueOf(list));
-                    FileUtils.saveXmlList(list);
+                    FileUtils.saveXmlList(list, FAV_DEVICES_FILE_NAME);
                     return;
                 } else
                     break;
@@ -327,7 +327,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         }
         String[] strArr = new String[]{address, name};
         list.add(0, strArr);
-        FileUtils.saveXmlList(list);
+        FileUtils.saveXmlList(list, FAV_DEVICES_FILE_NAME);
     }
 
     class BTStatus implements ConnectionStatusCallback<Object> {
@@ -353,7 +353,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         spinner.setVisibility(View.GONE);
                         scanningDevice.setVisibility(View.GONE);
                         if (!TextUtils.isEmpty(remoteBTAdd)) {
-                            saveConnectedDevice(device.getAddress(), device.getName(), false);
+                            saveFavoriteDevices(device.getAddress(), device.getName(), false);
                         }
                         deviceAdapter.notifyDataSetChanged();
                         mIsActiveDisconnect = true;
@@ -445,7 +445,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         if (!mBtAdapter.isEnabled())
             set_activity_activate_bluetooth();
         else {
-            List<String[]> deviceFavoritesList = FileUtils.readXmlList();
+            List<String[]> deviceFavoritesList = FileUtils.readXmlList(FAV_DEVICES_FILE_NAME);
             for (String[] device : deviceFavoritesList) {
                 MyDevice myDevice = new MyDevice(device[0], device[1], true);
                 addDevice(myDevice, 0);
@@ -551,11 +551,11 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                         device.setIsFavorites(false);
                         favoritefull.setVisibility(View.GONE);
                         showToast("Favoris supprimé");
-                        saveConnectedDevice(device.getAddress(), device.getName(), true);
+                        saveFavoriteDevices(device.getAddress(), device.getName(), true);
                     } else {
                         showToast("Favoris ajouté");
                         device.setIsFavorites(true);
-                        saveConnectedDevice(device.getAddress(), device.getName(), false);
+                        saveFavoriteDevices(device.getAddress(), device.getName(), false);
                         favoritefull.setVisibility(View.VISIBLE);
                     }
                 }

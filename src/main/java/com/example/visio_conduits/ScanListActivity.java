@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 
 import com.example.visio_conduits.utils.DBHelper;
+import com.example.visio_conduits.utils.FileUtils;
 import com.example.visio_conduits.utils.NumberTool;
 import com.example.visio_conduits.utils.Utils;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
@@ -41,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -69,7 +72,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     public static final String TAG_TYPE = "tagType";
     private TextView device_battery;
     private ProgressBar batteryPB;
-    private boolean isScanning = false;
+    private boolean isScanningTags = false;
     private int tagNumber = 0;
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
@@ -94,8 +97,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     };
 
-    private Map<String, Integer> devRssiValues;
-
+    private Map<String, String> devRssiValues;
     private boolean loopFlag = false;
     private ListView LvTags;
     private NeumorphButton  btnStart, btStop, btClear;
@@ -103,9 +105,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
     private long total = 0;
-    private SimpleAdapter adapter;
+    private TagsAdapter tagsAdapter;
     private HashMap<String, String> map;
-    private ArrayList<HashMap<String, String>> tagList;
+    private List<MyTag> tagsList;
     private List<String> tempDatas = new ArrayList<>();
     private Map<String, Integer> ValuessiValues;
     private long mStrTime;
@@ -114,14 +116,13 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     private ConnectStatus mConnectStatus = new ConnectStatus();
 
-    //--------------------------------------获取 解析数据-------------------------------------------------
-    final int FLAG_START = 0;//开始
-    final int FLAG_STOP = 1;//停止
+    final int FLAG_START = 0;
+    final int FLAG_STOP = 1;
     final int FLAG_UHFINFO_LIST = 5;
-    final int FLAG_UPDATE_TIME = 3; // 更新时间
-    final int FLAG_GET_MODE = 4; // 获取模式
-    final int FLAG_SUCCESS = 10;//成功
-    final int FLAG_FAIL = 11;//失败
+    final int FLAG_UPDATE_TIME = 3;
+    final int FLAG_GET_MODE = 4;
+    final int FLAG_SUCCESS = 10;
+    final int FLAG_FAIL = 11;
     final int FLAG_SET_SUCC = 12;
     final int FLAG_SET_FAIL = 13;
 
@@ -201,10 +202,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             finish();
         remoteBTAdd = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
+        tagsList = new ArrayList<>();
+        tagsAdapter = new TagsAdapter(this, tagsList);
+        devRssiValues = new HashMap<String, String>();
         initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
-        //checkLocationEnable(); à mettre en place ulterieurement
         Utils.initSound(getApplicationContext());
     }
 
@@ -243,6 +246,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         LvTags = (ListView) findViewById(R.id.LvTags);
+        LvTags.setAdapter(tagsAdapter);
+        LvTags.setOnItemClickListener(mTagsListener);
         btnStart = findViewById(R.id.btnStart);
         btStop =  findViewById(R.id.btStop);
         btStop.setShapeType(1);
@@ -254,29 +259,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btnStart.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
-        tagList = new ArrayList<HashMap<String, String>>();
-        adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
-                new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_NAME, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
-                new int[]{R.id.TvTagType, R.id.TvTagName, R.id.TvTagCount, R.id.TvTagRssi});
-        LvTags.setAdapter(adapter);
-        LvTags.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Intent newIntent = new Intent(ScanListActivity.this, ScanFocusedTagActivity.class);
-                Bundle b = new Bundle();
-                b.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTAdd);
-                Bundle b2 = new Bundle();
-                b2.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTName);
-                Bundle b3 = new Bundle();
-                b2.putString(TAG_EPC, tagList.get(position).get(ScanListActivity.TAG_EPC));
-                newIntent.putExtras(b);
-                newIntent.putExtras(b2);
-                newIntent.putExtras(b3);
-                ScanListActivity.this.startActivity(newIntent);
-            }
-        });
         clearData();
+        List<String[]> deviceFavoritesList = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
+        for (String[] device : deviceFavoritesList) {
+            MyTag favoriteTag = new MyTag(device[0], device[1], device[2], true);
+            addTag(favoriteTag, "0");
+        }
     }
 
     private void setViewsEnabled(int enabled) {
@@ -333,12 +321,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 clearData();
                 break;
             case R.id.btnStart:
-                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && !isScanning) {
+                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && !isScanningTags) {
                     startThread();
                 }
                 break;
             case R.id.btStop:
-                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && isScanning) {
+                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && isScanningTags) {
                     stopInventory();
                 }
                 break;
@@ -351,15 +339,32 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         tv_count.setText("0");
         tv_total.setText("0");
         tv_time.setText("0s");
-        tagList.clear();
+
+            for (Iterator<MyTag> iterator = tagsList.iterator(); iterator.hasNext(); ) {
+                MyTag tag = iterator.next();
+                if (!tag.getIsFavorites()) {
+                    iterator.remove();
+                }
+            }
+            tagsAdapter.notifyDataSetChanged();
+
+        Collections.sort(tagsList, new Comparator<MyTag>() {
+            @Override
+            public int compare(MyTag tag1, MyTag tag2) {
+                if (tag1.getIsFavorites() && tag2.getIsFavorites()) {
+                    String s1 = tag1.getName();
+                    String s2 = tag2.getName();
+                    return s1.compareToIgnoreCase(s2);
+                } else
+                    return 0;
+            }
+        });
+
         tempDatas.clear();
         total = 0;
-        adapter.notifyDataSetChanged();
+        tagsAdapter.notifyDataSetChanged();
     }
 
-    /**
-     * 停止识别
-     */
     private void stopInventory() {
         loopFlag = false;
         ConnectionStatus connectionStatus = uhf.getConnectStatus();
@@ -370,7 +375,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         } else {
             msg.arg1 = FLAG_FAIL;
         }
-        isScanning = false;
+        isScanningTags = false;
         handler.sendMessage(msg);
     }
 
@@ -390,7 +395,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                 loopFlag = false;
-                isScanning = false;
+                isScanningTags = false;
                 btStop.setShapeType(0);
                 setViewsEnabled(1);
             }
@@ -413,10 +418,10 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     }
 
     public synchronized void startThread() {
-        if (isScanning) {
+        if (isScanningTags) {
             return;
         }
-        isScanning = true;
+        isScanningTags = true;
         new TagThread().start();
     }
 
@@ -426,7 +431,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             Message msg = handler.obtainMessage(FLAG_START);
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
-                isScanning = true;
+                isScanningTags = true;
                 mStrTime = System.currentTimeMillis();
                 msg.arg1 = FLAG_SUCCESS;
             } else {
@@ -456,76 +461,37 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         List<UHFTAGInfo> list = uhf.readTagFromBufferList_EpcTidUser();
         return list;
     }
-
-    /**
-     * 添加EPC到列表中
-     *
-     * @param
-     */
+    
+    public void saveFavoriteTags(String epc, String name, String type, Boolean remove) {
+        List<String[]> list = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
+        for (int k = 0; k < list.size(); k++) {
+            if (epc.equals(list.get(k)[0])) {
+                list.remove(list.get(k));
+                if (remove) {
+                    FileUtils.saveXmlList(list, FAV_TAGS_FILE_NAME);
+                    return;
+                } else
+                    break;
+            }
+        }
+        String[] strArr = new String[]{epc, name, type};
+        list.add(0, strArr);
+        FileUtils.saveXmlList(list, FAV_TAGS_FILE_NAME);
+    }
 
     private void addEPCToList(List<UHFTAGInfo> list) {
         for(int k=0;k<list.size();k++){
             UHFTAGInfo uhftagInfo=list.get(k);
             if (!TextUtils.isEmpty(uhftagInfo.getEPC())) {
-                int index = checkIsExist(uhftagInfo.getEPC());
-
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(uhftagInfo.getEPC());
-
-                map = new HashMap<String, String>();
-                String TagEPC = uhftagInfo.getEPC();
-                String TagType = "";
-                //if (!TagEPC.startsWith("AAAA"))/:block other tags no tours
-                //    return;
-                if (TagEPC.startsWith("AAAAAA"))
-                    TagType = "Lumière";
-                else if (TagEPC.startsWith("AAAAEC"))
-                    TagType = "Chauffage Elec";
-                else if (TagEPC.startsWith("VC2021EP"))
-                    TagType = "Prise Elec";
-                else if (TagEPC.startsWith("VC2021EAR"))
-                    TagType = "Robinet Eau";
-                else if (TagEPC.startsWith("VC2021GR"))
-                    TagType = "Robinet Gaz";
-                map.put(ScanListActivity.TAG_TYPE, TagType);
-                map.put(ScanListActivity.TAG_EPC, uhftagInfo.getEPC());
-                map.put(ScanListActivity.TAG_DATA, stringBuilder.toString());
-                map.put(ScanListActivity.TAG_COUNT, String.valueOf(1));
-                map.put(ScanListActivity.TAG_RSSI, uhftagInfo.getRssi());
-                // getAppContext().uhfQueue.offer(epc + "\t 1");
-                if (index == -1) {
-                    Cursor cursor = mydb.selectATag(uhftagInfo.getEPC());
-                    if (cursor.moveToFirst() || cursor.getCount() != 0) {
-                        @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("name"));
-                        @SuppressLint("Range") String room = cursor.getString(cursor.getColumnIndex("room"));
-                        @SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
-                        map.put(ScanListActivity.TAG_NAME, name + " " + room);
-                    }
-                    else {
-
-                        map.put(ScanListActivity.TAG_NAME, String.valueOf(tagNumber));
-                    }
-                    tagList.add(map);
-                    tagNumber++;
-                    tempDatas.add(uhftagInfo.getEPC());
-                    tv_count.setText("" + adapter.getCount());
-                } else {
-                    map.put(ScanListActivity.TAG_NAME, String.valueOf(index));
-                    int tagCount = Integer.parseInt(tagList.get(index).get(ScanListActivity.TAG_COUNT), 10) + 1;
-                    map.put(ScanListActivity.TAG_COUNT, String.valueOf(tagCount));
-                    tagList.set(index, map);
-                }
-                tv_total.setText(String.valueOf(++total));
+                MyTag newTag = new MyTag(uhftagInfo.getEPC(), "","", false);
+                addTag(newTag, uhftagInfo.getRssi());
             }
         }
-        adapter.notifyDataSetChanged();
+        tagsAdapter.notifyDataSetChanged();
     }
-    /**
-     * 判断EPC是否在列表中
-     *
-     * @param epc 索引
-     * @return
-     */
+
     public int checkIsExist(String epc) {
         if (TextUtils.isEmpty(epc)) {
             return -1;
@@ -533,9 +499,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         return binarySearch(tempDatas, epc);
     }
 
-    /**
-     * 二分查找，找到该值在数组中的下标，否则为-1
-     */
     static int binarySearch(List<String> array, String src) {
         int left = 0;
         int right = array.size() - 1;
@@ -570,62 +533,117 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return true;
         }
     }
-/*
-    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
+
+    private void addTag(MyTag tag, String rssi) {
+        boolean tagFound = false;
+
+        for (MyTag listTags : tagsList) {
+            if (listTags.getEPC().equals(tag.getEPC())) {
+                tagFound = true;
+                break;
+            }
+        }
+        devRssiValues.put(tag.getEPC(), rssi);
+        if (!tagFound) {
+            //mEmptyList.setVisibility(View.GONE);
+            //if (!TagEPC.startsWith("AAAA"))/:block other tags no tours
+            //    return;
+            if (tag.getEPC().startsWith("AAAAAA"))
+                tag.setType("Lumière");
+            else if (tag.getEPC().startsWith("AAAAEC"))
+                tag.setType("Chauffage Elec");
+            else if (tag.getEPC().startsWith("VC2021EP"))
+                tag.setType("Prise Elec");
+            else if (tag.getEPC().startsWith("VC2021EAR"))
+                tag.setType("Robinet Eau");
+            else if (tag.getEPC().startsWith("VC2021GR"))
+                tag.setType("Robinet Gaz");
+            Cursor cursor = mydb.selectATag(tag.getEPC());
+            if (cursor.moveToFirst() || cursor.getCount() != 0) {
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("name"));
+                @SuppressLint("Range") String room = cursor.getString(cursor.getColumnIndex("room"));
+                @SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
+                tag.setName(name + " " + room);
+            }
+            else {
+                tagNumber++;
+                tag.setName(String.valueOf(tagNumber));
+            }
+        }
+        tag.setNbrDetections(tag.getNbrDetections() + 1);
+        tagsList.add(tag);
+
+        // getAppContext().uhfQueue.offer(epc + "\t 1");
+
+        tv_count.setText("" + tagsAdapter.getCount());
+        tv_total.setText(String.valueOf(++total));
+        tagsAdapter.notifyDataSetChanged();
+    }
+
+    private void clearTagList() {
+       /* if (isScanningTags)
+            scanLeDevice(false);
+        if (tryingToConnectAddress == "") {
+            for (Iterator<ConnectDeviceActivity.MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {//ici
+                ConnectDeviceActivity.MyDevice value = iterator.next();
+                if (!value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
+                    iterator.remove();
+                }
+            }
+            deviceAdapter.notifyDataSetChanged();
+            newDevicesListView.setVisibility(View.VISIBLE);
+        }
+        Collections.sort(deviceList, new Comparator<ConnectDeviceActivity.MyDevice>() {
+            @Override
+            public int compare(ConnectDeviceActivity.MyDevice device1, ConnectDeviceActivity.MyDevice device2) {
+                if (device1.getIsFavorites() && device2.getIsFavorites()) {
+                    String s1 = device1.getName();
+                    String s2 = device2.getName();
+                    return s1.compareToIgnoreCase(s2);
+                } else
+                    return 0;
+            }
+        });
+        scanLeDevice(true);*/
+    }
+
+    private AdapterView.OnItemClickListener mTagsListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            uhf.stopScanBTDevices();
-            ScanListActivity.MyTag device = tagList.get(position);
-            String address = device.getAddress().trim();
-            if (!TextUtils.isEmpty(address)) {
-                String deviceAddress = device.getAddress();
-                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && deviceAddress.equals(remoteBTAdd)) {
-                    tryingToConnectAddress = "";
-                    deviceAdapter.notifyDataSetChanged();
-                    Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
-                    Bundle b = new Bundle();
-                    b.putString(BluetoothDevice.EXTRA_DEVICE, deviceAddress);
-                    Bundle b2 = new Bundle();
-                    b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
-                    newIntent.putExtras(b);
-                    newIntent.putExtras(b2);
-                    ConnectDeviceActivity.this.startActivity(newIntent);
-                } else if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-                    tryingToConnectAddress = "";
-                    disconnecting = true;
-                    deviceAdapter.notifyDataSetChanged();
-                    disconnect(true);
-                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-                    tryingToConnectAddress = deviceAddress;
-                } else if (tryingToConnectAddress == "" && uhf.getConnectStatus() != ConnectionStatus.CONNECTING) {
-                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-                    tryingToConnectAddress = deviceAddress;
-                    deviceAdapter.notifyDataSetChanged();
-                    connect(deviceAddress);
-                } else
-                    showToast("Veuillez attendre la fin de la connexion précédente");
+            MyTag tag = tagsList.get(position);
+            if (!TextUtils.isEmpty(tag.getEPC())) {
+                Intent newIntent = new Intent(ScanListActivity.this, ScanFocusedTagActivity.class);
+                Bundle b = new Bundle();
+                b.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTAdd);
+                Bundle b2 = new Bundle();
+                b2.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTName);
+                Bundle b3 = new Bundle();
+                b2.putString(TAG_EPC, tag.getEPC());
+                newIntent.putExtras(b);
+                newIntent.putExtras(b2);
+                newIntent.putExtras(b3);
+                ScanListActivity.this.startActivity(newIntent);
             } else {
                 showToast(R.string.invalid_bluetooth_address);
             }
         }
     };
-*/
+
 
     class MyTag {
         private String epc;
         private String name;
-        private int rssi;
+        private String rssi;
+        private String type;
+        private int nbrDetections;
         private String detectionNumber;
         private boolean isFavorites;
 
-        public MyTag() {
-
-        }
-
-        public MyTag(String epc, String name, int rssi, Boolean isFavorites) {
+        public MyTag(String epc, String name, String type, Boolean isFavorites) {
             this.epc = epc;
             this.name = name;
-            this.rssi = rssi;
+            this.type = type;
+            this.nbrDetections = 0;
             this.isFavorites = isFavorites;
         }
 
@@ -637,8 +655,24 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return isFavorites;
         }
 
+        public void setNbrDetections(int nbrDetections) {
+            this.nbrDetections = nbrDetections; ;
+        }
+
+        public int getNbrDetections() {
+            return nbrDetections;
+        }
+
         public void setIsFavorites(boolean isFavorites) {
             this.isFavorites = isFavorites;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
         }
 
         public void setEPC(String epc) {
@@ -654,12 +688,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    class TagAdapter extends BaseAdapter {
+    class TagsAdapter extends BaseAdapter {
         Context context;
-        List<ConnectDeviceActivity.MyDevice> tags;
+        List<MyTag> tags;
         LayoutInflater inflater;
 
-        public TagAdapter(Context context, List<ConnectDeviceActivity.MyDevice> devices) {
+        public TagsAdapter(Context context, List<MyTag> tags) {
             this.context = context;
             inflater = LayoutInflater.from(context);
             this.tags = tags;
@@ -689,52 +723,41 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             } else {
                 vg = (ViewGroup) inflater.inflate(R.layout.device_element, null);
             }
-            ConnectDeviceActivity.MyDevice device = tags.get(position);
+            MyTag tag = tags.get(position);
             final TextView tvadd = ((TextView) vg.findViewById(R.id.address));
             final TextView tvname = ((TextView) vg.findViewById(R.id.name));
             final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
             final ImageView favoritefull = (ImageView) vg.findViewById(R.id.favoritefull);
             final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
-            if (device.getIsFavorites())
+            if (tag.getIsFavorites())
                 favoritefull.setVisibility(View.VISIBLE);
 
             favorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (device.getIsFavorites()){
-                        device.setIsFavorites(false);
+                    if (tag.getIsFavorites()){
+                        tag.setIsFavorites(false);
                         favoritefull.setVisibility(View.GONE);
                         showToast("Favoris supprimé");
-                        //saveFavoriteTags(device.getAddress(), device.getName(), true);
+                        saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), true);
                     }
                     else {
                         showToast("Favoris ajouté");
-                        device.setIsFavorites(true);
-                        //saveFavoriteTags(device.getAddress(), device.getName(), false);
+                        tag.setIsFavorites(true);
+                        saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(),false);
                         favoritefull.setVisibility(View.VISIBLE);
                     }
                 }
             });
-            int rssival = devRssiValues.get(device.getAddress()).intValue();
-            if (rssival != 0) {
-                if (rssival > -60)
-                    tvrssi.setText("A proximité");
-                else
-                    tvrssi.setText("Eloigné");
-                tvrssi.setTextColor(Color.BLACK);
-                tvrssi.setVisibility(View.VISIBLE);
-            } else if (device.getBondState() != BluetoothDevice.BOND_BONDED)
-                tvrssi.setText("Non détecté");
+            String rssival = devRssiValues.get(tag.getEPC());
+            tvrssi.setText(rssival);
             tvrssi.setTextColor(Color.BLACK);
             tvrssi.setVisibility(View.VISIBLE);
 
-            tvname.setText(device.getName());
+            tvname.setText(tag.getName());
             tvname.setTextColor(Color.BLACK);
-            tvadd.setText(device.getAddress());
+            tvadd.setText(tag.getEPC());
             tvadd.setTextColor(Color.BLACK);
-            if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-            } else {
-            }
             return vg;
         }
     }

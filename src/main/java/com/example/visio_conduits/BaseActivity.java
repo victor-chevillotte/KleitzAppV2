@@ -56,6 +56,10 @@ public class BaseActivity extends AppCompatActivity {
     private long lastTouchTime = System.currentTimeMillis(); // 上次接触屏幕操作的时间戳
     private static final int RUNNING_DISCONNECT_TIMER = 10;
 
+    public static final String FAV_TAGS_FILE_NAME = "BTFavTagList.xml";
+    public static final String FAV_DEVICES_FILE_NAME = "BTFavDeviceList.xml";
+
+
     public void showToast(String text) {
         if (toast != null) {
             toast.cancel();

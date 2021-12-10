@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 
+import com.example.visio_conduits.BaseActivity;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlSerializer;
 
@@ -18,15 +20,15 @@ import java.util.List;
  * Created by Administrator on 2017-5-22.
  */
 
-public class FileUtils {
+public class FileUtils extends BaseActivity {
     static String TAG = "FileUtils";
     public static String ADDR = "btaddress";
     public static String NAME = "btname";
-    public static String filePath = Environment.getExternalStorageDirectory() + File.separator + "BTDeviceList.xml";
+    public static String TYPE = "tagType";
 
-    public static void saveXmlList(List<String[]> data) {
+    public static void saveXmlList(List<String[]> data, String fileName) {
         try {
-            File file = new File(filePath);
+            File file = new File(Environment.getExternalStorageDirectory() + File.separator + fileName);
             if (file.exists()) {
                 file.delete();
             }
@@ -47,7 +49,13 @@ public class FileUtils {
                 serializer.startTag(null, NAME);
                 serializer.text(data.get(i)[1]);
                 serializer.endTag(null, NAME);
-                serializer.endTag(null, "bt");
+                serializer.startTag(null, TYPE);
+                if (fileName.equals(FAV_TAGS_FILE_NAME))
+                {
+                    serializer.text(data.get(i)[2]);
+                    serializer.endTag(null, TYPE);
+                    serializer.endTag(null, "bt");
+                }
             }
             serializer.endTag(null, "root");
             serializer.endDocument();
@@ -57,10 +65,10 @@ public class FileUtils {
         }
     }
 
-    public static ArrayList<String[]> readXmlList() {
+    public static ArrayList<String[]> readXmlList(String fileName) {
         ArrayList<String[]> list = new ArrayList<String[]>();
         try {
-            File path = new File(filePath);
+            File path = new File(Environment.getExternalStorageDirectory() + File.separator + fileName);
             if (!path.exists()) {
                 return list;
             }
@@ -73,6 +81,7 @@ public class FileUtils {
             int eventType = parser.getEventType(); // 获得事件类型
             String addr = null;
             String name = null;
+            String type = null;
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 String tagName = parser.getName(); // 获得当前节点的名称
                 switch (eventType) {
@@ -83,15 +92,18 @@ public class FileUtils {
                             addr = parser.nextText();
                         } else if (NAME.equals(tagName)) { // <age>
                             name = parser.nextText();
+                        } else if (TYPE.equals(tagName)) { // <age>
+                            type = parser.nextText();
                         }
                         break;
                     case XmlPullParser.END_TAG: // </persons>
                         if ("bt".equals(tagName)) {
                             Log.i(TAG, "addr---" + addr);
                             Log.i(TAG, "name---" + name);
-                            String[] str = new String[2];
+                            String[] str = new String[3];
                             str[0] = addr;
                             str[1] = name;
+                            str[2] = type;
                             list.add(str);
                         }
                         break;
@@ -107,10 +119,10 @@ public class FileUtils {
         return list;
     }
 
-    public static void clearXmlList() {
-        List<String[]> list = readXmlList();
+    public static void clearXmlList(String fileName) {
+        List<String[]> list = readXmlList(fileName);
         list.clear();
-        saveXmlList(list);
+        saveXmlList(list, fileName);
     }
 
     public static void writeFile(String fileName, String data, boolean append) {
