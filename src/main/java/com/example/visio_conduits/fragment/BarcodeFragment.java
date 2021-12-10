@@ -1,4 +1,4 @@
-package com.example.uhf_bt.fragment;
+package com.example.visio_conduits.fragment;
 
 
 import android.os.Bundle;
@@ -13,9 +13,9 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.uhf_bt.ScanListActivity;
-import com.example.uhf_bt.R;
-import com.example.uhf_bt.utils.Utils;
+import com.example.visio_conduits.ScanListActivity;
+import com.example.visio_conduits.R;
+import com.example.visio_conduits.utils.Utils;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
 

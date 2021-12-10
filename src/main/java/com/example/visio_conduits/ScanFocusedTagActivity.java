@@ -1,5 +1,6 @@
-package com.example.uhf_bt;
+package com.example.visio_conduits;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -22,8 +23,8 @@ import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.example.uhf_bt.utils.DBHelper;
-import com.example.uhf_bt.utils.Utils;
+import com.example.visio_conduits.utils.DBHelper;
+import com.example.visio_conduits.utils.Utils;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
@@ -57,6 +58,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public static final String TAG_LEN = "tagLen";
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
+    public static final String TAG_TYPE = "tagType";
     private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1,this);
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
@@ -161,6 +163,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        checkReadWritePermission();
+        checkLocationEnable();
         uhf.setKeyEventCallback(new KeyEventCallback() {
             @Override
             public void onKeyDown(int keycode) {
@@ -177,7 +181,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 stopInventory();
             }
         });
-        
+
         addConnectStatusNotice(mConnectStatus);
         fa = this;
         if (uhf.getConnectStatus() == ConnectionStatus.DISCONNECTED)
@@ -202,6 +206,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         super.onDestroy();
     }
 
+    @SuppressLint("Range")
     private void initUI() {
         setContentView(R.layout.activity_uhf_scan_focused_tag);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -225,10 +230,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
-                new String[]{ScanFocusedTagActivity.TAG_DATA, ScanFocusedTagActivity.TAG_LEN, ScanFocusedTagActivity.TAG_COUNT, ScanFocusedTagActivity.TAG_RSSI},
-                new int[]{R.id.TvTagUii, R.id.TvTagLen, R.id.TvTagCount,
-                        R.id.TvTagRssi});
-
+                new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_DATA, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
+                new int[]{R.id.TvTagType, R.id.TvTagUii, R.id.TvTagCount, R.id.TvTagRssi});
         nameTag = (Button) findViewById(R.id.InventoryFocusAddModifyTag);
         Cursor cursor = mydb.selectATag(focusedTagEPC);
         if (cursor.moveToFirst() && cursor.getCount() != 0) {
@@ -523,42 +526,5 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             return true;
         }
     }
-    /* A mettre en place ulterieurement
-    private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 100;
-    private static final int REQUEST_ACTION_LOCATION_SETTINGS = 3;
-
-    private void checkLocationEnable() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
-            }
-        }
-        if (!isLocationEnabled()) {
-            Utils.alert(this, R.string.get_location_permission, getString(R.string.tips_open_the_ocation_permission), R.drawable.webtext, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS);
-                }
-            });
-        }
-    }
-
-    private boolean isLocationEnabled() {
-        int locationMode = 0;
-        String locationProviders;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try {
-                locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
-            } catch (Settings.SettingNotFoundException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-        } else {
-            locationProviders = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return !TextUtils.isEmpty(locationProviders);
-        }
-    }*/
 
 }

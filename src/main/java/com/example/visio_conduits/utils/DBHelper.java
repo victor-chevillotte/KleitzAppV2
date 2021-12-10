@@ -1,4 +1,4 @@
-package com.example.uhf_bt.utils;
+package com.example.visio_conduits.utils;
 
 import android.app.Activity;
 import android.content.ContentValues;

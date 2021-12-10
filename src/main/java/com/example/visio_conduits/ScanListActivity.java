@@ -1,50 +1,30 @@
-package com.example.uhf_bt;
+package com.example.visio_conduits;
 
-import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 
-import com.example.uhf_bt.utils.FileUtils;
-import com.example.uhf_bt.utils.NumberTool;
-import com.example.uhf_bt.utils.Utils;
-import com.rscja.deviceapi.RFIDWithUHFUART;
+import com.example.visio_conduits.utils.NumberTool;
+import com.example.visio_conduits.utils.Utils;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
@@ -74,6 +54,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     public static final String TAG_LEN = "tagLen";
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
+    public static final String TAG_TYPE = "tagType";
     private TextView device_battery;
     private ProgressBar batteryPB;
     private boolean isScanning = false;
@@ -179,6 +160,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        checkReadWritePermission();
+        checkLocationEnable();
         uhf.setKeyEventCallback(new KeyEventCallback() {
             @Override
             public void onKeyDown(int keycode) {
@@ -256,9 +239,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
-                new String[]{ScanListActivity.TAG_DATA, ScanListActivity.TAG_LEN, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
-                new int[]{R.id.TvTagUii, R.id.TvTagLen, R.id.TvTagCount,
-                        R.id.TvTagRssi});
+                new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_DATA, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
+                new int[]{R.id.TvTagType, R.id.TvTagUii, R.id.TvTagCount, R.id.TvTagRssi});
         LvTags.setAdapter(adapter);
         LvTags.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -474,6 +456,19 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 stringBuilder.append(uhftagInfo.getEPC());
 
                 map = new HashMap<String, String>();
+                String TagEPC = uhftagInfo.getEPC();
+                if (!TagEPC.startsWith("VC2021"))
+                    return;
+                if (!TagEPC.startsWith("VC2021EL"))
+                    map.put(ScanListActivity.TAG_TYPE, "Lumière");
+                else if (!TagEPC.startsWith("VC2021EC"))
+                    map.put(ScanListActivity.TAG_TYPE, "Chauffage Elec");
+                else if (!TagEPC.startsWith("VC2021EP"))
+                    map.put(ScanListActivity.TAG_TYPE, "Prise Elec");
+                else if (!TagEPC.startsWith("VC2021EAR"))
+                    map.put(ScanListActivity.TAG_TYPE, "Robinet Eau");
+                else if (!TagEPC.startsWith("VC2021GR"))
+                    map.put(ScanListActivity.TAG_TYPE, "Robinet Gaz");
                 map.put(ScanListActivity.TAG_EPC, uhftagInfo.getEPC());
                 map.put(ScanListActivity.TAG_DATA, stringBuilder.toString());
                 map.put(ScanListActivity.TAG_COUNT, String.valueOf(1));
@@ -543,42 +538,5 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return true;
         }
     }
-    /* A mettre en place ulterieurement
-    private static final int ACCESS_FINE_LOCATION_PERMISSION_REQUEST = 100;
-    private static final int REQUEST_ACTION_LOCATION_SETTINGS = 3;
-
-    private void checkLocationEnable() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
-            }
-        }
-        if (!isLocationEnabled()) {
-            Utils.alert(this, R.string.get_location_permission, getString(R.string.tips_open_the_ocation_permission), R.drawable.webtext, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS);
-                }
-            });
-        }
-    }
-
-    private boolean isLocationEnabled() {
-        int locationMode = 0;
-        String locationProviders;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try {
-                locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
-            } catch (Settings.SettingNotFoundException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-        } else {
-            locationProviders = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return !TextUtils.isEmpty(locationProviders);
-        }
-    }*/
 
 }

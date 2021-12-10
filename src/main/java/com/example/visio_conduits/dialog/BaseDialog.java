@@ -1,4 +1,4 @@
-package com.example.uhf_bt.dialog;
+package com.example.visio_conduits.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -11,8 +11,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import com.example.uhf_bt.R;
-import com.example.uhf_bt.tool.SystemTool;
+import com.example.visio_conduits.R;
+import com.example.visio_conduits.tool.SystemTool;
 
 import androidx.annotation.DrawableRes;
 

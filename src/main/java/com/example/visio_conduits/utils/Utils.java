@@ -1,4 +1,4 @@
-package com.example.uhf_bt.utils;
+package com.example.visio_conduits.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -9,7 +9,7 @@ import android.media.SoundPool;
 import android.util.Log;
 import android.view.View;
 
-import com.example.uhf_bt.R;
+import com.example.visio_conduits.R;
 import com.rscja.deviceapi.DeviceConfiguration;
 import com.rscja.utility.StringUtility;
 

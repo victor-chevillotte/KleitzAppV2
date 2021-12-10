@@ -1,7 +1,6 @@
-package com.example.uhf_bt;
+package com.example.visio_conduits;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -16,7 +15,7 @@ import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.uhf_bt.utils.DBHelper;
+import com.example.visio_conduits.utils.DBHelper;
 
 public class AddTagNameActivity extends BaseActivity{
 

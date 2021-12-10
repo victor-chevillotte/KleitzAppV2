@@ -1,19 +1,14 @@
-package com.example.uhf_bt;
+package com.example.visio_conduits;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Process;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -21,13 +16,11 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.uhf_bt.utils.FileUtils;
-import com.example.uhf_bt.utils.SPUtils;
-import com.example.uhf_bt.utils.Utils;
+import com.example.visio_conduits.utils.FileUtils;
+import com.example.visio_conduits.utils.SPUtils;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
@@ -156,6 +149,8 @@ public class UHFSettingsActivity extends BaseActivity implements View.OnClickLis
   @Override
   protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+      checkReadWritePermission();
+      checkLocationEnable();
       faset = this;
       setContentView(R.layout.activity_uhf_settings);
       initUI();

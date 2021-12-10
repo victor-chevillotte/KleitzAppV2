@@ -1,4 +1,4 @@
-package com.example.uhf_bt.filebrowser;
+package com.example.visio_conduits.filebrowser;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -12,7 +12,7 @@ public class IconifiedTextView extends LinearLayout {
     private TextView mText = null;
     private ImageView mIcon = null;
 
-    public IconifiedTextView(Context context, com.example.uhf_bt.filebrowser.IconifiedText aIconifiedText) {
+    public IconifiedTextView(Context context, com.example.visio_conduits.filebrowser.IconifiedText aIconifiedText) {
         super(context);
         // 设置布局方式
         this.setOrientation(HORIZONTAL);

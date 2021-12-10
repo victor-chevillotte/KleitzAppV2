@@ -1,4 +1,4 @@
-package com.example.uhf_bt;
+package com.example.visio_conduits;
 
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -20,7 +20,7 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
-import com.example.uhf_bt.filebrowser.FileManagerActivity;
+import com.example.visio_conduits.filebrowser.FileManagerActivity;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 
@@ -84,6 +84,8 @@ public class UHFUpdateDeviceActivity extends BaseActivity implements View.OnClic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         faup = this;
+        checkReadWritePermission();
+        checkLocationEnable();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_uhfupdatedevice);
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);

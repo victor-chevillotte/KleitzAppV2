@@ -1,4 +1,4 @@
-package com.example.uhf_bt.filebrowser;
+package com.example.visio_conduits.filebrowser;
 
 import android.content.Context;
 import android.view.View;
@@ -12,19 +12,19 @@ import java.util.List;
 public class IconifiedTextListAdapter extends BaseAdapter {
     private Context mContext = null;
     // 用于显示文件的列表
-    private List<com.example.uhf_bt.filebrowser.IconifiedText> mItems = new ArrayList<com.example.uhf_bt.filebrowser.IconifiedText>();
+    private List<com.example.visio_conduits.filebrowser.IconifiedText> mItems = new ArrayList<com.example.visio_conduits.filebrowser.IconifiedText>();
 
     public IconifiedTextListAdapter(Context context) {
         mContext = context;
     }
 
     // 添加一项（一个文件）
-    public void addItem(com.example.uhf_bt.filebrowser.IconifiedText it) {
+    public void addItem(com.example.visio_conduits.filebrowser.IconifiedText it) {
         mItems.add(it);
     }
 
     // 设置文件列表
-    public void setListItems(List<com.example.uhf_bt.filebrowser.IconifiedText> lit) {
+    public void setListItems(List<com.example.visio_conduits.filebrowser.IconifiedText> lit) {
         mItems = lit;
     }
 
@@ -55,11 +55,11 @@ public class IconifiedTextListAdapter extends BaseAdapter {
 
     // 重写getView方法来返回一个IconifiedTextView（我们自定义的文件布局）对象
     public View getView(int position, View convertView, ViewGroup parent) {
-        com.example.uhf_bt.filebrowser.IconifiedTextView btv;
+        com.example.visio_conduits.filebrowser.IconifiedTextView btv;
         if (convertView == null) {
-            btv = new com.example.uhf_bt.filebrowser.IconifiedTextView(mContext, mItems.get(position));
+            btv = new com.example.visio_conduits.filebrowser.IconifiedTextView(mContext, mItems.get(position));
         } else {
-            btv = (com.example.uhf_bt.filebrowser.IconifiedTextView) convertView;
+            btv = (com.example.visio_conduits.filebrowser.IconifiedTextView) convertView;
             btv.setText(mItems.get(position).getText());
             btv.setIcon(mItems.get(position).getIcon());
         }

@@ -1,4 +1,4 @@
-package com.example.uhf_bt.filebrowser;
+package com.example.visio_conduits.filebrowser;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -16,7 +16,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
-import com.example.uhf_bt.R;
+import com.example.visio_conduits.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class FileManagerActivity extends ListActivity {
 
     public static String FILE_PATH_ACTION = "com.handset.download.filepath";
 
-    private List<com.example.uhf_bt.filebrowser.IconifiedText> directoryEntries = new ArrayList<com.example.uhf_bt.filebrowser.IconifiedText>();
+    private List<com.example.visio_conduits.filebrowser.IconifiedText> directoryEntries = new ArrayList<com.example.visio_conduits.filebrowser.IconifiedText>();
     private File currentDirectory = new File("/");
     private File myTmpFile = null;
     private int myTmpOpt = -1;

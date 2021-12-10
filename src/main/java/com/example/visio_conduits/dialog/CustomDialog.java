@@ -1,4 +1,4 @@
-package com.example.uhf_bt.dialog;
+package com.example.visio_conduits.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -10,8 +10,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.uhf_bt.R;
-import com.example.uhf_bt.tool.ToastUtils;
+import com.example.visio_conduits.R;
+import com.example.visio_conduits.tool.ToastUtils;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
