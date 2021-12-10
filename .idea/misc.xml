@@ -10,12 +10,14 @@
         <entry key="src/main/res/drawable/button_bg2.xml" value="0.225" />
         <entry key="src/main/res/drawable/button_bg3.xml" value="0.225" />
         <entry key="src/main/res/drawable/button_bg_down2.xml" value="0.225" />
+        <entry key="src/main/res/drawable/emptybattery.xml" value="0.34270833333333334" />
+        <entry key="src/main/res/drawable/ic_charging.xml" value="0.19583333333333333" />
         <entry key="src/main/res/drawable/rounded_button.xml" value="0.225" />
         <entry key="src/main/res/font/your_font.xml" value="0.23125" />
         <entry key="src/main/res/layout/activity_activate_bluetooth.xml" value="0.26197916666666665" />
         <entry key="src/main/res/layout/activity_connect_device.xml" value="0.34108271299759796" />
         <entry key="src/main/res/layout/activity_uhf_scan_focused_tag.xml" value="0.26197916666666665" />
-        <entry key="src/main/res/layout/activity_uhf_scan_list.xml" value="0.3411458333333333" />
+        <entry key="src/main/res/layout/activity_uhf_scan_list.xml" value="0.35436152393433873" />
         <entry key="src/main/res/layout/activity_uhf_settings.xml" value="0.3943630424843959" />
         <entry key="src/main/res/layout/device_address_name_list.xml" value="0.1890625" />
         <entry key="src/main/res/layout/device_element.xml" value="0.21197916666666666" />

@@ -9,6 +9,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,15 +25,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 
 import com.example.uhf_bt.utils.FileUtils;
 import com.example.uhf_bt.utils.NumberTool;
@@ -63,6 +75,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
     private TextView device_battery;
+    private ProgressBar batteryPB;
     private boolean isScanning = false;
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
@@ -214,7 +227,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
         settings_button = (NeumorphImageButton) findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
-
+        batteryPB = (ProgressBar) findViewById(R.id.batteryPB);
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         LvTags = (ListView) findViewById(R.id.LvTags);
@@ -265,11 +278,19 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     @Override
     public void onResume() {
-        //start handler as activity become visible
 
         handlerRefreshBattery.postDelayed( runnable = new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
             public void run() {
-                device_battery.setText(uhf.getBattery() + "%");
+                int precentage = 20;//uhf.getBattery();
+                device_battery.setText(precentage + "%");
+                batteryPB.setProgress(precentage);
+                if (precentage <= 10)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                else if (precentage <= 10)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.BLUE));
+                else
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.GREEN));
 
                 handlerRefreshBattery.postDelayed(runnable, delay);
             }

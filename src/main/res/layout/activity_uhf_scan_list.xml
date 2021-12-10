@@ -5,18 +5,44 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <ProgressBar
+        android:id="@+id/batteryPB"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:progress="0"
+        android:scaleY="3.3"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView3"
+        app:layout_constraintEnd_toEndOf="@+id/imageView3"
+        app:layout_constraintStart_toStartOf="@+id/imageView3"
+        app:layout_constraintTop_toTopOf="@+id/imageView3" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="76dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/emptybattery"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/device_battery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="4dp"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         android:text="100%"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@+id/imageView3"
+        app:layout_constraintEnd_toStartOf="@+id/imageView3"
+        app:layout_constraintTop_toTopOf="@+id/imageView3" />
 
     <soup.neumorphism.NeumorphImageButton
         android:id="@+id/settings_button"
@@ -33,15 +59,15 @@
 
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="0dp"
+        android:layout_width="411dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="84dp"
         android:background="@color/white_e0"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_button">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:layout_width="0dip"
@@ -101,12 +127,8 @@
         android:id="@+id/LvTags"
         android:layout_width="0dp"
         android:layout_height="520dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -118,8 +140,8 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <soup.neumorphism.NeumorphButton
-            style="@style/Widget.Neumorph.Button"
             android:id="@+id/btClear"
+            style="@style/Widget.Neumorph.Button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -127,16 +149,16 @@
 
 
         <soup.neumorphism.NeumorphButton
-            style="@style/Widget.Neumorph.Button"
             android:id="@+id/btStop"
+            style="@style/Widget.Neumorph.Button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/title_stop" />
 
         <soup.neumorphism.NeumorphButton
-            style="@style/Widget.Neumorph.Button"
             android:id="@+id/btnStart"
+            style="@style/Widget.Neumorph.Button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
