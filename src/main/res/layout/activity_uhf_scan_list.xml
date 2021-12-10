@@ -11,11 +11,11 @@
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="30dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5.4dp"
+        android:layout_marginRight="2dp"
         android:max="100"
         android:progress="100"
         android:scaleY="3.5"
-        android:layout_marginTop="5.4dp"
-        android:layout_marginRight="2dp"
         app:layout_constraintBottom_toBottomOf="@+id/imageView3"
         app:layout_constraintEnd_toEndOf="@+id/imageView3"
         app:layout_constraintStart_toStartOf="@+id/imageView3"
@@ -50,24 +50,45 @@
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_gravity="left"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="16dp"
         android:scaleType="centerInside"
         android:src="@drawable/baseline_settings_24"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <soup.neumorphism.NeumorphImageButton
+        android:id="@+id/info_button"
+        style="@style/Widget.Neumorph.ImageButton"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="left"
+        android:scaleType="centerInside"
+        android:src="@drawable/outline_contact_support_24"
+        app:layout_constraintEnd_toStartOf="@+id/settings_button"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <soup.neumorphism.NeumorphImageButton
+        android:id="@+id/market_button"
+        style="@style/Widget.Neumorph.ImageButton"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="left"
+        android:layout_marginEnd="68dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/outline_shopping_basket_24"
+        app:layout_constraintEnd_toStartOf="@+id/settings_button"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="411dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="84dp"
         android:background="@color/white_e0"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/settings_button">
 
         <TextView
             android:layout_width="0dip"
@@ -119,22 +140,31 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="RSSI"
-            android:textSize="15sp" />
+            android:textSize="15sp"
+            tools:ignore="TextContrastCheck" />
     </LinearLayout>
 
 
     <ListView
         android:id="@+id/LvTags"
-        android:layout_width="0dp"
-        android:layout_height="520dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <ListView
+        android:id="@+id/LvTags2"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@drawable/shadow_drawable"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">

@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="src/main/res/drawable/baseline_help_outline_24.xml" value="0.21770833333333334" />
         <entry key="src/main/res/drawable/baseline_refresh_18.xml" value="0.225" />
         <entry key="src/main/res/drawable/baseline_refresh_36.xml" value="0.225" />
         <entry key="src/main/res/drawable/baseline_settings_24.xml" value="0.21354166666666666" />
@@ -12,16 +13,20 @@
         <entry key="src/main/res/drawable/button_bg_down2.xml" value="0.225" />
         <entry key="src/main/res/drawable/emptybattery.xml" value="0.34270833333333334" />
         <entry key="src/main/res/drawable/ic_charging.xml" value="0.19583333333333333" />
+        <entry key="src/main/res/drawable/outline_contact_support_24.xml" value="0.21770833333333334" />
+        <entry key="src/main/res/drawable/outline_shopping_basket_24.xml" value="0.21770833333333334" />
         <entry key="src/main/res/drawable/rounded_button.xml" value="0.225" />
+        <entry key="src/main/res/drawable/shadow_drawable.xml" value="0.34270833333333334" />
         <entry key="src/main/res/font/your_font.xml" value="0.23125" />
         <entry key="src/main/res/layout/activity_activate_bluetooth.xml" value="0.26197916666666665" />
         <entry key="src/main/res/layout/activity_connect_device.xml" value="0.34108271299759796" />
         <entry key="src/main/res/layout/activity_uhf_scan_focused_tag.xml" value="0.26197916666666665" />
-        <entry key="src/main/res/layout/activity_uhf_scan_list.xml" value="0.6594936708860759" />
+        <entry key="src/main/res/layout/activity_uhf_scan_list.xml" value="0.375" />
         <entry key="src/main/res/layout/activity_uhf_settings.xml" value="0.3943630424843959" />
         <entry key="src/main/res/layout/device_address_name_list.xml" value="0.1890625" />
         <entry key="src/main/res/layout/device_element.xml" value="0.21197916666666666" />
         <entry key="src/main/res/layout/device_list.xml" value="0.3411458333333333" />
+        <entry key="src/main/res/layout/listtag_items.xml" value="0.3265625" />
         <entry key="src/main/res/layout/test.xml" value="0.45" />
       </map>
     </option>

@@ -223,12 +223,23 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!mBtAdapter.isEnabled())
             finish();
-        device_battery = (TextView) findViewById(R.id.device_battery);
-
-        settings_button = (NeumorphImageButton) findViewById(R.id.settings_button);
-        settings_button.setOnClickListener(this);
         batteryPB = (ProgressBar) findViewById(R.id.batteryPB);
         batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
+        device_battery = (TextView) findViewById(R.id.device_battery);
+        int precentage = uhf.getBattery();
+        if (precentage >= 0) {
+            device_battery.setText(precentage + "%");
+            batteryPB.setProgress(precentage);
+            if (precentage <= 10)
+                batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
+            else if (precentage <= 20)
+                batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
+            else
+                batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
+        }
+        handlerRefreshBattery.postDelayed(runnable, delay);
+        settings_button = (NeumorphImageButton) findViewById(R.id.settings_button);
+        settings_button.setOnClickListener(this);
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         LvTags = (ListView) findViewById(R.id.LvTags);
@@ -275,7 +286,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
-    int delay = 1*1000; //Delay for 1 seconds  One second = 1000 milliseconds.
+    int delay = 1*10000; //Delay for 1 seconds  One second = 1000 milliseconds.
 
     @Override
     public void onResume() {
@@ -323,7 +334,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 break;
             case R.id.btnStart:
                 if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && !isScanning) {
-                    showToast("yo");
                     startThread();
                 }
                 break;
