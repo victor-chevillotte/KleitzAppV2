@@ -1,5 +1,6 @@
 package com.example.visio_conduits;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -7,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +25,7 @@ import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.visio_conduits.utils.DBHelper;
 import com.example.visio_conduits.utils.NumberTool;
 import com.example.visio_conduits.utils.Utils;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
@@ -30,6 +33,8 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -50,6 +55,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
     public static final String TAG_DATA = "tagData";
+    public static final String TAG_NAME = "tagName";
     public static final String TAG_EPC = "tagEpc";
     public static final String TAG_LEN = "tagLen";
     public static final String TAG_COUNT = "tagCount";
@@ -58,6 +64,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private TextView device_battery;
     private ProgressBar batteryPB;
     private boolean isScanning = false;
+    private int tagNumber = 0;
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
@@ -94,6 +101,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     private long mStrTime;
     private ExecutorService executorService;
+    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1,this);
 
     private ConnectStatus mConnectStatus = new ConnectStatus();
 
@@ -239,8 +247,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btStop.setOnClickListener(this);
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
-                new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_DATA, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
-                new int[]{R.id.TvTagType, R.id.TvTagUii, R.id.TvTagCount, R.id.TvTagRssi});
+                new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_NAME, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
+                new int[]{R.id.TvTagType, R.id.TvTagName, R.id.TvTagCount, R.id.TvTagRssi});
         LvTags.setAdapter(adapter);
         LvTags.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -312,6 +320,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 ScanListActivity.this.startActivity(intent);
                 break;
             case R.id.btClear:
+                tagNumber = 0;
                 clearData();
                 break;
             case R.id.btnStart:
@@ -452,33 +461,47 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 int index = checkIsExist(uhftagInfo.getEPC());
 
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("EPC:");
                 stringBuilder.append(uhftagInfo.getEPC());
 
                 map = new HashMap<String, String>();
                 String TagEPC = uhftagInfo.getEPC();
-                if (!TagEPC.startsWith("VC2021"))
-                    return;
-                if (!TagEPC.startsWith("VC2021EL"))
-                    map.put(ScanListActivity.TAG_TYPE, "Lumière");
-                else if (!TagEPC.startsWith("VC2021EC"))
-                    map.put(ScanListActivity.TAG_TYPE, "Chauffage Elec");
-                else if (!TagEPC.startsWith("VC2021EP"))
-                    map.put(ScanListActivity.TAG_TYPE, "Prise Elec");
-                else if (!TagEPC.startsWith("VC2021EAR"))
-                    map.put(ScanListActivity.TAG_TYPE, "Robinet Eau");
-                else if (!TagEPC.startsWith("VC2021GR"))
-                    map.put(ScanListActivity.TAG_TYPE, "Robinet Gaz");
+                String TagType = "";
+                //if (!TagEPC.startsWith("AAAA"))/:block other tags no tours
+                //    return;
+                if (TagEPC.startsWith("AAAAAA"))
+                    TagType = "Lumière";
+                else if (TagEPC.startsWith("AAAAEC"))
+                    TagType = "Chauffage Elec";
+                else if (TagEPC.startsWith("VC2021EP"))
+                    TagType = "Prise Elec";
+                else if (TagEPC.startsWith("VC2021EAR"))
+                    TagType = "Robinet Eau";
+                else if (TagEPC.startsWith("VC2021GR"))
+                    TagType = "Robinet Gaz";
+                map.put(ScanListActivity.TAG_TYPE, TagType);
                 map.put(ScanListActivity.TAG_EPC, uhftagInfo.getEPC());
                 map.put(ScanListActivity.TAG_DATA, stringBuilder.toString());
                 map.put(ScanListActivity.TAG_COUNT, String.valueOf(1));
                 map.put(ScanListActivity.TAG_RSSI, uhftagInfo.getRssi());
                 // getAppContext().uhfQueue.offer(epc + "\t 1");
                 if (index == -1) {
+                    Cursor cursor = mydb.selectATag(uhftagInfo.getEPC());
+                    if (cursor.moveToFirst() || cursor.getCount() != 0) {
+                        @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("name"));
+                        @SuppressLint("Range") String room = cursor.getString(cursor.getColumnIndex("room"));
+                        @SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
+                        map.put(ScanListActivity.TAG_NAME, name + " " + room);
+                    }
+                    else {
+
+                        map.put(ScanListActivity.TAG_NAME, String.valueOf(tagNumber));
+                    }
                     tagList.add(map);
+                    tagNumber++;
                     tempDatas.add(uhftagInfo.getEPC());
                     tv_count.setText("" + adapter.getCount());
                 } else {
+                    map.put(ScanListActivity.TAG_NAME, String.valueOf(index));
                     int tagCount = Integer.parseInt(tagList.get(index).get(ScanListActivity.TAG_COUNT), 10) + 1;
                     map.put(ScanListActivity.TAG_COUNT, String.valueOf(tagCount));
                     tagList.set(index, map);

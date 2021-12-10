@@ -231,7 +231,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         tagList = new ArrayList<HashMap<String, String>>();
         adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
                 new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_DATA, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
-                new int[]{R.id.TvTagType, R.id.TvTagUii, R.id.TvTagCount, R.id.TvTagRssi});
+                new int[]{R.id.TvTagType, R.id.TvTagName, R.id.TvTagCount, R.id.TvTagRssi});
         nameTag = (Button) findViewById(R.id.InventoryFocusAddModifyTag);
         Cursor cursor = mydb.selectATag(focusedTagEPC);
         if (cursor.moveToFirst() && cursor.getCount() != 0) {
@@ -241,7 +241,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             focusedTagWorkPlace = cursor.getString(cursor.getColumnIndex("workplace"));
         }
 
-        EPCTV= (TextView) findViewById(R.id.FocusTagUii);
+        EPCTV= (TextView) findViewById(R.id.FocusTagEPC);
         EPCTV.setText(focusedTagEPC);
         nameTV= (TextView) findViewById(R.id.FocusTagName);
         nameTV.setText(focusedTagName);
