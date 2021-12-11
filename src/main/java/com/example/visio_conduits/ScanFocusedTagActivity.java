@@ -131,6 +131,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         checkReadWritePermission();
         checkLocationEnable();
+        setContentView(R.layout.activity_uhf_scan_focused_tag);
+
         uhf.setKeyEventCallback(new KeyEventCallback() {
             @Override
             public void onKeyDown(int keycode) {
@@ -147,7 +149,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 stopInventory();
             }
         });
-
         addConnectStatusNotice(mConnectStatus);
         fa = this;
         if (uhf.getConnectStatus() == ConnectionStatus.DISCONNECTED)
@@ -155,11 +156,13 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         remoteBTAdd = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         focusedTagEPC = getIntent().getStringExtra(TAG_EPC);
-        initUI();
         tagsList = new ArrayList<>();
+        initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
         Utils.initSound(getApplicationContext());
+        MyTag newTag = new MyTag(focusedTagEPC, "", "", "0,0", false);
+        addTag(newTag);
     }
 
 
@@ -174,7 +177,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
     @SuppressLint("Range")
     private void initUI() {
-        setContentView(R.layout.activity_uhf_scan_focused_tag);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!mBtAdapter.isEnabled())
             finish();
@@ -359,7 +361,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private void updateDisplay(MyTag tag) {
         if (tag.getEPC().equals(focusedTagEPC)) {
             int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
-            distance = - distance * 2 - 70;
+            distance = -distance * 2 - 70;
             if (distance <= 0) {
                 distance = 0;
             }
@@ -367,12 +369,14 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             pb_distance.setProgress(100 - distance);
             tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
             Utils.playSound(1);
-            distance = distance + 20 ;
-            while ( distance < 100) {
-                SystemClock.sleep(100);
-                distance = distance + 10 ;
+            int savedistance = distance;
+            distance = distance + 30;
+            while (distance < 100) {
+                SystemClock.sleep(150 + savedistance * 2);
+                distance = distance + 40;
                 Utils.playSound(1);
             }
+
         }
     }
 
@@ -380,19 +384,15 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         for (int k = 0; k < list.size(); k++) {
             UHFTAGInfo uhftagInfo = list.get(k);
             if (!uhftagInfo.getEPC().equals("")) {/* || !uhftagInfo.getEPC().startsWith("AAAA")*///block other tags no tours
-                boolean tagFound = false;
+                //boolean tagFound = false;
                 for (MyTag tag : tagsList) {
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {
-                        tagFound = true;
+                        //tagFound = true;
                         tag.setRssi(uhftagInfo.getRssi());
                         tag.setNbrDetections(false);
                         runOnUiThread(() -> updateDisplay(tag));
                         break;
                     }
-                }
-                if (!tagFound) {
-                    MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", uhftagInfo.getRssi(), false);
-                    addTag(newTag);
                 }
             }
         }
@@ -422,9 +422,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
         tag.setNbrDetections(false);
         tagsList.add(0, tag);
-        runOnUiThread(() -> updateDisplay(tag));
     }
-
 
 
     static class MyTag {

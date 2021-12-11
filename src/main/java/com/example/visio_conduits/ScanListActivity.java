@@ -136,6 +136,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         checkReadWritePermission();
         checkLocationEnable();
+        setContentView(R.layout.activity_uhf_scan_list);
         uhf.setKeyEventCallback(new KeyEventCallback() {
             @Override
             public void onKeyDown(int keycode) {
