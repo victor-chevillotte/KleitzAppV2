@@ -385,6 +385,7 @@
                     <TextView
                         android:text="@string/title_new_name"
                         android:layout_width="wrap_content"
+                        android:imeOptions="actionNext"
                         android:layout_height="wrap_content" />
                     <EditText
                         android:id="@+id/etNewName"

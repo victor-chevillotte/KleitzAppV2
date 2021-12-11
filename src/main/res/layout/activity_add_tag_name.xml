@@ -3,20 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="#1b2243"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <ImageView
-        android:id="@+id/logonotext"
-        android:layout_width="140dp"
-        android:layout_height="120dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="0dp"
-        android:src="@drawable/logoshrink"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/AddTagTitle"
@@ -46,7 +34,8 @@
         android:gravity="center"
         android:textAlignment="center"/>
 
-    <AutoCompleteTextView
+    <soup.neumorphism.NeumorphTextView
+        style="@style/Widget.Neumorph.TextView"
         android:id="@+id/AddTagName"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
@@ -79,6 +68,7 @@
         />
 
     <AutoCompleteTextView
+        style="@style/Widget.Neumorph.TextView"
         android:id="@+id/AddTagRoom"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
@@ -112,6 +102,7 @@
         />
 
     <AutoCompleteTextView
+        style="@style/Widget.Neumorph.TextView"
         android:id="@+id/AddTagWorkplace"
         android:layout_width="250dp"
         app:layout_constraintLeft_toLeftOf="parent"
