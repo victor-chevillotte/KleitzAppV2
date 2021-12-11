@@ -361,7 +361,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private void updateDisplay(MyTag tag) {
         if (tag.getEPC().equals(focusedTagEPC)) {
             int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
-            distance = -distance * 2 - 70;
+            distance = -distance * 2 - 60;
             if (distance <= 0) {
                 distance = 0;
             }
@@ -370,10 +370,10 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
             Utils.playSound(1);
             int savedistance = distance;
-            distance = distance + 30;
+            distance = distance + 40;
             while (distance < 100) {
-                SystemClock.sleep(150 + savedistance * 2);
-                distance = distance + 40;
+                SystemClock.sleep(10 + savedistance * 4);
+                distance = distance + 50;
                 Utils.playSound(1);
             }
 
