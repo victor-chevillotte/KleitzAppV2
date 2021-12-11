@@ -1,5 +1,6 @@
 package com.example.visio_conduits;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -50,7 +51,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     private static final int REQUEST_ENABLE_BT = 2;
     public BluetoothAdapter mBtAdapter = null;
 
-    private Button btn_activate_bluetooth;
     private ProgressBar spinner;
     private SwipeRefreshLayout swipeContainer;
     private ListView newDevicesListView;
@@ -63,7 +63,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     private Map<String, Integer> devRssiValues;
     private static final long SCAN_PERIOD = 5000; //5 seconds
 
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
     private boolean mScanning;
 
     private final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
@@ -118,7 +118,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         uhf.disconnect();
         uhf.free();
         setContentView(R.layout.activity_activate_bluetooth);
-        btn_activate_bluetooth = (Button) findViewById(R.id.btn_activate_bluetooth);
+        Button btn_activate_bluetooth = (Button) findViewById(R.id.btn_activate_bluetooth);
         btn_activate_bluetooth.setOnClickListener(this);
     }
 
@@ -133,33 +133,24 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     }
 
     private void init() {
-        mEmptyList = (TextView) findViewById(R.id.empty);
-        spinner = (ProgressBar) findViewById(R.id.progressBar1);
-        devRssiValues = new HashMap<String, Integer>();
+        mEmptyList = findViewById(R.id.empty);
+        spinner = findViewById(R.id.progressBar1);
+        devRssiValues = new HashMap<>();
         deviceList = new ArrayList<>();
         deviceAdapter = new DeviceAdapter(this, deviceList);
         mEmptyList.setText(R.string.scanning);
-        newDevicesListView = (ListView) findViewById(R.id.new_devices);
+        newDevicesListView = findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(deviceAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
-        scanningDevice = (TextView) findViewById(R.id.scanningDevice);
+        scanningDevice =  findViewById(R.id.scanningDevice);
         NeumorphImageButton btnRefresh = findViewById(R.id.btnRefresh);
-        btnRefresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearDeviceList();
-            }
-
-        });
+        btnRefresh.setOnClickListener(v -> clearDeviceList());
         mScanning = false;
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swiperefreshlayout);
+        swipeContainer = findViewById(R.id.swiperefreshlayout);
         // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                clearDeviceList();
-                swipeContainer.setRefreshing(false);
-            }
+        swipeContainer.setOnRefreshListener(() -> {
+            clearDeviceList();
+            swipeContainer.setRefreshing(false);
         });
 
         //boolean isFavoritesList = getIntent().getBooleanExtra(ConnectDeviceActivity.SHOW_HISTORY_CONNECTED_LIST, false);
@@ -176,35 +167,24 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             // Stops scanning after a pre-defined scan period.
             if (swipeContainer != null)
                 swipeContainer.setRefreshing(false);
-            if (mScanning == false) {
+            if (!mScanning) {
                 mScanning = true;
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        uhf.stopScanBTDevices();
-                        if (spinner != null) {
-                            spinner.setVisibility(View.GONE);
-                            scanningDevice.setVisibility(View.GONE);
-                        }
-                        mScanning = false;
+                mHandler.postDelayed(() -> {
+                    uhf.stopScanBTDevices();
+                    if (spinner != null) {
+                        spinner.setVisibility(View.GONE);
+                        scanningDevice.setVisibility(View.GONE);
                     }
+                    mScanning = false;
                 }, SCAN_PERIOD);
                 scanningDevice.setVisibility(View.VISIBLE);
                 spinner.setVisibility(View.VISIBLE);
-                uhf.startScanBTDevices(new ScanBTCallback() {
-                    @Override
-                    public void getDevices(final BluetoothDevice bluetoothDevice, final int rssi, byte[] bytes) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (bluetoothDevice.getName() != null) {
-                                    MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName(), false);
-                                    addDevice(myDevice, rssi);
-                                }
-                            }
-                        });
+                uhf.startScanBTDevices((bluetoothDevice, rssi, bytes) -> runOnUiThread(() -> {
+                    if (bluetoothDevice.getName() != null) {
+                        MyDevice myDevice = new MyDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName(), false);
+                        addDevice(myDevice, rssi);
                     }
-                });
+                }));
             }
         } else {
             mScanning = false;
@@ -239,31 +219,28 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     private void clearDeviceList() {
         if (mScanning)
             scanLeDevice(false);
-        if (tryingToConnectAddress == "") {
+        if (tryingToConnectAddress.equals("")) {
             for (Iterator<MyDevice> iterator = deviceList.iterator(); iterator.hasNext(); ) {
                 MyDevice value = iterator.next();
-                if (!value.getIsFavorites() && value.getAddress() != remoteBTAdd) {
+                if (!value.getIsFavorites() && !value.getAddress().equals(remoteBTAdd)) {
                     iterator.remove();
                 }
             }
             deviceAdapter.notifyDataSetChanged();
             newDevicesListView.setVisibility(View.VISIBLE);
         }
-        Collections.sort(deviceList, new Comparator<MyDevice>() {
-            @Override
-            public int compare(MyDevice device1, MyDevice device2) {
-                if (device1.getIsFavorites() && device2.getIsFavorites()) {
-                    String s1 = device1.getName();
-                    String s2 = device2.getName();
-                    return s1.compareToIgnoreCase(s2);
-                } else
-                    return 0;
-            }
+        Collections.sort(deviceList, (device1, device2) -> {
+            if (device1.getIsFavorites() && device2.getIsFavorites()) {
+                String s1 = device1.getName();
+                String s2 = device2.getName();
+                return s1.compareToIgnoreCase(s2);
+            } else
+                return 0;
         });
         scanLeDevice(true);
     }
 
-    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
+    private final AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             uhf.stopScanBTDevices();
@@ -291,7 +268,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     disconnect(true);
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                     tryingToConnectAddress = deviceAddress;
-                } else if (tryingToConnectAddress == "" && uhf.getConnectStatus() != ConnectionStatus.CONNECTING) {
+                } else if (tryingToConnectAddress.equals("") && uhf.getConnectStatus() != ConnectionStatus.CONNECTING) {
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                     tryingToConnectAddress = deviceAddress;
                     deviceAdapter.notifyDataSetChanged();
@@ -333,82 +310,72 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     class BTStatus implements ConnectionStatusCallback<Object> {
         @Override
         public void getStatus(final ConnectionStatus connectionStatus, final Object device1) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    BluetoothDevice device = (BluetoothDevice) device1;
+            runOnUiThread(() -> {
+                BluetoothDevice device = (BluetoothDevice) device1;
 
-                    if (connectionStatus == ConnectionStatus.CONNECTED) {
-                        remoteBTName = device.getName();
-                        remoteBTAdd = device.getAddress();
-                        tryingToConnectAddress = "";
-                        showToast(R.string.connect_success);
-                        Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
-                        Bundle b = new Bundle();
-                        b.putString(BluetoothDevice.EXTRA_DEVICE, device.getAddress());
-                        Bundle b2 = new Bundle();
-                        b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
-                        newIntent.putExtras(b);
-                        newIntent.putExtras(b2);
-                        uhf.stopScanBTDevices();
-                        spinner.setVisibility(View.GONE);
-                        scanningDevice.setVisibility(View.GONE);
-                        if (!TextUtils.isEmpty(remoteBTAdd)) {
-                            saveFavoriteDevices(device.getAddress(), device.getName(), false);
-                        }
-                        deviceAdapter.notifyDataSetChanged();
-                        mIsActiveDisconnect = true;
-                        ConnectDeviceActivity.this.startActivity(newIntent);
-                        clearDeviceList();
-
-                    } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
-                        if (disconnecting) {
-                            showToast("Antenne " + remoteBTName + " déconnectée");
-                            remoteBTName = "";
-                            remoteBTAdd = "";
-                            disconnecting = false;
-                            deviceAdapter.notifyDataSetChanged();
-                            connect(tryingToConnectAddress);
-                        } else {
-                            tryingToConnectAddress = "";
-                            remoteBTName = "";
-                            remoteBTAdd = "";
-                            disconnecting = false;
-                            deviceAdapter.notifyDataSetChanged();
-                            showToast("Echec de connexion à " + mDevice.getName());
-                        }
-                        if (ScanListActivity.fa != null)
-                            ScanListActivity.fa.finish();
-                        if (UHFUpdateDeviceActivity.faup != null)
-                            UHFUpdateDeviceActivity.faup.finish();
-                        if (UHFSettingsActivity.faset != null)
-                            UHFSettingsActivity.faset.finish();
-                        if (ScanFocusedTagActivity.fa != null)
-                            ScanFocusedTagActivity.fa.finish();
-
-                        /*boolean reconnect = SPUtils.getInstance(getApplicationContext()).getSPBoolean(SPUtils.AUTO_RECONNECT, false);
-                        if (mDevice != null && reconnect) {
-                            reConnect(mDevice.getAddress()); // 重连
-                        }*/
+                if (connectionStatus == ConnectionStatus.CONNECTED) {
+                    remoteBTName = device.getName();
+                    remoteBTAdd = device.getAddress();
+                    tryingToConnectAddress = "";
+                    showToast(R.string.connect_success);
+                    Intent newIntent = new Intent(ConnectDeviceActivity.this, ScanListActivity.class);
+                    Bundle b = new Bundle();
+                    b.putString(BluetoothDevice.EXTRA_DEVICE, device.getAddress());
+                    Bundle b2 = new Bundle();
+                    b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
+                    newIntent.putExtras(b);
+                    newIntent.putExtras(b2);
+                    uhf.stopScanBTDevices();
+                    spinner.setVisibility(View.GONE);
+                    scanningDevice.setVisibility(View.GONE);
+                    if (!TextUtils.isEmpty(remoteBTAdd)) {
+                        saveFavoriteDevices(device.getAddress(), device.getName(), false);
                     }
+                    deviceAdapter.notifyDataSetChanged();
+                    mIsActiveDisconnect = true;
+                    ConnectDeviceActivity.this.startActivity(newIntent);
+                    clearDeviceList();
 
-                    for (ConnectDeviceActivity.IConnectStatus iConnectStatus : connectStatusList) {
-                        if (iConnectStatus != null) {
-                            iConnectStatus.getStatus(connectionStatus);
-                        }
+                } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
+                    if (disconnecting) {
+                        showToast("Antenne " + remoteBTName + " déconnectée");
+                        remoteBTName = "";
+                        remoteBTAdd = "";
+                        disconnecting = false;
+                        deviceAdapter.notifyDataSetChanged();
+                        connect(tryingToConnectAddress);
+                    } else {
+                        tryingToConnectAddress = "";
+                        remoteBTName = "";
+                        remoteBTAdd = "";
+                        disconnecting = false;
+                        deviceAdapter.notifyDataSetChanged();
+                        showToast("Echec de connexion à " + mDevice.getName());
+                    }
+                    if (ScanListActivity.fa != null)
+                        ScanListActivity.fa.finish();
+                    if (UHFUpdateDeviceActivity.faup != null)
+                        UHFUpdateDeviceActivity.faup.finish();
+                    if (UHFSettingsActivity.faset != null)
+                        UHFSettingsActivity.faset.finish();
+                    if (ScanFocusedTagActivity.fa != null)
+                        ScanFocusedTagActivity.fa.finish();
+                }
+
+                for (IConnectStatus iConnectStatus : connectStatusList) {
+                    if (iConnectStatus != null) {
+                        iConnectStatus.getStatus(connectionStatus);
                     }
                 }
             });
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_activate_bluetooth:
-                activateBluetooth();
-                break;
-            default:
-                break;
+        if (view.getId() == R.id.btn_activate_bluetooth) {
+            activateBluetooth();
         }
     }
 
@@ -420,16 +387,12 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case REQUEST_ENABLE_BT:
-                if (resultCode == Activity.RESULT_OK) {
-                    showToast("Le bluetooth a bien été activé !");
-                } else {
-                    showToast("Erreur lors de l'activation du bluetooth a bien été activé !");
-                }
-                break;
-            default:
-                break;
+        if (requestCode == REQUEST_ENABLE_BT) {
+            if (resultCode == Activity.RESULT_OK) {
+                showToast("Le bluetooth a bien été activé !");
+            } else {
+                showToast("Erreur lors de l'activation du bluetooth a bien été activé !");
+            }
         }
     }
 
@@ -455,8 +418,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         }
     }
 
-    class MyDevice {
-        private String address;
+    static class MyDevice {
+        private final String address;
         private String name;
         private boolean isFavorites;
         private int bondState;
@@ -479,10 +442,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             this.isFavorites = isFavorites;
         }
 
-        public void setAddress(String address) {
-            this.address = address;
-        }
-
         public String getName() {
             return name;
         }
@@ -495,9 +454,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             return bondState;
         }
 
-        public void setBondState(int bondState) {
-            this.bondState = bondState;
-        }
     }
 
     class DeviceAdapter extends BaseAdapter {
@@ -526,6 +482,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             return position;
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewGroup vg;
@@ -536,32 +493,29 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                 vg = (ViewGroup) inflater.inflate(R.layout.device_element, null);
             }
             MyDevice device = devices.get(position);
-            final TextView tvadd = ((TextView) vg.findViewById(R.id.address));
-            final TextView tvname = ((TextView) vg.findViewById(R.id.name));
-            final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
-            final ImageView favoritefull = (ImageView) vg.findViewById(R.id.favoritefull);
-            final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
+            final TextView tvadd =  vg.findViewById(R.id.address);
+            final TextView tvname = vg.findViewById(R.id.name);
+            final TextView tvrssi = vg.findViewById(R.id.rssi);
+            final ImageView favoritefull = vg.findViewById(R.id.favoritefull);
+            final RelativeLayout favorite = vg.findViewById(R.id.favorite);
             if (device.getIsFavorites())
                 favoritefull.setVisibility(View.VISIBLE);
             else
                 favoritefull.setVisibility(View.GONE);
-            favorite.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (device.getIsFavorites()) {
-                        device.setIsFavorites(false);
-                        favoritefull.setVisibility(View.GONE);
-                        showToast("Favoris supprimé");
-                        saveFavoriteDevices(device.getAddress(), device.getName(), true);
-                    } else {
-                        showToast("Favoris ajouté");
-                        device.setIsFavorites(true);
-                        saveFavoriteDevices(device.getAddress(), device.getName(), false);
-                        favoritefull.setVisibility(View.VISIBLE);
-                    }
+            favorite.setOnClickListener(v -> {
+                if (device.getIsFavorites()) {
+                    device.setIsFavorites(false);
+                    favoritefull.setVisibility(View.GONE);
+                    showToast("Favoris supprimé");
+                    saveFavoriteDevices(device.getAddress(), device.getName(), true);
+                } else {
+                    showToast("Favoris ajouté");
+                    device.setIsFavorites(true);
+                    saveFavoriteDevices(device.getAddress(), device.getName(), false);
+                    favoritefull.setVisibility(View.VISIBLE);
                 }
             });
-            int rssival = devRssiValues.get(device.getAddress()).intValue();
+            int rssival = devRssiValues.get(device.getAddress());
             if (rssival != 0) {
                 if (rssival > -60)
                     tvrssi.setText("A proximité");
