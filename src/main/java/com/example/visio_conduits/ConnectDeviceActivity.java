@@ -291,20 +291,19 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
 
     public void saveFavoriteDevices(String address, String name, Boolean remove) {
         List<String[]> list = FileUtils.readXmlList(FAV_DEVICES_FILE_NAME);
-        for (int k = 0; k < list.size(); k++) {
-            if (address.equals(list.get(k)[0])) {
-                list.remove(list.get(k));
-                if (remove) {
-                    Log.e("suppr", String.valueOf(list));
+        if (remove) {
+            for (int k = 0; k < list.size(); k++) {
+                if (address.equals(list.get(k)[0])) {
+                    list.remove(list.get(k));
                     FileUtils.saveXmlList(list, FAV_DEVICES_FILE_NAME);
                     return;
-                } else
-                    break;
+                }
             }
         }
         String[] strArr = new String[]{address, name};
         list.add(0, strArr);
         FileUtils.saveXmlList(list, FAV_DEVICES_FILE_NAME);
+        list = FileUtils.readXmlList(FAV_DEVICES_FILE_NAME);
     }
 
     class BTStatus implements ConnectionStatusCallback<Object> {
@@ -312,7 +311,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         public void getStatus(final ConnectionStatus connectionStatus, final Object device1) {
             runOnUiThread(() -> {
                 BluetoothDevice device = (BluetoothDevice) device1;
-
                 if (connectionStatus == ConnectionStatus.CONNECTED) {
                     remoteBTName = device.getName();
                     remoteBTAdd = device.getAddress();
@@ -325,15 +323,19 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
                     b2.putString(BluetoothDevice.EXTRA_DEVICE, device.getName());
                     newIntent.putExtras(b);
                     newIntent.putExtras(b2);
-                    uhf.stopScanBTDevices();
+                    ConnectDeviceActivity.this.startActivity(newIntent);//set favorite device
+                    for (MyDevice listDev : deviceList) {
+                        if (listDev.getAddress().equals(remoteBTAdd)) {
+                            listDev.setIsFavorites(true);
+                            saveFavoriteDevices(device.getAddress(), device.getName(), false);
+                            break;
+                        }
+                    }
                     spinner.setVisibility(View.GONE);
                     scanningDevice.setVisibility(View.GONE);
-                    if (!TextUtils.isEmpty(remoteBTAdd)) {
-                        saveFavoriteDevices(device.getAddress(), device.getName(), false);
-                    }
+                    uhf.stopScanBTDevices();
                     deviceAdapter.notifyDataSetChanged();
                     mIsActiveDisconnect = true;
-                    ConnectDeviceActivity.this.startActivity(newIntent);
                     clearDeviceList();
 
                 } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {

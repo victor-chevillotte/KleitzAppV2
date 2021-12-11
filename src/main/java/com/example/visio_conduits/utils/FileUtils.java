@@ -33,29 +33,25 @@ public class FileUtils extends BaseActivity {
                 file.delete();
             }
             FileOutputStream fos = new FileOutputStream(file);
-            // 获得一个序列化工具
             XmlSerializer serializer = Xml.newSerializer();
             serializer.setOutput(fos, "utf-8");
-            // 设置文件头
             serializer.startDocument("utf-8", true);
             serializer.startTag(null, "root");
             for (int i = 0; i < data.size(); i++) {
                 serializer.startTag(null, "bt");
-                // 蓝牙地址
                 serializer.startTag(null, ADDR);
                 serializer.text(data.get(i)[0]);
                 serializer.endTag(null, ADDR);
-                // 蓝牙名称
                 serializer.startTag(null, NAME);
                 serializer.text(data.get(i)[1]);
                 serializer.endTag(null, NAME);
-                serializer.startTag(null, TYPE);
                 if (fileName.equals(FAV_TAGS_FILE_NAME))
                 {
+                    serializer.startTag(null, TYPE);
                     serializer.text(data.get(i)[2]);
                     serializer.endTag(null, TYPE);
-                    serializer.endTag(null, "bt");
                 }
+                serializer.endTag(null, "bt");
             }
             serializer.endTag(null, "root");
             serializer.endDocument();
@@ -73,10 +69,7 @@ public class FileUtils extends BaseActivity {
                 return list;
             }
             FileInputStream fis = new FileInputStream(path);
-
-            // 获得pull解析器对象
             XmlPullParser parser = Xml.newPullParser();
-            // 指定解析的文件和编码格式
             parser.setInput(fis, "utf-8");
             int eventType = parser.getEventType(); // 获得事件类型
             String addr = null;
