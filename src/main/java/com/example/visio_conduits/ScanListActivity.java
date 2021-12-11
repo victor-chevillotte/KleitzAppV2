@@ -12,10 +12,8 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,8 +37,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import soup.neumorphism.NeumorphButton;
 import soup.neumorphism.NeumorphImageButton;
@@ -98,7 +94,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private TagsAdapter tagsAdapter;
     private List<MyTag> tagsList;
     private long mStrTime;
-    private ExecutorService executorService;
     private final DBHelper mydb = new DBHelper(this, null, 1, this);
 
     private final ConnectStatus mConnectStatus = new ConnectStatus();
@@ -176,7 +171,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         handlerRefreshBattery.postDelayed(runnable, delay);
         NeumorphImageButton settings_button = findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
-        executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         ListView lvTags = findViewById(R.id.LvTags);
         lvTags.setAdapter(tagsAdapter);
@@ -283,7 +277,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                                 break;
                         }
                         sortTagsList();
-                        tagsAdapter.notifyDataSetChanged();
+                        runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
                         return true;
                     });
                     dropDownMenu.show();
@@ -310,7 +304,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
             sortTagsList();
             total = 0;
-            tagsAdapter.notifyDataSetChanged();
+            runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
         }
 
         private void sortTagsList() {
@@ -347,10 +341,11 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     private void stopInventory() {
         loopFlag = false;
-        isScanningTags = false;
         btStop.setShapeType(1);
         btnStart.setShapeType(0);
-        uhf.stopInventory();
+        if (isScanningTags)
+            uhf.stopInventory();
+        isScanningTags = false;
     }
 
         class ConnectStatus implements ScanListActivity.IConnectStatus {
@@ -385,6 +380,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
         class TagThread extends Thread {
 
+            @SuppressLint("SetTextI18n")
             public void run() {
                 btStop.setShapeType(0);
                 btnStart.setShapeType(1);
@@ -444,7 +440,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                         tag.setRssi(uhftagInfo.getRssi());
                         tag.setNbrDetections(false);
                         tv_total.setText(String.valueOf(++total));
-                        tagsAdapter.notifyDataSetChanged();
+                        runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
                         break;
                     }
                 }
@@ -483,7 +479,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         tag.setNbrDetections(false);
         tagsList.add(0, tag);
         tv_count.setText("" + tagsAdapter.getCount());
-        tagsAdapter.notifyDataSetChanged();
+        runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
     }
 
     private final AdapterView.OnItemClickListener mTagsListener = new AdapterView.OnItemClickListener() {

@@ -13,7 +13,6 @@ import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
@@ -30,8 +29,7 @@ import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
 import java.text.ParseException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 public class ScanFocusedTagActivity extends BaseActivity implements View.OnClickListener {
 
@@ -81,63 +79,9 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private boolean isExit = false;
     private long totalFocusTagDetect = 0;
 
-    private ExecutorService executorService;
-
     private final ConnectStatus mConnectStatus = new ConnectStatus();
 
-    final int FLAG_START = 0;
-    final int FLAG_STOP = 1;
-    final int FLAG_UHFINFO_LIST = 5;
-    final int FLAG_GET_MODE = 4;
-    final int FLAG_SUCCESS = 10;
-    final int FLAG_FAIL = 11;
-    final int FLAG_SET_SUCC = 12;
-    final int FLAG_SET_FAIL = 13;
-
     boolean isRunning = false;
-    @SuppressLint("HandlerLeak")
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case FLAG_STOP:
-                    if (msg.arg1 == FLAG_SUCCESS) {
-                        //停止成功
-                        btStop.setEnabled(false);
-                        InventoryLoop.setEnabled(true);
-                    } else {
-                        //停止失败
-                        Utils.playSound(2);
-                        showToast(R.string.uhf_msg_inventory_stop_fail);
-                    }
-                    break;
-                case FLAG_START:
-                    if (msg.arg1 == FLAG_SUCCESS) {
-                        //开始读取标签成功
-                        btStop.setEnabled(true);
-                        InventoryLoop.setEnabled(false);
-                    } else {
-                        //开始读取标签失败
-                        Utils.playSound(2);
-                    }
-                    break;
-                case FLAG_UHFINFO_LIST:
-                    List<UHFTAGInfo> list = (List<UHFTAGInfo>) msg.obj;
-                    try {//ici
-                        addEPCToList(list);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case FLAG_SET_SUCC:
-                    showToast("success");
-                    break;
-                case FLAG_SET_FAIL:
-                    showToast("fail");
-                    break;
-            }
-        }
-    };
 
 
     private void set_activity_activate_bluetooth() {
@@ -204,7 +148,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         Button settings_button = findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
 
-        executorService = Executors.newFixedThreadPool(3);
         isExit = false;
         InventoryLoop = findViewById(R.id.InventoryLoop);
         btStop = findViewById(R.id.btStop);
@@ -317,16 +260,11 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
     private void stopInventory() {
         loopFlag = false;
-        ConnectionStatus connectionStatus = uhf.getConnectStatus();
-        Message msg = handler.obtainMessage(FLAG_STOP);
-        boolean result = uhf.stopInventory();
-        if (result || connectionStatus == ConnectionStatus.DISCONNECTED) {
-            msg.arg1 = FLAG_SUCCESS;
-        } else {
-            msg.arg1 = FLAG_FAIL;
-        }
+        btStop.setEnabled(false);
+        InventoryLoop.setEnabled(true);
+        if (isScanningTags)
+            uhf.stopInventory();
         isScanningTags = false;
-        handler.sendMessage(msg);
     }
 
     class ConnectStatus implements IConnectStatus {
@@ -339,7 +277,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    getMode();
                     setViewsEnabled(true);
                 }
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
@@ -349,18 +286,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 setViewsEnabled(false);
             }
         }
-    }
-
-    private final Runnable getModeRunnable = () -> {
-        if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-            byte[] data = uhf.getEPCAndTIDUserMode();
-            Message msg = handler.obtainMessage(FLAG_GET_MODE, data);
-            handler.sendMessage(msg);
-        }
-    };
-
-    private void getMode() {
-        executorService.execute(getModeRunnable);
     }
 
     public synchronized void startThread() {
@@ -374,22 +299,25 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     class TagThread extends Thread {
 
         public void run() {
-            Message msg = handler.obtainMessage(FLAG_START);
+            btStop.setEnabled(true);
+            InventoryLoop.setEnabled(false);
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
                 isScanningTags = true;
-                msg.arg1 = FLAG_SUCCESS;
             } else {
-                msg.arg1 = FLAG_FAIL;
+                showToast("Erreur de connexion à l'antenne.");
             }
-            handler.sendMessage(msg);
-            isRunning = false;//执行完成设置成false
+            isRunning = false;
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
                 if (list == null || list.size() == 0) {
                     SystemClock.sleep(1);
                 } else {
-                    handler.sendMessage(handler.obtainMessage(FLAG_UHFINFO_LIST, list));
+                    try {
+                        addEPCToList(list);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                     Utils.playSound(1);
                 }
 
