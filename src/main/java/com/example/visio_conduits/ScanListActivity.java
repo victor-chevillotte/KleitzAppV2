@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -226,118 +227,118 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         setViewsEnabled(0);
     }
 
-        @Override
-        public void onPause() {
-            handlerRefreshBattery.removeCallbacks(runnable); //stop handler when activity not visible
-            super.onPause();
-            stopInventory();
-        }
+    @Override
+    public void onPause() {
+        handlerRefreshBattery.removeCallbacks(runnable); //stop handler when activity not visible
+        super.onPause();
+        stopInventory();
+    }
 
-        @SuppressLint("NonConstantResourceId")
-        @Override
-        public void onClick(View view) {
-            switch (view.getId()) {
-                case R.id.settings_button:
-                    showToast("Chargement des réglages...");
-                    Intent intent = new Intent(ScanListActivity.this, UHFSettingsActivity.class);
-                    ScanListActivity.this.startActivity(intent);
-                    break;
-                case R.id.btClear:
-                    tagNumber = 0;
-                    clearData();
-                    break;
-                case R.id.btnStart:
-                    if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && !isScanningTags) {
-                        startThread();
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.settings_button:
+                showToast("Chargement des réglages...");
+                Intent intent = new Intent(ScanListActivity.this, UHFSettingsActivity.class);
+                ScanListActivity.this.startActivity(intent);
+                break;
+            case R.id.btClear:
+                tagNumber = 0;
+                clearData();
+                break;
+            case R.id.btnStart:
+                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && !isScanningTags) {
+                    startThread();
+                }
+                break;
+            case R.id.btStop:
+                if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && isScanningTags) {
+                    stopInventory();
+                }
+                break;
+            case R.id.btSort:
+                PopupMenu dropDownMenu = new PopupMenu(getApplicationContext(), btSort);
+                dropDownMenu.getMenuInflater().inflate(R.menu.sort, dropDownMenu.getMenu());
+                dropDownMenu.setOnMenuItemClickListener(menuItem -> {
+                    switch (menuItem.getItemId()) {
+                        case R.id.name:
+                            sortType = SORT_BY_NAME;
+                            break;
+                        case R.id.type:
+                            sortType = SORT_BY_TYPE;
+                            break;
+                        case R.id.rssi:
+                            sortType = SORT_BY_RSSI;
+                            break;
+                        case R.id.detections:
+                            sortType = SORT_BY_DETECTIONS_NUM;
+                            break;
+                        default:
+                            break;
                     }
-                    break;
-                case R.id.btStop:
-                    if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED && isScanningTags) {
-                        stopInventory();
-                    }
-                    break;
-                case R.id.btSort:
-                    PopupMenu dropDownMenu = new PopupMenu(getApplicationContext(), btSort);
-                    dropDownMenu.getMenuInflater().inflate(R.menu.sort, dropDownMenu.getMenu());
-                    dropDownMenu.setOnMenuItemClickListener(menuItem -> {
-                        switch (menuItem.getItemId()) {
-                            case R.id.name:
-                                sortType = SORT_BY_NAME;
-                                break;
-                            case R.id.type:
-                                sortType = SORT_BY_TYPE;
-                                break;
-                            case R.id.rssi:
-                                sortType = SORT_BY_RSSI;
-                                break;
-                            case R.id.detections:
-                                sortType = SORT_BY_DETECTIONS_NUM;
-                                break;
-                            default:
-                                break;
-                        }
-                        sortTagsList();
-                        runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
-                        return true;
-                    });
-                    dropDownMenu.show();
-                    break;
-                default:
-                    break;
+                    sortTagsList();
+                    runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
+                    return true;
+                });
+                dropDownMenu.show();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void clearData() {
+        tv_count.setText("0");
+        tv_total.setText("0");
+        tv_time.setText("0s");
+
+        for (Iterator<MyTag> iterator = tagsList.iterator(); iterator.hasNext(); ) {
+            MyTag tag = iterator.next();
+            if (!tag.getIsFavorites()) {
+                iterator.remove();
+            } else {
+                tag.setNbrDetections(true);
+                tag.setRssi("Non détecté");
             }
         }
+        sortTagsList();
+        total = 0;
+        runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
+    }
 
-        @SuppressLint("SetTextI18n")
-        private void clearData() {
-            tv_count.setText("0");
-            tv_total.setText("0");
-            tv_time.setText("0s");
-
-            for (Iterator<MyTag> iterator = tagsList.iterator(); iterator.hasNext(); ) {
-                MyTag tag = iterator.next();
-                if (!tag.getIsFavorites()) {
-                    iterator.remove();
-                } else {
-                    tag.setNbrDetections(true);
-                    tag.setRssi("Non détecté");
-                }
+    private void sortTagsList() {
+        Collections.sort(tagsList, (tag1, tag2) -> {
+            if (tag1.getIsFavorites()) {
+                if (tagsList.get(0) != tag1 && !tagsList.get(0).getIsFavorites())
+                    return -1;
+                else
+                    return 0;
             }
-            sortTagsList();
-            total = 0;
-            runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
-        }
-
-        private void sortTagsList() {
-            Collections.sort(tagsList, (tag1, tag2) -> {
-                if (tag1.getIsFavorites()) {
-                    if (tagsList.get(0) != tag1 && !tagsList.get(0).getIsFavorites())
-                        return -1;
-                    else
-                        return 0;
-                }
-                if (sortType == SORT_BY_NAME) {
-                    String s1 = tag1.getName();
-                    String s2 = tag2.getName();
-                    return s1.compareToIgnoreCase(s2);
-                } else if (sortType == SORT_BY_TYPE) {
-                    String s1 = tag1.getType();
-                    String s2 = tag2.getType();
-                    return s1.compareToIgnoreCase(s2);
-                } else if (sortType == SORT_BY_RSSI) {
-                    String s1 = tag1.getRssi();
-                    String s2 = tag2.getRssi();
-                    return s1.compareToIgnoreCase(s2);
-                } else if (sortType == SORT_BY_DETECTIONS_NUM) {
-                    int n1 = tag1.getNbrDetections();
-                    int n2 = tag2.getNbrDetections();
-                    return n2 - n1;
-                } else if (sortType == SORT_BY_NEW_DETECTIONS) {
-                    return 0;
-                } else {
-                    return 0;
-                }
-            });
-        }
+            if (sortType == SORT_BY_NAME) {
+                String s1 = tag1.getName();
+                String s2 = tag2.getName();
+                return s1.compareToIgnoreCase(s2);
+            } else if (sortType == SORT_BY_TYPE) {
+                String s1 = tag1.getType();
+                String s2 = tag2.getType();
+                return s1.compareToIgnoreCase(s2);
+            } else if (sortType == SORT_BY_RSSI) {
+                String s1 = tag1.getRssi();
+                String s2 = tag2.getRssi();
+                return s1.compareToIgnoreCase(s2);
+            } else if (sortType == SORT_BY_DETECTIONS_NUM) {
+                int n1 = tag1.getNbrDetections();
+                int n2 = tag2.getNbrDetections();
+                return n2 - n1;
+            } else if (sortType == SORT_BY_NEW_DETECTIONS) {
+                return 0;
+            } else {
+                return 0;
+            }
+        });
+    }
 
     private void stopInventory() {
         loopFlag = false;
@@ -348,91 +349,91 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         isScanningTags = false;
     }
 
-        class ConnectStatus implements ScanListActivity.IConnectStatus {
-            @Override
-            public void getStatus(ConnectionStatus connectionStatus) {
-                if (connectionStatus == ConnectionStatus.CONNECTED) {
-                    if (!loopFlag) {
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        setViewsEnabled(0);
+    class ConnectStatus implements ScanListActivity.IConnectStatus {
+        @Override
+        public void getStatus(ConnectionStatus connectionStatus) {
+            if (connectionStatus == ConnectionStatus.CONNECTED) {
+                if (!loopFlag) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-
-                } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
-                    loopFlag = false;
-                    isScanningTags = false;
-                    btStop.setShapeType(0);
-                    setViewsEnabled(1);
+                    setViewsEnabled(0);
                 }
-            }
-        }
 
-        public synchronized void startThread() {
-            if (isScanningTags) {
-                return;
-            }
-            isScanningTags = true;
-            new TagThread().start();
-        }
-
-        class TagThread extends Thread {
-
-            @SuppressLint("SetTextI18n")
-            public void run() {
+            } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
+                loopFlag = false;
+                isScanningTags = false;
                 btStop.setShapeType(0);
-                btnStart.setShapeType(1);
-                if (uhf.startInventoryTag()) {
-                    loopFlag = true;
-                    isScanningTags = true;
-                    mStrTime = System.currentTimeMillis();
+                setViewsEnabled(1);
+            }
+        }
+    }
+
+    public synchronized void startThread() {
+        if (isScanningTags) {
+            return;
+        }
+        isScanningTags = true;
+        new TagThread().start();
+    }
+
+    class TagThread extends Thread {
+
+        @SuppressLint("SetTextI18n")
+        public void run() {
+            btStop.setShapeType(0);
+            btnStart.setShapeType(1);
+            if (uhf.startInventoryTag()) {
+                loopFlag = true;
+                isScanningTags = true;
+                mStrTime = System.currentTimeMillis();
+            } else {
+                showToast("Erreur de connexion à l'antenne.");
+            }
+            long startTime = System.currentTimeMillis();
+            while (loopFlag) {
+                List<UHFTAGInfo> list = getUHFInfo();
+                if (list == null || list.size() == 0) {
+                    SystemClock.sleep(1);
                 } else {
-                    showToast("Erreur de connexion à l'antenne.");
+                    addEPCToList(list);
                 }
-                long startTime = System.currentTimeMillis();
-                while (loopFlag) {
-                    List<UHFTAGInfo> list = getUHFInfo();
-                    if (list == null || list.size() == 0) {
-                        SystemClock.sleep(1);
-                    } else {
-                        addEPCToList(list);
-                    }
-                    if (System.currentTimeMillis() - startTime > 100) {
-                        startTime = System.currentTimeMillis();
-                        float useTime = (System.currentTimeMillis() - mStrTime) / 1000.0F;
-                        tv_time.setText(NumberTool.getPointDouble(loopFlag ? 1 : 3, useTime) + "s");
-                    }
+                if (System.currentTimeMillis() - startTime > 100) {
+                    startTime = System.currentTimeMillis();
+                    float useTime = (System.currentTimeMillis() - mStrTime) / 1000.0F;
+                    tv_time.setText(NumberTool.getPointDouble(loopFlag ? 1 : 3, useTime) + "s");
                 }
             }
         }
+    }
 
-        private synchronized List<UHFTAGInfo> getUHFInfo() {
-            return uhf.readTagFromBufferList_EpcTidUser();
-        }
+    private synchronized List<UHFTAGInfo> getUHFInfo() {
+        return uhf.readTagFromBufferList_EpcTidUser();
+    }
 
-        public void saveFavoriteTags(String epc, String name, String type, Boolean remove) {
-            List<String[]> list = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
-            for (int k = 0; k < list.size(); k++) {
-                if (epc.equals(list.get(k)[0])) {
-                    list.remove(list.get(k));
-                    if (remove) {
-                        FileUtils.saveXmlList(list, FAV_TAGS_FILE_NAME);
-                        return;
-                    } else
-                        break;
-                }
+    public void saveFavoriteTags(String epc, String name, String type, Boolean remove) {
+        List<String[]> list = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
+        for (int k = 0; k < list.size(); k++) {
+            if (epc.equals(list.get(k)[0])) {
+                list.remove(list.get(k));
+                if (remove) {
+                    FileUtils.saveXmlList(list, FAV_TAGS_FILE_NAME);
+                    return;
+                } else
+                    break;
             }
-            String[] strArr = new String[]{epc, name, type};
-            list.add(0, strArr);
-            FileUtils.saveXmlList(list, FAV_TAGS_FILE_NAME);
         }
+        String[] strArr = new String[]{epc, name, type};
+        list.add(0, strArr);
+        FileUtils.saveXmlList(list, FAV_TAGS_FILE_NAME);
+    }
 
-        private void addEPCToList(List<UHFTAGInfo> list) {
-            for (int k = 0; k < list.size(); k++) {
-                UHFTAGInfo uhftagInfo = list.get(k);
-                if (!uhftagInfo.getEPC().equals("") ) {/* || !uhftagInfo.getEPC().startsWith("AAAA")*///block other tags no tours
+    private void addEPCToList(List<UHFTAGInfo> list) {
+        for (int k = 0; k < list.size(); k++) {
+            UHFTAGInfo uhftagInfo = list.get(k);
+            if (!uhftagInfo.getEPC().equals("")) {/* || !uhftagInfo.getEPC().startsWith("AAAA")*///block other tags no tours
                 boolean tagFound = false;
                 for (MyTag tag : tagsList) {
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {

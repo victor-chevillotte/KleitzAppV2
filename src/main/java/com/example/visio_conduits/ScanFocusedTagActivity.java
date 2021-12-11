@@ -10,15 +10,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.text.TextUtils;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.visio_conduits.utils.DBHelper;
@@ -27,7 +31,7 @@ import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
-import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -43,6 +47,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public String focusedTagWorkPlace = "";
     public BluetoothAdapter mBtAdapter = null;
     private static final int NEW_TAG_NAME = 1;
+    private List<MyTag> tagsList;
+    private ScanListActivity.TagsAdapter tagsAdapter;
 
     public TextView nameTV, roomTV, workplaceTV, EPCTV, device_battery;
 
@@ -79,9 +85,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private long totalFocusTagDetect = 0;
 
     private final ConnectStatus mConnectStatus = new ConnectStatus();
-
     boolean isRunning = false;
-
 
     private void set_activity_activate_bluetooth() {
         uhf.free();
@@ -120,6 +124,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         remoteBTName = getIntent().getStringExtra(BluetoothDevice.EXTRA_DEVICE);
         focusedTagEPC = getIntent().getStringExtra(TAG_EPC);
         initUI();
+        tagsList = new ArrayList<>();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
         Utils.initSound(getApplicationContext());
@@ -150,7 +155,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         InventoryLoop = findViewById(R.id.InventoryLoop);
         btStop = findViewById(R.id.btStop);
         btStop.setEnabled(false);
-        tv_FocusTagNbDetect = findViewById(R.id.tv_FocusTagNbDetect);
         pb_distance = findViewById(R.id.progressBar);
         tv_distance = findViewById(R.id.FocusTagDistance);
 
@@ -285,41 +289,36 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     }
 
     public synchronized void startThread() {
-        if (isRunning) {
+        if (isScanningTags) {
             return;
         }
-        isRunning = true;
+        isScanningTags = true;
         new TagThread().start();
     }
 
     class TagThread extends Thread {
 
+        @SuppressLint("SetTextI18n")
         public void run() {
-            runOnUiThread(() -> {
-                btStop.setEnabled(true);
-                InventoryLoop.setEnabled(false);
-            });
-
+            //btStop.setShapeType(0);
+            //btnStart.setShapeType(1);
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
                 isScanningTags = true;
             } else {
                 showToast("Erreur de connexion à l'antenne.");
             }
-            isRunning = false;
+            long startTime = System.currentTimeMillis();
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
                 if (list == null || list.size() == 0) {
                     SystemClock.sleep(1);
                 } else {
-                    try {
-                        addEPCToList(list);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    Utils.playSound(1);
+                    addEPCToList(list);
                 }
-
+                if (System.currentTimeMillis() - startTime > 100) {
+                    startTime = System.currentTimeMillis();
+                }
             }
         }
     }
@@ -328,26 +327,164 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         return uhf.readTagFromBufferList_EpcTidUser();
     }
 
-    @SuppressLint("SetTextI18n")
-    private void addEPCToList(List<UHFTAGInfo> list) throws ParseException {
+    private void update(UHFTAGInfo tag) {
+        runOnUiThread(() -> {
+            Utils.playSound(1);
+            int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
+            distance = -distance - 40;
+            if (distance <= 0) {
+                distance = 0;
+            }
+            int finalDistance = distance;
+            tv_distance.setText(finalDistance + " cm");
+            pb_distance.setProgress(100 - finalDistance);
+            //tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+        });
+    }
+
+    private void addEPCToList(List<UHFTAGInfo> list) {
         for (int k = 0; k < list.size(); k++) {
             UHFTAGInfo uhftagInfo = list.get(k);
-            if (!TextUtils.isEmpty(uhftagInfo.getEPC()) && uhftagInfo.getEPC().equals(focusedTagEPC)) {//ici
-                int distance = (int) Double.parseDouble(uhftagInfo.getRssi().replaceAll(",", "."));
-                distance = -distance - 40;
-                if (distance <= 0) {
-                    distance = 0;
+            if (!uhftagInfo.getEPC().equals(focusedTagEPC)) {/* || !uhftagInfo.getEPC().startsWith("AAAA")*///block other tags no tours
+                boolean tagFound = false;
+                for (MyTag tag : tagsList) {
+                    if (tag.getEPC().equals(uhftagInfo.getEPC())) {
+                        tagFound = true;
+                        tag.setRssi(uhftagInfo.getRssi());
+                        tag.setNbrDetections(false);
+                        //tv_total.setText(String.valueOf(++total));
+                        runOnUiThread(() -> {
+                            Utils.playSound(1);
+                            int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
+                            distance = -distance - 40;
+                            if (distance <= 0) {
+                                distance = 0;
+                            }
+                            int finalDistance = distance;
+                            tv_distance.setText(finalDistance + " cm");
+                            pb_distance.setProgress(100 - finalDistance);
+                            //tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+                        });
+                        break;
+                    }
                 }
-                int finalDistance = distance;
-                runOnUiThread(() -> {
-                    tv_distance.setText(finalDistance + " cm");
-                    pb_distance.setProgress(100 - finalDistance);
-                    tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
-                });
-                break;
+                if (!tagFound) {
+                    //mEmptyList.setVisibility(View.GONE);//ici
+                    MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", uhftagInfo.getRssi(), false);
+                    addTag(newTag);
+                    runOnUiThread(() -> {
+                        Utils.playSound(1);
+                        int distance = (int) Double.parseDouble(newTag.getRssi().replaceAll(",", "."));
+                        distance = -distance - 40;
+                        if (distance <= 0) {
+                            distance = 0;
+                        }
+                        int finalDistance = distance;
+                        tv_distance.setText(finalDistance + " cm");
+                        pb_distance.setProgress(100 - finalDistance);
+                        //tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+                    });
                 }
             }
         }
+    }
 
+    @SuppressLint("SetTextI18n")
+    private void addTag(MyTag tag) {
+        if (tag.getEPC().startsWith("AAAAAA"))
+            tag.setType("Lumière");
+        else if (tag.getEPC().startsWith("AAAAEC"))
+            tag.setType("Chauffage Elec");
+        else if (tag.getEPC().startsWith("VC2021EP"))
+            tag.setType("Prise Elec");
+        else if (tag.getEPC().startsWith("VC2021EAR"))
+            tag.setType("Robinet Eau");
+        else if (tag.getEPC().startsWith("VC2021GR"))
+            tag.setType("Robinet Gaz");
+        Cursor cursor = mydb.selectATag(tag.getEPC());
+        if (cursor.moveToFirst() || cursor.getCount() != 0) {
+            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("name"));
+            @SuppressLint("Range") String room = cursor.getString(cursor.getColumnIndex("room"));
+            //@SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
+            tag.setName(name + " " + room);
+        } else {
+            //tag.setName(String.valueOf(tagNumber));
+            tag.setName(tag.getEPC());
+        }
+        tag.setNbrDetections(false);
+        tagsList.add(0, tag);
+        //tv_count.setText("" + tagsAdapter.getCount());
+    }
+
+
+
+    static class MyTag {
+        private final String epc;
+        private String name;
+        private String rssi;
+        private String type;
+        private int nbrDetections;
+        private boolean isFavorites;
+
+        public MyTag(String epc, String name, String type, String rssi, Boolean isFavorites) {
+            this.epc = epc;
+            this.name = name;
+            this.type = type;
+            this.rssi = rssi;
+            this.nbrDetections = 0;
+            this.isFavorites = isFavorites;
+        }
+
+        public String getEPC() {
+            return epc;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setRssi(String rssi) {
+            this.rssi = rssi;
+        }
+
+        public String getRssi() {
+            return this.rssi;
+        }
+
+        public void setNbrDetections(boolean reset) {
+            if (reset)
+                this.nbrDetections = 0;
+            else
+                this.nbrDetections++;
+        }
+
+        public int getNbrDetections() {
+            return nbrDetections;
+        }
+
+        public Boolean getIsFavorites() {
+            return isFavorites;
+        }
+
+        public void setIsFavorites(boolean isFavorites) {
+            this.isFavorites = isFavorites;
+        }
 
     }
+
+}
+
+
+
