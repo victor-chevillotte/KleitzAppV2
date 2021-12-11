@@ -1079,4 +1079,5 @@
     <string name="ConnectTitle">Connexion à votre antenne</string>
     <string name="searching_device">Recherche d\'antenne</string>
     <string name="appDescription">MurVision vous permet de localiser vos conduits à travers les murs !</string>
+    <string name="modify_tag_name">Modifier l\'étiquette</string>
 </resources>

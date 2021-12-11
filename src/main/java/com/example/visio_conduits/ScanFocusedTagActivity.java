@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,16 +17,9 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.example.visio_conduits.utils.DBHelper;
@@ -36,18 +28,14 @@ import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
-import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ScanFocusedTagActivity extends BaseActivity implements View.OnClickListener {
 
+    @SuppressLint("StaticFieldLeak")
     public static ScanFocusedTagActivity fa;
     public String remoteBTName = "";
     public String remoteBTAdd = "";
@@ -59,15 +47,10 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public BluetoothAdapter mBtAdapter = null;
     private static final int NEW_TAG_NAME = 1;
 
-    public TextView nameTV, roomTV, workplaceTV, EPCTV, device_battery;;
+    public TextView nameTV, roomTV, workplaceTV, EPCTV, device_battery;
 
-    public static final String TAG_DATA = "tagData";
     public static final String TAG_EPC = "tagEpc";
-    public static final String TAG_LEN = "tagLen";
-    public static final String TAG_COUNT = "tagCount";
-    public static final String TAG_RSSI = "tagRssi";
-    public static final String TAG_TYPE = "tagType";
-    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1,this);
+    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1, this);
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
@@ -77,7 +60,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                switch(state) {
+                switch (state) {
                     case BluetoothAdapter.STATE_OFF:
                     case BluetoothAdapter.STATE_TURNING_OFF:
                         set_activity_activate_bluetooth();
@@ -91,34 +74,29 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     };
     private boolean loopFlag = false;
-    private Button InventoryLoop, btStop, settings_button, nameTag;
+    private Button InventoryLoop;
+    private Button btStop;
     private ProgressBar pb_distance;
     private TextView tv_FocusTagNbDetect, tv_distance;
     private boolean isExit = false;
     private long totalFocusTagDetect = 0;
-    private SimpleAdapter adapter;
-    private HashMap<String, String> map;
-    private ArrayList<HashMap<String, String>> tagList;
-    private List<String> tempDatas = new ArrayList<>();
 
-
-    private long mStrTime;
     private ExecutorService executorService;
 
-    private ConnectStatus mConnectStatus = new ConnectStatus();
+    private final ConnectStatus mConnectStatus = new ConnectStatus();
 
-    //--------------------------------------获取 解析数据-------------------------------------------------
-    final int FLAG_START = 0;//开始
-    final int FLAG_STOP = 1;//停止
+    final int FLAG_START = 0;
+    final int FLAG_STOP = 1;
     final int FLAG_UHFINFO_LIST = 5;
-    final int FLAG_GET_MODE = 4; // 获取模式
-    final int FLAG_SUCCESS = 10;//成功
-    final int FLAG_FAIL = 11;//失败
+    final int FLAG_GET_MODE = 4;
+    final int FLAG_SUCCESS = 10;
+    final int FLAG_FAIL = 11;
     final int FLAG_SET_SUCC = 12;
     final int FLAG_SET_FAIL = 13;
 
     boolean isRunning = false;
     Handler handler = new Handler() {
+        @SuppressLint("HandlerLeak")
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -144,7 +122,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     }
                     break;
                 case FLAG_UHFINFO_LIST:
-                    List<UHFTAGInfo> list = ( List<UHFTAGInfo>) msg.obj;
+                    List<UHFTAGInfo> list = (List<UHFTAGInfo>) msg.obj;
                     try {//ici
                         addEPCToList(list);
                     } catch (ParseException e) {
@@ -185,6 +163,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     }
                 }
             }
+
             public void onKeyUp(int keycode) {
                 Log.d(TAG, "  keycode =" + keycode + "   ,isExit=" + isExit);
                 stopInventory();
@@ -201,7 +180,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
-        //checkLocationEnable(); à mettre en place ulterieurement
         Utils.initSound(getApplicationContext());
     }
 
@@ -211,7 +189,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         Utils.freeSound();
         unregisterReceiver(bluetoothBroadcastReceiver);
         isExit = true;
-        removeConnectStatusNotice((IConnectStatus) mConnectStatus);
+        removeConnectStatusNotice(mConnectStatus);
         super.onDestroy();
     }
 
@@ -221,79 +199,67 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!mBtAdapter.isEnabled())
             finish();
-        device_battery = (TextView) findViewById(R.id.device_battery);
+        device_battery = findViewById(R.id.device_battery);
 
-        settings_button = (Button) findViewById(R.id.settings_button);
+        Button settings_button = findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
 
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
-        InventoryLoop = (Button) findViewById(R.id.InventoryLoop);
-        btStop = (Button) findViewById(R.id.btStop);
+        InventoryLoop = findViewById(R.id.InventoryLoop);
+        btStop = findViewById(R.id.btStop);
         btStop.setEnabled(false);
-        tv_FocusTagNbDetect = (TextView) findViewById(R.id.tv_FocusTagNbDetect);
-        pb_distance=(ProgressBar) findViewById(R.id.progressBar);
-        tv_distance= (TextView) findViewById(R.id.FocusTagDistance);
+        tv_FocusTagNbDetect = findViewById(R.id.tv_FocusTagNbDetect);
+        pb_distance = findViewById(R.id.progressBar);
+        tv_distance = findViewById(R.id.FocusTagDistance);
 
         InventoryLoop.setOnClickListener(this);
         btStop.setOnClickListener(this);
-        tagList = new ArrayList<HashMap<String, String>>();
-        adapter = new SimpleAdapter(this, tagList, R.layout.listtag_items,
-                new String[]{ ScanListActivity.TAG_TYPE, ScanListActivity.TAG_DATA, ScanListActivity.TAG_COUNT, ScanListActivity.TAG_RSSI},
-                new int[]{R.id.type, R.id.name, R.id.count, R.id.rssi});
-        nameTag = (Button) findViewById(R.id.InventoryFocusAddModifyTag);
+        Button nameTag =  findViewById(R.id.InventoryFocusAddModifyTag);
         Cursor cursor = mydb.selectATag(focusedTagEPC);
         if (cursor.moveToFirst() && cursor.getCount() != 0) {
-            nameTag.setText("Modifier l'étiquette");
+            nameTag.setText(R.string.modify_tag_name);
             focusedTagName = cursor.getString(cursor.getColumnIndex("name"));
             focusedTagRoom = cursor.getString(cursor.getColumnIndex("room"));
             focusedTagWorkPlace = cursor.getString(cursor.getColumnIndex("workplace"));
         }
 
-        EPCTV= (TextView) findViewById(R.id.FocusTagEPC);
+        EPCTV = findViewById(R.id.FocusTagEPC);
         EPCTV.setText(focusedTagEPC);
-        nameTV= (TextView) findViewById(R.id.FocusTagName);
+        nameTV =  findViewById(R.id.FocusTagName);
         nameTV.setText(focusedTagName);
-        roomTV= (TextView) findViewById(R.id.FocusTagRoom);
+        roomTV = findViewById(R.id.FocusTagRoom);
         roomTV.setText(focusedTagRoom);
-        workplaceTV= (TextView) findViewById(R.id.FocusTagWorkplace);
+        workplaceTV =  findViewById(R.id.FocusTagWorkplace);
         workplaceTV.setText(focusedTagWorkPlace);
 
-        nameTag.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent myIntent = new Intent(ScanFocusedTagActivity.this, AddTagNameActivity.class);
-                myIntent.putExtra("uii", focusedTagEPC);
-                myIntent.putExtra("name", focusedTagName);
-                myIntent.putExtra("room", focusedTagRoom);
-                myIntent.putExtra("workplace", focusedTagWorkPlace);
-                boolean newTag=true;
-                if(!focusedTagName.equals("")){
-                    newTag=false;
-                }
-                myIntent.putExtra("newTag", newTag);
-                startActivityForResult(myIntent, NEW_TAG_NAME);
+        nameTag.setOnClickListener(v -> {
+            Intent myIntent = new Intent(ScanFocusedTagActivity.this, AddTagNameActivity.class);
+            myIntent.putExtra("uii", focusedTagEPC);
+            myIntent.putExtra("name", focusedTagName);
+            myIntent.putExtra("room", focusedTagRoom);
+            myIntent.putExtra("workplace", focusedTagWorkPlace);
+            boolean newTag = true;
+            if (!focusedTagName.equals("")) {
+                newTag = false;
             }
+            myIntent.putExtra("newTag", newTag);
+            startActivityForResult(myIntent, NEW_TAG_NAME);
         });
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case NEW_TAG_NAME:
-                //When the DeviceListActivity return, with the selected device address
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    focusedTagName = data.getStringExtra("NewFocusedTagName");
-                    focusedTagRoom = data.getStringExtra("NewFocusedTagRoom");
-                    focusedTagWorkPlace = data.getStringExtra("NewFocusedTagWorkPlace");
-                    nameTV.setText(focusedTagName);
-                    roomTV.setText(focusedTagRoom);
-                    workplaceTV.setText(focusedTagWorkPlace);
-                }
-                break;
-            default:
-                break;
+        if (requestCode == NEW_TAG_NAME) {//When the DeviceListActivity return, with the selected device address
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                focusedTagName = data.getStringExtra("NewFocusedTagName");
+                focusedTagRoom = data.getStringExtra("NewFocusedTagRoom");
+                focusedTagWorkPlace = data.getStringExtra("NewFocusedTagWorkPlace");
+                nameTV.setText(focusedTagName);
+                roomTV.setText(focusedTagRoom);
+                workplaceTV.setText(focusedTagWorkPlace);
+            }
         }
     }
 
@@ -303,18 +269,16 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
     Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
-    int delay = 1*1000; //Delay for 1 seconds  One second = 1000 milliseconds.
+    int delay = 1000; //Delay for 1 seconds  One second = 1000 milliseconds.
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onResume() {
         //start handler as activity become visible
+        handlerRefreshBattery.postDelayed(runnable = () -> {
+            device_battery.setText(uhf.getBattery() + "%");
 
-        handlerRefreshBattery.postDelayed( runnable = new Runnable() {
-            public void run() {
-                device_battery.setText(uhf.getBattery() + "%");
-
-                handlerRefreshBattery.postDelayed(runnable, delay);
-            }
+            handlerRefreshBattery.postDelayed(runnable, delay);
         }, delay);
         super.onResume();
         setViewsEnabled(true);
@@ -329,12 +293,13 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.settings_button:
                 showToast("Chargement des réglages...");
-                Intent intent=new Intent(ScanFocusedTagActivity.this, UHFSettingsActivity.class);
+                Intent intent = new Intent(ScanFocusedTagActivity.this, UHFSettingsActivity.class);
                 ScanFocusedTagActivity.this.startActivity(intent);
                 break;
             case R.id.InventoryLoop:
@@ -386,14 +351,11 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    private Runnable getModeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-                byte[] data = uhf.getEPCAndTIDUserMode();
-                Message msg = handler.obtainMessage(FLAG_GET_MODE, data);
-                handler.sendMessage(msg);
-            }
+    private final Runnable getModeRunnable = () -> {
+        if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
+            byte[] data = uhf.getEPCAndTIDUserMode();
+            Message msg = handler.obtainMessage(FLAG_GET_MODE, data);
+            handler.sendMessage(msg);
         }
     };
 
@@ -416,7 +378,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
                 isScanningTags = true;
-                mStrTime = System.currentTimeMillis();
                 msg.arg1 = FLAG_SUCCESS;
             } else {
                 msg.arg1 = FLAG_FAIL;
@@ -425,9 +386,9 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             isRunning = false;//执行完成设置成false
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
-                if(list==null || list.size()==0){
+                if (list == null || list.size() == 0) {
                     SystemClock.sleep(1);
-                }else{
+                } else {
                     Utils.playSound(1);
                     handler.sendMessage(handler.obtainMessage(FLAG_UHFINFO_LIST, list));
                 }
@@ -437,89 +398,26 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    private synchronized   List<UHFTAGInfo> getUHFInfo() {
-        List<UHFTAGInfo> list = uhf.readTagFromBufferList_EpcTidUser();
-        return list;
+    private synchronized List<UHFTAGInfo> getUHFInfo() {
+        return uhf.readTagFromBufferList_EpcTidUser();
     }
 
+    @SuppressLint("SetTextI18n")
     private void addEPCToList(List<UHFTAGInfo> list) throws ParseException {
-        for(int k=0;k<list.size();k++){
-            UHFTAGInfo uhftagInfo=list.get(k);
+        for (int k = 0; k < list.size(); k++) {
+            UHFTAGInfo uhftagInfo = list.get(k);
             if (!TextUtils.isEmpty(uhftagInfo.getEPC()) && uhftagInfo.getEPC().equals(focusedTagEPC)) {//ici
-                int index = checkIsExist(uhftagInfo.getEPC());
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("EPC:");
-                stringBuilder.append(uhftagInfo.getEPC());
-
-                map = new HashMap<String, String>();
-                map.put(ScanFocusedTagActivity.TAG_EPC, uhftagInfo.getEPC());
-                map.put(ScanFocusedTagActivity.TAG_DATA, stringBuilder.toString());
-                map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(1));
-                map.put(ScanFocusedTagActivity.TAG_RSSI, uhftagInfo.getRssi());
-                if (index == -1) {
-                    tagList.add(map);
-                    tempDatas.add(uhftagInfo.getEPC());
-                } else {
-                    int tagCount = Integer.parseInt(tagList.get(index).get(ScanFocusedTagActivity.TAG_COUNT), 10) + 1;
-                    map.put(ScanFocusedTagActivity.TAG_COUNT, String.valueOf(tagCount));
-                    tagList.set(index, map);
-                }
-                NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
-                Number number = format.parse(tagList.get(0).get(ScanFocusedTagActivity.TAG_RSSI));
-                int distance = (int) (- number.doubleValue() - 40);
-                if (distance<=0){
-                    distance=0;
+                int distance = (int) Double.parseDouble(uhftagInfo.getRssi().replaceAll(",", "."));
+                distance = - distance - 40;
+                if (distance <= 0) {
+                    distance = 0;
                 }
                 tv_distance.setText(distance + " cm");
-                pb_distance.setProgress( 100 - distance);
+                pb_distance.setProgress(100 - distance);
                 tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
             }
         }
-        adapter.notifyDataSetChanged();
     }
-
-    public int checkIsExist(String epc) {
-        if (TextUtils.isEmpty(epc)) {
-            return -1;
-        }
-        return binarySearch(tempDatas, epc);
-    }
-
-
-    static int binarySearch(List<String> array, String src) {
-        int left = 0;
-        int right = array.size() - 1;
-        while (left <= right) {
-            if (compareString(array.get(left), src)) {
-                return left;
-            } else if (left != right) {
-                if (compareString(array.get(right), src))
-                    return right;
-            }
-            left++;
-            right--;
-        }
-        return -1;
-    }
-
-    static boolean compareString(String str1, String str2) {
-        if (str1.length() != str2.length()) {
-            return false;
-        } else if (str1.hashCode() != str2.hashCode()) {
-            return false;
-        } else {
-            char[] value1 = str1.toCharArray();
-            char[] value2 = str2.toCharArray();
-            int size = value1.length;
-            for (int k = 0; k < size; k++) {
-                if (value1[k] != value2[k]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
 
 
 }
