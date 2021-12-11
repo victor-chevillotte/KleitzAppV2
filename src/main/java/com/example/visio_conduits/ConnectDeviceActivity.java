@@ -303,7 +303,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
         String[] strArr = new String[]{address, name};
         list.add(0, strArr);
         FileUtils.saveXmlList(list, FAV_DEVICES_FILE_NAME);
-    }
+           }
 
     class BTStatus implements ConnectionStatusCallback<Object> {
         @Override
