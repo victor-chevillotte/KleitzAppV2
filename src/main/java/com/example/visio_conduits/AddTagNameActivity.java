@@ -40,23 +40,19 @@ public class AddTagNameActivity extends BaseActivity{
         TextView uiiDisplay = findViewById(R.id.AddTagUii);
         uiiDisplay.setText(uiiOfFocus);
         name = intent.getStringExtra("name");
-        AutoCompleteTextView AddTagName = findViewById(R.id.AddTagName);
-        AddTagName.setText(name);
+        mStatNameView = findViewById(R.id.AddTagName);
+        mStatNameView.setText(name);
         room = intent.getStringExtra("room");
-        AutoCompleteTextView AddTagRoom = findViewById(R.id.AddTagRoom);
-        AddTagRoom.setText(room);
+        mStatRoomView = findViewById(R.id.AddTagRoom);
+        mStatRoomView.setText(room);
         workplace = intent.getStringExtra("workplace");
-        AutoCompleteTextView AddTagWorkplace = findViewById(R.id.AddTagWorkplace);
-        AddTagWorkplace.setText(workplace);
+        mStatWorkplaceView = findViewById(R.id.AddTagWorkplace);
+        mStatWorkplaceView.setText(workplace);
         newTag = intent.getBooleanExtra("newTag", Boolean.parseBoolean("true"));
         if(!newTag){
-            Button addModifyTagBtn = (Button) findViewById(R.id.AddTagSubmitBtn);
-            addModifyTagBtn.setText("Modifier");
+            Button addModifyTagBtn = findViewById(R.id.AddTagSubmitBtn);
+            addModifyTagBtn.setText(R.string.modify_tag);
         }
-
-        mStatWorkplaceView = findViewById(R.id.AddTagWorkplace);
-        mStatRoomView = findViewById(R.id.AddTagRoom);
-        mStatNameView = findViewById(R.id.AddTagName);
 
         // Create an ItemAutoTextAdapter for the State Name field,
         // and set it as the OnItemClickListener for that field.
@@ -76,7 +72,7 @@ public class AddTagNameActivity extends BaseActivity{
     }
 
     public void AddTagbuttonHandler(View view) {
-        Button addModifyTagBtn = (Button) findViewById(R.id.AddTagSubmitBtn);
+        Button addModifyTagBtn = findViewById(R.id.AddTagSubmitBtn);
 
         EditText tagNameEditText = findViewById(R.id.AddTagName);
         name = tagNameEditText.getText().toString();
@@ -88,17 +84,17 @@ public class AddTagNameActivity extends BaseActivity{
         workplace = tagWorkplaceEditText.getText().toString();
         if (name.equals("")){
             TextView tagNameAlert = findViewById(R.id.AddTagNameAlert);
-            tagNameAlert.setText("Veuillez entrer un nom.");
+            tagNameAlert.setText(R.string.enter_name);
             return;
         }
         if (room.equals("")){
             TextView tagRoomAlert = findViewById(R.id.AddTagRoomAlert);
-            tagRoomAlert.setText("Veuillez entrer une pièce.");
+            tagRoomAlert.setText(R.string.enter_room_name);
             return;
         }
         if (workplace.equals("")){
             TextView tagWorkplaceAlert = findViewById(R.id.AddTagWorkplaceAlert);
-            tagWorkplaceAlert.setText("Veuillez entrer un chantier.");
+            tagWorkplaceAlert.setText(R.string.enter_workplace_name);
             return;
         }
         if(addModifyTagBtn.getText()=="Modifier"){
@@ -171,23 +167,19 @@ public class AddTagNameActivity extends BaseActivity{
          */
         @Override
         public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    TextView tagNameAlert = findViewById(R.id.AddTagNameAlert);
-                    tagNameAlert.setText("");
-                    TextView tagRoomAlert = findViewById(R.id.AddTagRoomAlert);
-                    tagRoomAlert.setText("");
-                    TextView tagWorkplaceAlert = findViewById(R.id.AddTagWorkplaceAlert);
-                    tagWorkplaceAlert.setText("");
-                    System.out.println("flag2");
-                }
+            runOnUiThread(() -> {
+                TextView tagNameAlert = findViewById(R.id.AddTagNameAlert);
+                tagNameAlert.setText("");
+                TextView tagRoomAlert = findViewById(R.id.AddTagRoomAlert);
+                tagRoomAlert.setText("");
+                TextView tagWorkplaceAlert = findViewById(R.id.AddTagWorkplaceAlert);
+                tagWorkplaceAlert.setText("");
+                System.out.println("flag2");
             });
             if (getFilterQueryProvider() != null) {
                 return getFilterQueryProvider().runQuery(constraint);
             }
-            Cursor cursor = mydb.getMatchingStates((constraint != null ? constraint.toString() : null),typeOfField);
-            return cursor;
+            return mydb.getMatchingStates((constraint != null ? constraint.toString() : null),typeOfField);
         }
 
         /**
@@ -203,8 +195,7 @@ public class AddTagNameActivity extends BaseActivity{
         @Override
         public String convertToString(Cursor cursor) {
             final int columnIndex = cursor.getColumnIndexOrThrow("name");
-            final String str = cursor.getString(columnIndex);
-            return str;
+            return cursor.getString(columnIndex);
         }
 
         /**
@@ -245,11 +236,9 @@ public class AddTagNameActivity extends BaseActivity{
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             final LayoutInflater inflater = LayoutInflater.from(context);
-            final View view =
-                    inflater.inflate(android.R.layout.simple_dropdown_item_1line,
-                            parent, false);
 
-            return view;
+            return inflater.inflate(android.R.layout.simple_dropdown_item_1line,
+                    parent, false);
         }
 
         /**

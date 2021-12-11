@@ -1081,4 +1081,8 @@
     <string name="searching_device">Recherche d\'antenne</string>
     <string name="appDescription">MurVision vous permet de localiser vos conduits à travers les murs !</string>
     <string name="modify_tag_name">Modifier l\'étiquette</string>
+    <string name="modify_tag">Modifier</string>
+    <string name="enter_name">Veuillez entrer un nom.</string>
+    <string name="enter_room_name">Veuillez entrer une pièce.</string>
+    <string name="enter_workplace_name">Veuillez entrer un chantier.</string>
 </resources>
