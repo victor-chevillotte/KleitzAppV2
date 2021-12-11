@@ -396,7 +396,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
                 if (list == null || list.size() == 0) {
-                    SystemClock.sleep(1);
+                    SystemClock.sleep(20);
                 } else {
                     addEPCToList(list);
                 }

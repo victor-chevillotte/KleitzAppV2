@@ -341,7 +341,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
                 if (list == null || list.size() == 0) {
-                    SystemClock.sleep(1);
+                    SystemClock.sleep(20);
                 } else {
                     addEPCToList(list);
                 }
@@ -359,15 +359,18 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private void updateDisplay(MyTag tag) {
         if (tag.getEPC().equals(focusedTagEPC)) {
             int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
-            distance = - distance - 40;
+            distance = - distance * 2 - 70;
             if (distance <= 0) {
                 distance = 0;
             }
             tv_distance.setText(distance + " cm");
             pb_distance.setProgress(100 - distance);
             tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+            Utils.playSound(1);
+            distance = distance + 20 ;
             while ( distance < 100) {
-                distance = distance + 20 ;
+                SystemClock.sleep(100);
+                distance = distance + 10 ;
                 Utils.playSound(1);
             }
         }
