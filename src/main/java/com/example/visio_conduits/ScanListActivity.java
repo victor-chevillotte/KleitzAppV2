@@ -115,7 +115,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private HashMap<String, String> map;
     private List<MyTag> tagsList;
     private List<String> tempDatas = new ArrayList<>();
-    private Map<String, Integer> ValuessiValues;
     private long mStrTime;
     private ExecutorService executorService;
     private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1, this);
@@ -382,6 +381,10 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             if (!tag.getIsFavorites()) {
                 iterator.remove();
             }
+            else {
+                tag.setNbrDetections(true);
+                tag.setRssi("0");
+            }
         }
         sortTagsList();
         tempDatas.clear();
@@ -543,7 +546,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {
                         tagFound = true;
                         tag.setRssi(uhftagInfo.getRssi());
-                        tag.setNbrDetections();
+                        tag.setNbrDetections(false);
                         tv_total.setText(String.valueOf(++total));
                         tagsAdapter.notifyDataSetChanged();
                         break;
@@ -658,8 +661,11 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return this.rssi;
         }
 
-        public void setNbrDetections() {
-            this.nbrDetections++;
+        public void setNbrDetections(boolean reset) {
+            if (reset)
+                this.nbrDetections = 0;
+            else
+                this.nbrDetections++;
         }
 
         public int getNbrDetections() {
