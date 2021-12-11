@@ -18,12 +18,14 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
@@ -66,10 +68,15 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     public static final String TAG_DATA = "tagData";
     public static final String TAG_NAME = "tagName";
     public static final String TAG_EPC = "tagEpc";
-    public static final String TAG_LEN = "tagLen";
     public static final String TAG_COUNT = "tagCount";
     public static final String TAG_RSSI = "tagRssi";
     public static final String TAG_TYPE = "tagType";
+    public static final int SORT_BY_NAME = 0;
+    public static final int SORT_BY_TYPE = 1;
+    public static final int SORT_BY_RSSI = 2;
+    public static final int SORT_BY_DETECTIONS_NUM = 3;
+    public static final int SORT_BY_NEW_DETECTIONS = 4;
+    private int sortType = SORT_BY_NEW_DETECTIONS;
     private TextView device_battery;
     private ProgressBar batteryPB;
     private boolean isScanningTags = false;
@@ -100,7 +107,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private boolean loopFlag = false;
     private ListView LvTags;
     private NeumorphButton btnStart, btStop, btClear;
-    private NeumorphImageButton settings_button;
+    private NeumorphImageButton settings_button, btSort;
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
     private long total = 0;
@@ -251,6 +258,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btStop = findViewById(R.id.btStop);
         btStop.setShapeType(1);
         btClear = findViewById(R.id.btClear);
+        btSort = findViewById(R.id.btSort);
         tv_count = (TextView) findViewById(R.id.tv_count);
         tv_total = (TextView) findViewById(R.id.tv_total);
         tv_time = (TextView) findViewById(R.id.tv_time);
@@ -258,6 +266,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btnStart.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
+        btSort.setOnClickListener(this);
         clearData();
         List<String[]> deviceFavoritesList = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
         for (String[] device : deviceFavoritesList) {
@@ -329,6 +338,35 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     stopInventory();
                 }
                 break;
+            case R.id.btSort:
+                PopupMenu dropDownMenu = new PopupMenu(getApplicationContext(), btSort);
+                dropDownMenu.getMenuInflater().inflate(R.menu.sort, dropDownMenu.getMenu());
+                dropDownMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        switch (menuItem.getItemId()) {
+                            case R.id.name:
+                                sortType = SORT_BY_NAME;
+                                break;
+                            case R.id.type:
+                                sortType = SORT_BY_TYPE;
+                                break;
+                            case R.id.rssi:
+                                sortType = SORT_BY_RSSI;
+                                break;
+                            case R.id.detections:
+                                sortType = SORT_BY_DETECTIONS_NUM;
+                                break;
+                            default :
+                                break;
+                        }
+                        sortTagsList();
+                        tagsAdapter.notifyDataSetChanged();
+                        return true;
+                    }
+                });
+                dropDownMenu.show();
+                break;
             default:
                 break;
         }
@@ -345,23 +383,41 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 iterator.remove();
             }
         }
-        tagsAdapter.notifyDataSetChanged();
-
-        Collections.sort(tagsList, new Comparator<MyTag>() {
-            @Override
-            public int compare(MyTag tag1, MyTag tag2) {
-                if (tag1.getIsFavorites() && tag2.getIsFavorites()) {
-                    String s1 = tag1.getName();
-                    String s2 = tag2.getName();
-                    return s1.compareToIgnoreCase(s2);
-                } else
-                    return 0;
-            }
-        });
-
+        sortTagsList();
         tempDatas.clear();
         total = 0;
         tagsAdapter.notifyDataSetChanged();
+    }
+
+    private void sortTagsList (){
+        Collections.sort(tagsList, (tag1, tag2) -> {
+            if (sortType == SORT_BY_NAME){
+                String s1 = tag1.getName();
+                String s2 = tag2.getName();
+                return s1.compareToIgnoreCase(s2);
+            }
+            else if  (sortType == SORT_BY_TYPE){
+                String s1 = tag1.getType();
+                String s2 = tag2.getType();
+                return s1.compareToIgnoreCase(s2);
+            }
+            else if  (sortType == SORT_BY_RSSI){
+                String s1 = tag1.getRssi();
+                String s2 = tag2.getRssi();
+                return s1.compareToIgnoreCase(s2);
+            }
+            else if  (sortType == SORT_BY_DETECTIONS_NUM){
+                int n1 = tag1.getNbrDetections();
+                int n2 = tag2.getNbrDetections();
+                return n2 - n1;
+            }
+            else if  (sortType == SORT_BY_NEW_DETECTIONS){
+                return 0;
+            }
+            else{
+                return 0;
+            }
+        });
     }
 
     private void stopInventory() {
@@ -486,7 +542,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 for (MyTag tag : tagsList) {
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {
                         tagFound = true;
-                        tag.setRssi( uhftagInfo.getRssi());
+                        tag.setRssi(uhftagInfo.getRssi());
                         tag.setNbrDetections();
                         tv_total.setText(String.valueOf(++total));
                         tagsAdapter.notifyDataSetChanged();
@@ -498,6 +554,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", uhftagInfo.getRssi(), false);
                     addTag(newTag);
                 }
+                sortTagsList();
             }
         }
     }
@@ -523,7 +580,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             tagNumber++;
             tag.setName(String.valueOf(tagNumber));
         }
-        tagsList.add(tag);
+        tagsList.add(0, tag);
         tv_count.setText("" + tagsAdapter.getCount());
         tagsAdapter.notifyDataSetChanged();
     }
@@ -621,23 +678,23 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     class TagsAdapter extends BaseAdapter {
         Context context;
-        List<MyTag> tags;
+        List<MyTag> tagsList;
         LayoutInflater inflater;
 
         public TagsAdapter(Context context, List<MyTag> tags) {
             this.context = context;
             inflater = LayoutInflater.from(context);
-            this.tags = tags;
+            this.tagsList = tags;
         }
 
         @Override
         public int getCount() {
-            return tags.size();
+            return tagsList.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return tags.get(position);
+            return tagsList.get(position);
         }
 
         @Override
@@ -654,7 +711,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             } else {
                 vg = (ViewGroup) inflater.inflate(R.layout.listtag_items, null);
             }
-            MyTag tag = tags.get(position);
+            MyTag tag = tagsList.get(position);
             final TextView tvname = ((TextView) vg.findViewById(R.id.name));
             final TextView tvtype = ((TextView) vg.findViewById(R.id.type));
             final TextView tvcount = ((TextView) vg.findViewById(R.id.count));
@@ -663,6 +720,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
             if (tag.getIsFavorites())
                 favoritefull.setVisibility(View.VISIBLE);
+            else
+                favoritefull.setVisibility(View.GONE);
 
             favorite.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -676,7 +735,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                         showToast("Favoris ajouté");
                         tag.setIsFavorites(true);
                         saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
-                        favoritefull.setVisibility(View.VISIBLE);
                     }
                 }
             });

@@ -543,7 +543,8 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
             if (device.getIsFavorites())
                 favoritefull.setVisibility(View.VISIBLE);
-
+            else
+                favoritefull.setVisibility(View.GONE);
             favorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
