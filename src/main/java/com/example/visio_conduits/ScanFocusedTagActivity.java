@@ -50,7 +50,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public TextView nameTV, roomTV, workplaceTV, EPCTV, device_battery;
 
     public static final String TAG_EPC = "tagEpc";
-    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1, this);
+    private final DBHelper mydb = new DBHelper(this,  null, 1, this);
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 

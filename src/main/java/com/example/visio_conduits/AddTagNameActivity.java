@@ -25,7 +25,7 @@ public class AddTagNameActivity extends BaseActivity{
     public String workplace="";
     public Boolean newTag=true;
 
-    private DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1,this);
+    private DBHelper mydb = new DBHelper(this,  null, 1,this);
     public AutoCompleteTextView mStatWorkplaceView;
     public AutoCompleteTextView mStatRoomView;
     public AutoCompleteTextView mStatNameView;

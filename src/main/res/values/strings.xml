@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
     <string name="app_name">Track cable V2</string>
 
     <string name="action_settings">Réglages</string>
@@ -602,7 +603,7 @@
     <string name="title_about_Temperature">Temperature</string>
     <string name="title_about_storage">Storage:</string>
     <string name="title_about_display">Display:</string>
-    <string name="title_about_cpu">CPU:</string>
+    <string name="title_about_cpu" translatable="false">CPU:</string>
     <string name="title_about_model">Model:</string>
     <string name="title_about_android_release">Android version:</string>
     <string name="title_about_device_release">Build number:</string>
@@ -771,7 +772,7 @@
     <string name="led_msg_open_fail">Open the led light failure</string>
     <string name="led_msg_close_fail">Close the led light failure</string>
     <string name="gs_msg_not_one">Please select a function module</string>
-    <string name="title_activity_ping_pop">PingPopActivity</string>
+    <string name="title_activity_ping_pop" >PingPopActivity</string>
     <string name="title_activity_bdnav">Beidou</string>
     <string name="bd_msg_Locate_succ">Success</string>
     <string name="bd_msg_Locateing">Locating...</string>

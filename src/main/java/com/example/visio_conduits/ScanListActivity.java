@@ -98,7 +98,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private List<MyTag> tagsList;
     private long mStrTime;
     private ExecutorService executorService;
-    private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1, this);
+    private final DBHelper mydb = new DBHelper(this, null, 1, this);
 
     private final ConnectStatus mConnectStatus = new ConnectStatus();
 

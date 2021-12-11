@@ -1,5 +1,6 @@
 package com.example.visio_conduits.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,39 +24,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
   public static final String NAMES_TABLE_DROP = "DROP TABLE IF EXISTS names;";
 
-  public static final String ROOMS_TABLE_NAME = "rooms";
-
-  public static final String ROOM_COLUMN_ID = "_id";
-
-  public static final String ROOM_COLUMN_NAME = "name";
-
   public static final String TAGS_TABLE_CREATE = "CREATE TABLE tags (id INTEGER PRIMARY KEY AUTOINCREMENT, uii STRING, name INTEGER,room INTEGER, workplace INTEGER )";
 
   public static final String TAGS_TABLE_DROP = "DROP TABLE IF EXISTS tags;";
 
-  public static final String TAGS_TABLE_NAME = "tags";
-
-  public static final String TAG_COLUMN_ID = "id";
-
-  public static final String TAG_COLUMN_NAME = "name";
-
-  public static final String TAG_COLUMN_ROOM_NAME_ID = "room";
-
-  public static final String TAG_COLUMN_UII = "uii";
-
-  public static final String TAG_COLUMN_WORKPLACE_NAME_ID = "workplace";
-
-  public static final int VERSION = 1;
-
   public static final String WORKPLACES_TABLE_CREATE = "CREATE TABLE workplaces (_id INTEGER PRIMARY KEY AUTOINCREMENT, name STRING )";
 
   public static final String WORKPLACES_TABLE_DROP = "DROP TABLE IF EXISTS workplaces;";
-
-  public static final String WORKPLACES_TABLE_NAME = "workplaces";
-
-  public static final String WORKPLACE_COLUMN_ID = "_id";
-
-  public static final String WORKPLACE_COLUMN_NAME = "name";
 
   private final Activity mActivity;
 
@@ -71,11 +46,12 @@ public class DBHelper extends SQLiteOpenHelper {
    */
 
 
-  public DBHelper(Context paramContext, String s, SQLiteDatabase.CursorFactory paramCursorFactory, int paramInt, Activity activity) {
+  public DBHelper(Context paramContext, SQLiteDatabase.CursorFactory paramCursorFactory, int paramInt, Activity activity) {
     super(paramContext, DATABASE_NAME, paramCursorFactory, paramInt);
     this.mActivity = activity;
   }
 
+  @SuppressLint("SQLiteString")
   @Override
   public void onCreate(SQLiteDatabase paramSQLiteDatabase) {
     System.out.println("Create DB");
@@ -145,9 +121,10 @@ public class DBHelper extends SQLiteOpenHelper {
     onCreate(paramSQLiteDatabase);
   }
 
+  @SuppressLint("Range")
   public ArrayList<String> getAllTags() {
     ArrayList<String> arrayList = new ArrayList();
-    Cursor cursor = getReadableDatabase().rawQuery("select * from tags", null);
+    @SuppressLint("Recycle") Cursor cursor = getReadableDatabase().rawQuery("select * from tags", null);
     cursor.moveToFirst();
     while (!cursor.isAfterLast()) {
       arrayList.add(cursor.getString(cursor.getColumnIndex("name")));
@@ -160,6 +137,7 @@ public class DBHelper extends SQLiteOpenHelper {
     return (int) DatabaseUtils.queryNumEntries(getReadableDatabase(), "tags");
   }
 
+  @SuppressLint("Range")
   public boolean insertTag(String uii, String name, String room, String workplace) {
     int nameId=1;
     int roomId=1;
@@ -219,31 +197,28 @@ public class DBHelper extends SQLiteOpenHelper {
     return true;
   }
 
-  public boolean insertName(String name) {
+  public void insertName(String name) {
     System.out.println("insertName");
     ContentValues contentValues = new ContentValues();
     contentValues.put("name", name);
     SQLiteDatabase mDb = this.getWritableDatabase();
     mDb.insert("names", null, contentValues);
-    return true;
   }
 
-  public boolean insertRoom(String name) {
+  public void insertRoom(String name) {
     System.out.println("insertRoom");
     ContentValues contentValues = new ContentValues();
     contentValues.put("name", name);
     SQLiteDatabase mDb = this.getWritableDatabase();
     mDb.insert("rooms", null, contentValues);
-    return true;
   }
 
-  public boolean insertWorkplace(String name) {
+  public void insertWorkplace(String name) {
     System.out.println("insertWorkplace");
     ContentValues contentValues = new ContentValues();
     contentValues.put("name", name);
     SQLiteDatabase mDb = this.getWritableDatabase();
     mDb.insert("workplaces", null, contentValues);
-    return true;
   }
 
   public Cursor selectATag(String uii) {
@@ -270,6 +245,7 @@ public class DBHelper extends SQLiteOpenHelper {
     return mDb.rawQuery(sql,new String[]{name});
   }
 
+  @SuppressLint("Range")
   public boolean updateTag(String uii, String name, String room, String workplace) {
     int roomId=1;
     int workplaceId=1;
@@ -342,15 +318,17 @@ public class DBHelper extends SQLiteOpenHelper {
     System.out.println("type:"+type);
     System.out.println(type.equals("room"));
     String queryString="";
-  if (type.equals("workplaces")){//passe pas la condition ici
-     queryString = "SELECT _id,name FROM workplaces";
-  }
-  else if (type.equals("rooms")){
-    queryString = "SELECT _id,name FROM rooms";
-  }
-  else if (type.equals("names")){
-    queryString = "SELECT _id,name FROM names";
-  }
+    switch (type) {
+      case "workplaces": //passe pas la condition ici
+        queryString = "SELECT _id,name FROM workplaces";
+        break;
+      case "rooms":
+        queryString = "SELECT _id,name FROM rooms";
+        break;
+      case "names":
+        queryString = "SELECT _id,name FROM names";
+        break;
+    }
 
     if (constraint != null) {
       // Query for any rows where the state name begins with the
