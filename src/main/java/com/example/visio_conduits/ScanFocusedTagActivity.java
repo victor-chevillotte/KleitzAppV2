@@ -41,14 +41,13 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public String focusedTagName = "";
     public String focusedTagRoom = "";
     public String focusedTagWorkPlace = "";
-    private final static String TAG = "ScanListActivity";
     public BluetoothAdapter mBtAdapter = null;
     private static final int NEW_TAG_NAME = 1;
 
     public TextView nameTV, roomTV, workplaceTV, EPCTV, device_battery;
 
     public static final String TAG_EPC = "tagEpc";
-    private final DBHelper mydb = new DBHelper(this,  null, 1, this);
+    private final DBHelper mydb = new DBHelper(this, null, 1, this);
 
     public final BroadcastReceiver bluetoothBroadcastReceiver = new BroadcastReceiver() {
 
@@ -109,7 +108,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             }
 
             public void onKeyUp(int keycode) {
-                Log.d(TAG, "  keycode =" + keycode + "   ,isExit=" + isExit);
                 stopInventory();
             }
         });
@@ -158,7 +156,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
         InventoryLoop.setOnClickListener(this);
         btStop.setOnClickListener(this);
-        Button nameTag =  findViewById(R.id.InventoryFocusAddModifyTag);
+        Button nameTag = findViewById(R.id.InventoryFocusAddModifyTag);
         Cursor cursor = mydb.selectATag(focusedTagEPC);
         if (cursor.moveToFirst() && cursor.getCount() != 0) {
             nameTag.setText(R.string.modify_tag_name);
@@ -169,11 +167,11 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
         EPCTV = findViewById(R.id.FocusTagEPC);
         EPCTV.setText(focusedTagEPC);
-        nameTV =  findViewById(R.id.FocusTagName);
+        nameTV = findViewById(R.id.FocusTagName);
         nameTV.setText(focusedTagName);
         roomTV = findViewById(R.id.FocusTagRoom);
         roomTV.setText(focusedTagRoom);
-        workplaceTV =  findViewById(R.id.FocusTagWorkplace);
+        workplaceTV = findViewById(R.id.FocusTagWorkplace);
         workplaceTV.setText(focusedTagWorkPlace);
 
         nameTag.setOnClickListener(v -> {
@@ -231,9 +229,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public void onPause() {
         handlerRefreshBattery.removeCallbacks(runnable); //stop handler when activity not visible
         super.onPause();
-        if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-            stopInventory();
-        }
+        stopInventory();
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -299,8 +295,11 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     class TagThread extends Thread {
 
         public void run() {
-            btStop.setEnabled(true);
-            InventoryLoop.setEnabled(false);
+            runOnUiThread(() -> {
+                btStop.setEnabled(true);
+                InventoryLoop.setEnabled(false);
+            });
+
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
                 isScanningTags = true;
@@ -322,7 +321,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 }
 
             }
-            stopInventory();
         }
     }
 
@@ -336,17 +334,20 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             UHFTAGInfo uhftagInfo = list.get(k);
             if (!TextUtils.isEmpty(uhftagInfo.getEPC()) && uhftagInfo.getEPC().equals(focusedTagEPC)) {//ici
                 int distance = (int) Double.parseDouble(uhftagInfo.getRssi().replaceAll(",", "."));
-                distance = - distance - 40;
+                distance = -distance - 40;
                 if (distance <= 0) {
                     distance = 0;
                 }
-                tv_distance.setText(distance + " cm");
-                pb_distance.setProgress(100 - distance);
-                tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+                int finalDistance = distance;
+                runOnUiThread(() -> {
+                    tv_distance.setText(finalDistance + " cm");
+                    pb_distance.setProgress(100 - finalDistance);
+                    tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+                });
                 break;
+                }
             }
         }
+
+
     }
-
-
-}
