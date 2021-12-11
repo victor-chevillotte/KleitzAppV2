@@ -269,7 +269,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         clearData();
         List<String[]> deviceFavoritesList = FileUtils.readXmlList(FAV_TAGS_FILE_NAME);
         for (String[] device : deviceFavoritesList) {
-            MyTag favoriteTag = new MyTag(device[0], device[1], device[2], "", true);
+            MyTag favoriteTag = new MyTag(device[0], device[1], device[2], "Non détécté", true);
             addTag(favoriteTag);
         }
     }
@@ -356,7 +356,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                             case R.id.detections:
                                 sortType = SORT_BY_DETECTIONS_NUM;
                                 break;
-                            default :
+                            default:
                                 break;
                         }
                         sortTagsList();
@@ -380,10 +380,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             MyTag tag = iterator.next();
             if (!tag.getIsFavorites()) {
                 iterator.remove();
-            }
-            else {
+            } else {
                 tag.setNbrDetections(true);
-                tag.setRssi("0");
+                tag.setRssi("Non détecté");
             }
         }
         sortTagsList();
@@ -392,32 +391,33 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         tagsAdapter.notifyDataSetChanged();
     }
 
-    private void sortTagsList (){
+    private void sortTagsList() {
         Collections.sort(tagsList, (tag1, tag2) -> {
-            if (sortType == SORT_BY_NAME){
+            if (tag1.getIsFavorites()) {
+                if (tagsList.get(0) != tag1 && !tagsList.get(0).getIsFavorites())
+                    return -1;
+                else
+                    return 0;
+            }
+            if (sortType == SORT_BY_NAME) {
                 String s1 = tag1.getName();
                 String s2 = tag2.getName();
                 return s1.compareToIgnoreCase(s2);
-            }
-            else if  (sortType == SORT_BY_TYPE){
+            } else if (sortType == SORT_BY_TYPE) {
                 String s1 = tag1.getType();
                 String s2 = tag2.getType();
                 return s1.compareToIgnoreCase(s2);
-            }
-            else if  (sortType == SORT_BY_RSSI){
+            } else if (sortType == SORT_BY_RSSI) {
                 String s1 = tag1.getRssi();
                 String s2 = tag2.getRssi();
                 return s1.compareToIgnoreCase(s2);
-            }
-            else if  (sortType == SORT_BY_DETECTIONS_NUM){
+            } else if (sortType == SORT_BY_DETECTIONS_NUM) {
                 int n1 = tag1.getNbrDetections();
                 int n2 = tag2.getNbrDetections();
                 return n2 - n1;
-            }
-            else if  (sortType == SORT_BY_NEW_DETECTIONS){
+            } else if (sortType == SORT_BY_NEW_DETECTIONS) {
                 return 0;
-            }
-            else{
+            } else {
                 return 0;
             }
         });
@@ -553,7 +553,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     }
                 }
                 if (!tagFound) {
-                    //mEmptyList.setVisibility(View.GONE);
+                    //mEmptyList.setVisibility(View.GONE);//ici
                     MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", uhftagInfo.getRssi(), false);
                     addTag(newTag);
                 }
@@ -625,7 +625,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             this.name = name;
             this.type = type;
             this.rssi = rssi;
-            this.nbrDetections = 1;
+            this.nbrDetections = 0;
             this.isFavorites = isFavorites;
         }
 
@@ -740,6 +740,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     } else {
                         showToast("Favoris ajouté");
                         tag.setIsFavorites(true);
+                        favoritefull.setVisibility(View.VISIBLE);
                         saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
                     }
                 }
