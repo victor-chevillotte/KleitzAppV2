@@ -10,15 +10,12 @@ import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,26 +25,19 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
-
-import androidx.annotation.RequiresApi;
 
 import com.example.visio_conduits.utils.DBHelper;
 import com.example.visio_conduits.utils.FileUtils;
 import com.example.visio_conduits.utils.NumberTool;
-import com.example.visio_conduits.utils.Utils;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -56,27 +46,20 @@ import soup.neumorphism.NeumorphImageButton;
 
 public class ScanListActivity extends BaseActivity implements View.OnClickListener {
 
+    @SuppressLint("StaticFieldLeak")
     public static ScanListActivity fa;
     public String remoteBTName = "";
     public String remoteBTAdd = "";
-    private final static String TAG = "ScanListActivity";
-    private static final int REQUEST_ENABLE_BT = 2;
 
     public BluetoothAdapter mBtAdapter = null;
 
-    public static final String SHOW_HISTORY_CONNECTED_LIST = "showHistoryConnectedList";
-    public static final String TAG_DATA = "tagData";
-    public static final String TAG_NAME = "tagName";
     public static final String TAG_EPC = "tagEpc";
-    public static final String TAG_COUNT = "tagCount";
-    public static final String TAG_RSSI = "tagRssi";
-    public static final String TAG_TYPE = "tagType";
     public static final int SORT_BY_NAME = 0;
     public static final int SORT_BY_TYPE = 1;
     public static final int SORT_BY_RSSI = 2;
     public static final int SORT_BY_DETECTIONS_NUM = 3;
     public static final int SORT_BY_NEW_DETECTIONS = 4;
-    private int sortType = SORT_BY_NEW_DETECTIONS;
+    private int sortType = SORT_BY_RSSI;
     private TextView device_battery;
     private ProgressBar batteryPB;
     private boolean isScanningTags = false;
@@ -105,21 +88,19 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     };
 
     private boolean loopFlag = false;
-    private ListView LvTags;
-    private NeumorphButton btnStart, btStop, btClear;
-    private NeumorphImageButton settings_button, btSort;
+    private NeumorphButton btnStart;
+    private NeumorphButton btStop;
+    private NeumorphImageButton btSort;
     private TextView tv_count, tv_total, tv_time;
     private boolean isExit = false;
     private long total = 0;
     private TagsAdapter tagsAdapter;
-    private HashMap<String, String> map;
     private List<MyTag> tagsList;
-    private List<String> tempDatas = new ArrayList<>();
     private long mStrTime;
     private ExecutorService executorService;
     private final DBHelper mydb = new DBHelper(this, "KleitzElec.db", null, 1, this);
 
-    private ConnectStatus mConnectStatus = new ConnectStatus();
+    private final ConnectStatus mConnectStatus = new ConnectStatus();
 
     final int FLAG_START = 0;
     final int FLAG_STOP = 1;
@@ -131,29 +112,24 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     final int FLAG_SET_SUCC = 12;
     final int FLAG_SET_FAIL = 13;
 
+    @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
+        @SuppressLint("SetTextI18n")
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case FLAG_STOP:
                     if (msg.arg1 == FLAG_SUCCESS) {
-                        //停止成功
                         btStop.setShapeType(1);
                         btnStart.setShapeType(0);
                     } else {
-                        //停止失败
-                        Utils.playSound(2);
                         showToast(R.string.uhf_msg_inventory_stop_fail);
                     }
                     break;
                 case FLAG_START:
                     if (msg.arg1 == FLAG_SUCCESS) {
-                        //开始读取标签成功
                         btStop.setShapeType(0);
                         btnStart.setShapeType(1);
-                    } else {
-                        //开始读取标签失败
-                        Utils.playSound(2);
                     }
                     break;
                 case FLAG_UHFINFO_LIST:
@@ -213,27 +189,26 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         initUI();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
-        Utils.initSound(getApplicationContext());
     }
 
 
     @Override
     protected void onDestroy() {
-        Utils.freeSound();
         unregisterReceiver(bluetoothBroadcastReceiver);
         isExit = true;
-        removeConnectStatusNotice((ScanListActivity.IConnectStatus) mConnectStatus);
+        removeConnectStatusNotice(mConnectStatus);
         super.onDestroy();
     }
 
+    @SuppressLint("SetTextI18n")
     private void initUI() {
         setContentView(R.layout.activity_uhf_scan_list);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!mBtAdapter.isEnabled())
             finish();
-        batteryPB = (ProgressBar) findViewById(R.id.batteryPB);
+        batteryPB = findViewById(R.id.batteryPB);
         batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
-        device_battery = (TextView) findViewById(R.id.device_battery);
+        device_battery = findViewById(R.id.device_battery);
         int precentage = uhf.getBattery();
         if (precentage >= 0) {
             device_battery.setText(precentage + "%");
@@ -246,21 +221,21 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
         }
         handlerRefreshBattery.postDelayed(runnable, delay);
-        settings_button = (NeumorphImageButton) findViewById(R.id.settings_button);
+        NeumorphImageButton settings_button = findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
         executorService = Executors.newFixedThreadPool(3);
         isExit = false;
-        LvTags = (ListView) findViewById(R.id.LvTags);
-        LvTags.setAdapter(tagsAdapter);
-        LvTags.setOnItemClickListener(mTagsListener);
+        ListView lvTags = findViewById(R.id.LvTags);
+        lvTags.setAdapter(tagsAdapter);
+        lvTags.setOnItemClickListener(mTagsListener);
         btnStart = findViewById(R.id.btnStart);
         btStop = findViewById(R.id.btStop);
         btStop.setShapeType(1);
-        btClear = findViewById(R.id.btClear);
+        NeumorphButton btClear = findViewById(R.id.btClear);
         btSort = findViewById(R.id.btSort);
-        tv_count = (TextView) findViewById(R.id.tv_count);
-        tv_total = (TextView) findViewById(R.id.tv_total);
-        tv_time = (TextView) findViewById(R.id.tv_time);
+        tv_count = findViewById(R.id.tv_count);
+        tv_total = findViewById(R.id.tv_total);
+        tv_time = findViewById(R.id.tv_time);
 
         btnStart.setOnClickListener(this);
         btClear.setOnClickListener(this);
@@ -280,27 +255,25 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
-    int delay = 1 * 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
+    int delay = 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onResume() {
 
-        handlerRefreshBattery.postDelayed(runnable = new Runnable() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            public void run() {
-                int precentage = uhf.getBattery();
-                if (precentage >= 0) {
-                    device_battery.setText(precentage + "%");
-                    batteryPB.setProgress(precentage);
-                    if (precentage <= 10)
-                        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                    else if (precentage <= 20)
-                        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
-                    else
-                        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
-                }
-                handlerRefreshBattery.postDelayed(runnable, delay);
+        handlerRefreshBattery.postDelayed(runnable = () -> {
+            int precentage = uhf.getBattery();
+            if (precentage >= 0) {
+                device_battery.setText(precentage + "%");
+                batteryPB.setProgress(precentage);
+                if (precentage <= 10)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                else if (precentage <= 20)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
+                else
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
             }
+            handlerRefreshBattery.postDelayed(runnable, delay);
         }, delay);
         super.onResume();
         setViewsEnabled(0);
@@ -315,6 +288,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -340,29 +314,26 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             case R.id.btSort:
                 PopupMenu dropDownMenu = new PopupMenu(getApplicationContext(), btSort);
                 dropDownMenu.getMenuInflater().inflate(R.menu.sort, dropDownMenu.getMenu());
-                dropDownMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        switch (menuItem.getItemId()) {
-                            case R.id.name:
-                                sortType = SORT_BY_NAME;
-                                break;
-                            case R.id.type:
-                                sortType = SORT_BY_TYPE;
-                                break;
-                            case R.id.rssi:
-                                sortType = SORT_BY_RSSI;
-                                break;
-                            case R.id.detections:
-                                sortType = SORT_BY_DETECTIONS_NUM;
-                                break;
-                            default:
-                                break;
-                        }
-                        sortTagsList();
-                        tagsAdapter.notifyDataSetChanged();
-                        return true;
+                dropDownMenu.setOnMenuItemClickListener(menuItem -> {
+                    switch (menuItem.getItemId()) {
+                        case R.id.name:
+                            sortType = SORT_BY_NAME;
+                            break;
+                        case R.id.type:
+                            sortType = SORT_BY_TYPE;
+                            break;
+                        case R.id.rssi:
+                            sortType = SORT_BY_RSSI;
+                            break;
+                        case R.id.detections:
+                            sortType = SORT_BY_DETECTIONS_NUM;
+                            break;
+                        default:
+                            break;
                     }
+                    sortTagsList();
+                    tagsAdapter.notifyDataSetChanged();
+                    return true;
                 });
                 dropDownMenu.show();
                 break;
@@ -371,6 +342,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void clearData() {
         tv_count.setText("0");
         tv_total.setText("0");
@@ -386,7 +358,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             }
         }
         sortTagsList();
-        tempDatas.clear();
         total = 0;
         tagsAdapter.notifyDataSetChanged();
     }
@@ -460,14 +431,11 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    private Runnable getModeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-                byte[] data = uhf.getEPCAndTIDUserMode();
-                Message msg = handler.obtainMessage(FLAG_GET_MODE, data);
-                handler.sendMessage(msg);
-            }
+    private final Runnable getModeRunnable = () -> {
+        if (uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
+            byte[] data = uhf.getEPCAndTIDUserMode();
+            Message msg = handler.obtainMessage(FLAG_GET_MODE, data);
+            handler.sendMessage(msg);
         }
     };
 
@@ -502,7 +470,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 if (list == null || list.size() == 0) {
                     SystemClock.sleep(1);
                 } else {
-                    Utils.playSound(1);
                     handler.sendMessage(handler.obtainMessage(FLAG_UHFINFO_LIST, list));
                 }
                 if (System.currentTimeMillis() - startTime > 100) {
@@ -516,8 +483,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     }
 
     private synchronized List<UHFTAGInfo> getUHFInfo() {
-        List<UHFTAGInfo> list = uhf.readTagFromBufferList_EpcTidUser();
-        return list;
+        return uhf.readTagFromBufferList_EpcTidUser();
     }
 
     public void saveFavoriteTags(String epc, String name, String type, Boolean remove) {
@@ -540,7 +506,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private void addEPCToList(List<UHFTAGInfo> list) {
         for (int k = 0; k < list.size(); k++) {
             UHFTAGInfo uhftagInfo = list.get(k);
-            if (!TextUtils.isEmpty(uhftagInfo.getEPC()) /* || !uhftagInfo.getEPC().startsWith("AAAA")*/) {//block other tags no tours
+            if (!uhftagInfo.getEPC().equals("") /* || !uhftagInfo.getEPC().startsWith("AAAA")*/) {//block other tags no tours
                 boolean tagFound = false;
                 for (MyTag tag : tagsList) {
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {
@@ -562,6 +528,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void addTag(MyTag tag) {
         if (tag.getEPC().startsWith("AAAAAA"))
             tag.setType("Lumière");
@@ -577,18 +544,19 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         if (cursor.moveToFirst() || cursor.getCount() != 0) {
             @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("name"));
             @SuppressLint("Range") String room = cursor.getString(cursor.getColumnIndex("room"));
-            @SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
+            //@SuppressLint("Range") String workplace = cursor.getString(cursor.getColumnIndex("workplace"));
             tag.setName(name + " " + room);
         } else {
             tagNumber++;
             tag.setName(String.valueOf(tagNumber));
         }
+        tag.setNbrDetections(false);
         tagsList.add(0, tag);
         tv_count.setText("" + tagsAdapter.getCount());
         tagsAdapter.notifyDataSetChanged();
     }
 
-    private AdapterView.OnItemClickListener mTagsListener = new AdapterView.OnItemClickListener() {
+    private final AdapterView.OnItemClickListener mTagsListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             MyTag tag = tagsList.get(position);
@@ -611,13 +579,12 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     };
 
 
-    class MyTag {
-        private String epc;
+    static class MyTag {
+        private final String epc;
         private String name;
         private String rssi;
         private String type;
         private int nbrDetections;
-        private String detectionNumber;
         private boolean isFavorites;
 
         public MyTag(String epc, String name, String type, String rssi, Boolean isFavorites) {
@@ -631,10 +598,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
         public String getEPC() {
             return epc;
-        }
-
-        public void setEPC(String epc) {
-            this.epc = epc;
         }
 
         public String getName() {
@@ -708,6 +671,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return position;
         }
 
+        @SuppressLint("InflateParams")
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewGroup vg;
@@ -718,31 +682,28 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 vg = (ViewGroup) inflater.inflate(R.layout.listtag_items, null);
             }
             MyTag tag = tagsList.get(position);
-            final TextView tvname = ((TextView) vg.findViewById(R.id.name));
-            final TextView tvtype = ((TextView) vg.findViewById(R.id.type));
-            final TextView tvcount = ((TextView) vg.findViewById(R.id.count));
-            final TextView tvrssi = (TextView) vg.findViewById(R.id.rssi);
-            final ImageView favoritefull = (ImageView) vg.findViewById(R.id.favoritefull);
-            final RelativeLayout favorite = (RelativeLayout) vg.findViewById(R.id.favorite);
+            final TextView tvname = vg.findViewById(R.id.name);
+            final TextView tvtype = vg.findViewById(R.id.type);
+            final TextView tvcount = vg.findViewById(R.id.count);
+            final TextView tvrssi = vg.findViewById(R.id.rssi);
+            final ImageView favoritefull = vg.findViewById(R.id.favoritefull);
+            final RelativeLayout favorite = vg.findViewById(R.id.favorite);
             if (tag.getIsFavorites())
                 favoritefull.setVisibility(View.VISIBLE);
             else
                 favoritefull.setVisibility(View.GONE);
 
-            favorite.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (tag.getIsFavorites()) {
-                        tag.setIsFavorites(false);
-                        favoritefull.setVisibility(View.GONE);
-                        showToast("Favoris supprimé");
-                        saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), true);
-                    } else {
-                        showToast("Favoris ajouté");
-                        tag.setIsFavorites(true);
-                        favoritefull.setVisibility(View.VISIBLE);
-                        saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
-                    }
+            favorite.setOnClickListener(v -> {
+                if (tag.getIsFavorites()) {
+                    tag.setIsFavorites(false);
+                    favoritefull.setVisibility(View.GONE);
+                    showToast("Favoris supprimé");
+                    saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), true);
+                } else {
+                    showToast("Favoris ajouté");
+                    tag.setIsFavorites(true);
+                    favoritefull.setVisibility(View.VISIBLE);
+                    saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
                 }
             });
             tvrssi.setText(tag.getRssi());

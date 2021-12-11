@@ -95,8 +95,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     final int FLAG_SET_FAIL = 13;
 
     boolean isRunning = false;
+    @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
-        @SuppressLint("HandlerLeak")
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -389,8 +389,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 if (list == null || list.size() == 0) {
                     SystemClock.sleep(1);
                 } else {
-                    Utils.playSound(1);
                     handler.sendMessage(handler.obtainMessage(FLAG_UHFINFO_LIST, list));
+                    Utils.playSound(1);
                 }
 
             }
@@ -415,6 +415,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 tv_distance.setText(distance + " cm");
                 pb_distance.setProgress(100 - distance);
                 tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+                break;
             }
         }
     }
