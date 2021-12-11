@@ -253,9 +253,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btnStart.setShapeType(enabled);
     }
 
-    Handler handlerRefreshBattery = new Handler();
+    final Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
-    int delay = 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
+    final int delay = 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -506,7 +506,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private void addEPCToList(List<UHFTAGInfo> list) {
         for (int k = 0; k < list.size(); k++) {
             UHFTAGInfo uhftagInfo = list.get(k);
-            if (!uhftagInfo.getEPC().equals("") /* || !uhftagInfo.getEPC().startsWith("AAAA")*/) {//block other tags no tours
+            if (!uhftagInfo.getEPC().equals("") ) {/* || !uhftagInfo.getEPC().startsWith("AAAA")*///block other tags no tours
                 boolean tagFound = false;
                 for (MyTag tag : tagsList) {
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {

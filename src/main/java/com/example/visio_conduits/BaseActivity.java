@@ -46,15 +46,14 @@ public class BaseActivity extends AppCompatActivity {
     public BluetoothDevice mDevice = null;
     private final static String TAG = "BaseActivity";
 
-    public boolean isScanningTags = false; //is scanningTags
-    public boolean mIsActiveDisconnect = true; // 是否主动断开连接
+    public boolean isScanningTags = false;
+    public boolean mIsActiveDisconnect = true;
 
-    private Timer mDisconnectTimer = new Timer();
+    private final Timer mDisconnectTimer = new Timer();
     private DisconnectTimerTask timerTask;
-    private long timeCountCur; // 断开时间选择
-    private long period = 1000 * 30; // 隔多少时间更新一次
-    private long lastTouchTime = System.currentTimeMillis(); // 上次接触屏幕操作的时间戳
-    private static final int RUNNING_DISCONNECT_TIMER = 10;
+    private long timeCountCur;
+    private final long period = 1000 * 30;
+    private long lastTouchTime = System.currentTimeMillis();
 
     public static final String FAV_TAGS_FILE_NAME = "BTFavTagList.xml";
     public static final String FAV_DEVICES_FILE_NAME = "BTFavDeviceList.xml";
@@ -146,24 +145,18 @@ public class BaseActivity extends AppCompatActivity {
     private static final int READ_EXTERNAL_STORAGE_PERMISSION_REQUEST=102;
     private static final int REQUEST_ACTION_LOCATION_SETTINGS = 3;
 
-    public boolean checkLocationEnable() {
-        boolean result=true;
+    public void checkLocationEnable() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSION_REQUEST);
-                result=false;
             }
         }
         if (!isLocationEnabled()) {
-            Utils.alert(this, R.string.get_location_permission, getString(R.string.tips_open_the_ocation_permission), R.drawable.webtext, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS);
-                }
+            Utils.alert(this, R.string.get_location_permission, getString(R.string.tips_open_the_ocation_permission), R.drawable.webtext, (dialog, which) -> {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS);
             });
         }
-        return result;
     }
     public void checkReadWritePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -176,19 +169,13 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
     public boolean isLocationEnabled() {
-        int locationMode = 0;
-        String locationProviders;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try {
-                locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
-            } catch (Settings.SettingNotFoundException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-        } else {
-            locationProviders = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return !TextUtils.isEmpty(locationProviders);
+        int locationMode;
+        try {
+            locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+            return false;
         }
+        return locationMode != Settings.Secure.LOCATION_MODE_OFF;
     }
 }
