@@ -85,8 +85,34 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
     };
 
+    final Handler handlerRefreshBattery = new Handler();
+    Runnable runnable;
+    final int delay = 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onResume() {
+
+        handlerRefreshBattery.postDelayed(runnable = () -> {
+            int precentage = uhf.getBattery();
+            if (precentage >= 0) {
+                device_battery.setText(precentage + "%");
+                batteryPB.setProgress(precentage);
+                if (precentage <= 10)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                else if (precentage <= 20)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
+                else
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
+            }
+            handlerRefreshBattery.postDelayed(runnable, delay);
+        }, delay);
+        super.onResume();
+        setViewsEnabled(0);
+    }
+
     private boolean loopFlag = false;
-    private NeumorphButton btnStart;
+    private NeumorphButton btStart;
     private NeumorphButton btStop;
     private NeumorphImageButton btSort;
     private TextView tv_count, tv_total, tv_time;
@@ -176,7 +202,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         ListView lvTags = findViewById(R.id.LvTags);
         lvTags.setAdapter(tagsAdapter);
         lvTags.setOnItemClickListener(mTagsListener);
-        btnStart = findViewById(R.id.btnStart);
+        btStart = findViewById(R.id.btnStart);
         btStop = findViewById(R.id.btStop);
         btStop.setShapeType(1);
         NeumorphButton btClear = findViewById(R.id.btClear);
@@ -185,7 +211,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         tv_total = findViewById(R.id.tv_total);
         tv_time = findViewById(R.id.tv_time);
 
-        btnStart.setOnClickListener(this);
+        btStart.setOnClickListener(this);
         btClear.setOnClickListener(this);
         btStop.setOnClickListener(this);
         btSort.setOnClickListener(this);
@@ -198,33 +224,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     }
 
     private void setViewsEnabled(int enabled) {
-        btnStart.setShapeType(enabled);
-    }
-
-    final Handler handlerRefreshBattery = new Handler();
-    Runnable runnable;
-    final int delay = 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
-
-    @SuppressLint("SetTextI18n")
-    @Override
-    public void onResume() {
-
-        handlerRefreshBattery.postDelayed(runnable = () -> {
-            int precentage = uhf.getBattery();
-            if (precentage >= 0) {
-                device_battery.setText(precentage + "%");
-                batteryPB.setProgress(precentage);
-                if (precentage <= 10)
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
-                else if (precentage <= 20)
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
-                else
-                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
-            }
-            handlerRefreshBattery.postDelayed(runnable, delay);
-        }, delay);
-        super.onResume();
-        setViewsEnabled(0);
+        btStart.setShapeType(enabled);
     }
 
     @Override
@@ -343,7 +343,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private void stopInventory() {
         loopFlag = false;
         btStop.setShapeType(1);
-        btnStart.setShapeType(0);
+        btStart.setShapeType(0);
         if (isScanningTags)
             uhf.stopInventory();
         isScanningTags = false;
@@ -384,7 +384,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         @SuppressLint("SetTextI18n")
         public void run() {
             btStop.setShapeType(0);
-            btnStart.setShapeType(1);
+            btStart.setShapeType(1);
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
                 isScanningTags = true;

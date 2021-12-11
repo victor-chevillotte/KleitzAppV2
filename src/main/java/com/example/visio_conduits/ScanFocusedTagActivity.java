@@ -9,12 +9,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,9 @@ import com.rscja.deviceapi.interfaces.KeyEventCallback;
 import java.util.ArrayList;
 import java.util.List;
 
+import soup.neumorphism.NeumorphButton;
+import soup.neumorphism.NeumorphImageButton;
+
 
 public class ScanFocusedTagActivity extends BaseActivity implements View.OnClickListener {
 
@@ -47,6 +52,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     public String focusedTagWorkPlace = "";
     public BluetoothAdapter mBtAdapter = null;
     private static final int NEW_TAG_NAME = 1;
+    private ProgressBar batteryPB;
     private List<MyTag> tagsList;
     private ScanListActivity.TagsAdapter tagsAdapter;
 
@@ -77,8 +83,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     };
     private boolean loopFlag = false;
-    private Button InventoryLoop;
-    private Button btStop;
+    private NeumorphButton btStart;
+    private NeumorphButton btStop;
     private ProgressBar pb_distance;
     private TextView tv_FocusTagNbDetect, tv_distance;
     private boolean isExit = false;
@@ -86,6 +92,32 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
     private final ConnectStatus mConnectStatus = new ConnectStatus();
     boolean isRunning = false;
+
+    final Handler handlerRefreshBattery = new Handler();
+    Runnable runnable;
+    final int delay = 10000; //Delay for 1 seconds  One second = 1000 milliseconds.
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onResume() {
+
+        handlerRefreshBattery.postDelayed(runnable = () -> {
+            int precentage = uhf.getBattery();
+            if (precentage >= 0) {
+                device_battery.setText(precentage + "%");
+                batteryPB.setProgress(precentage);
+                if (precentage <= 10)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
+                else if (precentage <= 20)
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
+                else
+                    batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
+            }
+            handlerRefreshBattery.postDelayed(runnable, delay);
+        }, delay);
+        super.onResume();
+        setViewsEnabled(0);
+    }
 
     private void set_activity_activate_bluetooth() {
         uhf.free();
@@ -147,18 +179,32 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         if (!mBtAdapter.isEnabled())
             finish();
         device_battery = findViewById(R.id.device_battery);
+        batteryPB = findViewById(R.id.batteryPB);
+        batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
+        device_battery = findViewById(R.id.device_battery);
+        int precentage = uhf.getBattery();
+        if (precentage >= 0) {
+            device_battery.setText(precentage + "%");
+            batteryPB.setProgress(precentage);
+            if (precentage <= 10)
+                batteryPB.setProgressTintList(ColorStateList.valueOf(Color.RED));
+            else if (precentage <= 20)
+                batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(255, 165, 0)));
+            else
+                batteryPB.setProgressTintList(ColorStateList.valueOf(Color.rgb(76, 175, 80)));
+        }
 
-        Button settings_button = findViewById(R.id.settings_button);
+        NeumorphImageButton settings_button = findViewById(R.id.settings_button);
         settings_button.setOnClickListener(this);
 
         isExit = false;
-        InventoryLoop = findViewById(R.id.InventoryLoop);
+        btStart = findViewById(R.id.btnStart);
         btStop = findViewById(R.id.btStop);
-        btStop.setEnabled(false);
+        btStop.setShapeType(1);
         pb_distance = findViewById(R.id.progressBar);
         tv_distance = findViewById(R.id.FocusTagDistance);
 
-        InventoryLoop.setOnClickListener(this);
+        btStart.setOnClickListener(this);
         btStop.setOnClickListener(this);
         Button nameTag = findViewById(R.id.InventoryFocusAddModifyTag);
         Cursor cursor = mydb.selectATag(focusedTagEPC);
@@ -168,7 +214,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             focusedTagRoom = cursor.getString(cursor.getColumnIndex("room"));
             focusedTagWorkPlace = cursor.getString(cursor.getColumnIndex("workplace"));
         }
-
+        tv_FocusTagNbDetect = findViewById(R.id.tv_FocusTagNbDetect);
         EPCTV = findViewById(R.id.FocusTagEPC);
         EPCTV.setText(focusedTagEPC);
         nameTV = findViewById(R.id.FocusTagName);
@@ -208,25 +254,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
     }
 
-    private void setViewsEnabled(boolean enabled) {
-        InventoryLoop.setEnabled(enabled);
-    }
-
-    Handler handlerRefreshBattery = new Handler();
-    Runnable runnable;
-    int delay = 1000; //Delay for 1 seconds  One second = 1000 milliseconds.
-
-    @SuppressLint("SetTextI18n")
-    @Override
-    public void onResume() {
-        //start handler as activity become visible
-        handlerRefreshBattery.postDelayed(runnable = () -> {
-            device_battery.setText(uhf.getBattery() + "%");
-
-            handlerRefreshBattery.postDelayed(runnable, delay);
-        }, delay);
-        super.onResume();
-        setViewsEnabled(true);
+    private void setViewsEnabled(int enabled) {
+        btStart.setShapeType(enabled);
     }
 
     @Override
@@ -245,7 +274,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 Intent intent = new Intent(ScanFocusedTagActivity.this, UHFSettingsActivity.class);
                 ScanFocusedTagActivity.this.startActivity(intent);
                 break;
-            case R.id.InventoryLoop:
+            case R.id.btnStart:
                 startThread();
                 break;
             case R.id.btStop:
@@ -260,8 +289,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
     private void stopInventory() {
         loopFlag = false;
-        btStop.setEnabled(false);
-        InventoryLoop.setEnabled(true);
+        btStop.setShapeType(1);
+        btStart.setShapeType(0);
         if (isScanningTags)
             uhf.stopInventory();
         isScanningTags = false;
@@ -277,13 +306,13 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    setViewsEnabled(true);
+                    setViewsEnabled(0);
                 }
             } else if (connectionStatus == ConnectionStatus.DISCONNECTED) {
                 loopFlag = false;
                 isScanningTags = false;
                 btStop.setEnabled(false);
-                setViewsEnabled(false);
+                setViewsEnabled(1);
             }
         }
     }
@@ -300,8 +329,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
         @SuppressLint("SetTextI18n")
         public void run() {
-            //btStop.setShapeType(0);
-            //btnStart.setShapeType(1);
+            btStop.setShapeType(0);
+            btStart.setShapeType(1);
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
                 isScanningTags = true;
@@ -327,63 +356,40 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         return uhf.readTagFromBufferList_EpcTidUser();
     }
 
-    private void update(UHFTAGInfo tag) {
-        runOnUiThread(() -> {
-            Utils.playSound(1);
+    private void updateDisplay(MyTag tag) {
+        if (tag.getEPC().equals(focusedTagEPC)) {
             int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
-            distance = -distance - 40;
+            distance = - distance - 40;
             if (distance <= 0) {
                 distance = 0;
             }
-            int finalDistance = distance;
-            tv_distance.setText(finalDistance + " cm");
-            pb_distance.setProgress(100 - finalDistance);
-            //tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
-        });
+            tv_distance.setText(distance + " cm");
+            pb_distance.setProgress(100 - distance);
+            tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
+            while ( distance < 100) {
+                distance = distance + 20 ;
+                Utils.playSound(1);
+            }
+        }
     }
 
     private void addEPCToList(List<UHFTAGInfo> list) {
         for (int k = 0; k < list.size(); k++) {
             UHFTAGInfo uhftagInfo = list.get(k);
-            if (!uhftagInfo.getEPC().equals(focusedTagEPC)) {/* || !uhftagInfo.getEPC().startsWith("AAAA")*///block other tags no tours
+            if (!uhftagInfo.getEPC().equals("")) {/* || !uhftagInfo.getEPC().startsWith("AAAA")*///block other tags no tours
                 boolean tagFound = false;
                 for (MyTag tag : tagsList) {
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {
                         tagFound = true;
                         tag.setRssi(uhftagInfo.getRssi());
                         tag.setNbrDetections(false);
-                        //tv_total.setText(String.valueOf(++total));
-                        runOnUiThread(() -> {
-                            Utils.playSound(1);
-                            int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
-                            distance = -distance - 40;
-                            if (distance <= 0) {
-                                distance = 0;
-                            }
-                            int finalDistance = distance;
-                            tv_distance.setText(finalDistance + " cm");
-                            pb_distance.setProgress(100 - finalDistance);
-                            //tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
-                        });
+                        runOnUiThread(() -> updateDisplay(tag));
                         break;
                     }
                 }
                 if (!tagFound) {
-                    //mEmptyList.setVisibility(View.GONE);//ici
                     MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", uhftagInfo.getRssi(), false);
                     addTag(newTag);
-                    runOnUiThread(() -> {
-                        Utils.playSound(1);
-                        int distance = (int) Double.parseDouble(newTag.getRssi().replaceAll(",", "."));
-                        distance = -distance - 40;
-                        if (distance <= 0) {
-                            distance = 0;
-                        }
-                        int finalDistance = distance;
-                        tv_distance.setText(finalDistance + " cm");
-                        pb_distance.setProgress(100 - finalDistance);
-                        //tv_FocusTagNbDetect.setText(String.valueOf(++totalFocusTagDetect));
-                    });
                 }
             }
         }
@@ -413,7 +419,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         }
         tag.setNbrDetections(false);
         tagsList.add(0, tag);
-        //tv_count.setText("" + tagsAdapter.getCount());
+        runOnUiThread(() -> updateDisplay(tag));
     }
 
 
