@@ -16,15 +16,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.visio_conduits.utils.DBHelper;
@@ -54,7 +48,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private static final int NEW_TAG_NAME = 1;
     private ProgressBar batteryPB;
     private List<MyTag> tagsList;
-    private ScanListActivity.TagsAdapter tagsAdapter;
 
     public TextView nameTV, roomTV, workplaceTV, device_battery;
 
@@ -91,7 +84,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private long totalFocusTagDetect = 0;
 
     private final ConnectStatus mConnectStatus = new ConnectStatus();
-    boolean isRunning = false;
 
     final Handler handlerRefreshBattery = new Handler();
     Runnable runnable;
@@ -178,7 +170,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         super.onDestroy();
     }
 
-    @SuppressLint("Range")
+    @SuppressLint({"Range", "SetTextI18n"})
     private void initUI() {
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!mBtAdapter.isEnabled())
@@ -363,6 +355,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         return uhf.readTagFromBufferList_EpcTidUser();
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateDisplay(MyTag tag) {
         if (tag.getEPC().equals(focusedTagEPC)) {
             int distance = (int) Double.parseDouble(tag.getRssi().replaceAll(",", "."));
@@ -480,18 +473,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
                 this.nbrDetections = 0;
             else
                 this.nbrDetections++;
-        }
-
-        public int getNbrDetections() {
-            return nbrDetections;
-        }
-
-        public Boolean getIsFavorites() {
-            return isFavorites;
-        }
-
-        public void setIsFavorites(boolean isFavorites) {
-            this.isFavorites = isFavorites;
         }
 
     }

@@ -104,7 +104,6 @@ public class AddTagNameActivity extends BaseActivity{
         }
         if(addModifyTagBtn.getText().equals("Modifier")){
             //Decide what happens when the user clicks the Modify Tag button
-            showToast("yo");
             mydb.updateTag(uiiOfFocus,name,room,workplace);
         }
         else {
