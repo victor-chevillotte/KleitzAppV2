@@ -277,7 +277,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                         default:
                             break;
                     }
-                    sortTagsList();
+                    runOnUiThread(() ->  sortTagsList());
                     runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
                     return true;
                 });
@@ -302,7 +302,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 tag.setRssi("Non détecté");
             }
         }
-        sortTagsList();
+        runOnUiThread(() ->  sortTagsList());
         total = 0;
         runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
     }
@@ -395,7 +395,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 if (list == null || list.size() == 0) {
                     SystemClock.sleep(20);
                 } else {
-                    addEPCToList(list);
+                    runOnUiThread(() -> addEPCToList(list));
                 }
             }
         }
@@ -453,7 +453,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", String.valueOf(distance), false);
                     addTag(newTag);
                 }
-                sortTagsList();
+                runOnUiThread(() ->  sortTagsList());
+                runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
             }
         }
     }
@@ -481,7 +482,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             tag.setName(String.valueOf(tagNumber));
         }
         tag.setNbrDetections(false);
-        tagsList.add(0, tag);
+        runOnUiThread(() -> tagsList.add(0, tag));
         runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
     }
 
@@ -516,7 +517,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             for (MyTag tag : tagsList) {
                 if (tag.getEPC().equals(focusedTagEPC)) {
                     Cursor cursor = mydb.selectATag(focusedTagEPC);
-
                     if (cursor.moveToFirst() && cursor.getCount() != 0) {
                         String NewTagName = cursor.getString(cursor.getColumnIndex("name"));
                         String NewTagRoom = cursor.getString(cursor.getColumnIndex("room"));
