@@ -56,7 +56,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
     private List<MyTag> tagsList;
     private ScanListActivity.TagsAdapter tagsAdapter;
 
-    public TextView nameTV, roomTV, workplaceTV, EPCTV, device_battery;
+    public TextView nameTV, roomTV, workplaceTV, device_battery;
 
     public static final String TAG_EPC = "tagEpc";
     private final DBHelper mydb = new DBHelper(this, null, 1, this);
@@ -220,8 +220,6 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
             focusedTagWorkPlace = cursor.getString(cursor.getColumnIndex("workplace"));
         }
         tv_FocusTagNbDetect = findViewById(R.id.tv_FocusTagNbDetect);
-        EPCTV = findViewById(R.id.FocusTagEPC);
-        EPCTV.setText(focusedTagEPC);
         nameTV = findViewById(R.id.FocusTagName);
         nameTV.setText(focusedTagName);
         roomTV = findViewById(R.id.FocusTagRoom);

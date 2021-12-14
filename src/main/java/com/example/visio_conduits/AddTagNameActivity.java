@@ -41,8 +41,6 @@ public class AddTagNameActivity extends BaseActivity{
 
         Intent intent = getIntent();
         uiiOfFocus = intent.getStringExtra("uii");
-        TextView uiiDisplay = findViewById(R.id.AddTagUii);
-        uiiDisplay.setText(uiiOfFocus);
         name = intent.getStringExtra("name");
         mStatNameView = findViewById(R.id.AddTagName);
         mStatNameView.setText(name);
