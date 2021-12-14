@@ -35,7 +35,6 @@
         android:textAlignment="center"/>
 
     <AutoCompleteTextView
-        style="@style/Widget.Neumorph.TextView"
         android:id="@+id/AddTagName"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
@@ -68,7 +67,6 @@
         />
 
     <AutoCompleteTextView
-        style="@style/Widget.Neumorph.TextView"
         android:id="@+id/AddTagRoom"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
@@ -102,7 +100,6 @@
         />
 
     <AutoCompleteTextView
-        style="@style/Widget.Neumorph.TextView"
         android:id="@+id/AddTagWorkplace"
         android:layout_width="250dp"
         app:layout_constraintLeft_toLeftOf="parent"

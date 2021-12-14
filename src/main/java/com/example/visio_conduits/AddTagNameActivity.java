@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -76,12 +78,15 @@ public class AddTagNameActivity extends BaseActivity{
 
         EditText tagNameEditText = findViewById(R.id.AddTagName);
         name = tagNameEditText.getText().toString();
-
+        tagNameEditText.onEditorAction(EditorInfo.IME_ACTION_DONE);
         EditText tagRoomEditText = findViewById(R.id.AddTagRoom);
         room = tagRoomEditText.getText().toString();
+        tagRoomEditText.onEditorAction(EditorInfo.IME_ACTION_DONE);
 
         EditText tagWorkplaceEditText = findViewById(R.id.AddTagWorkplace);
         workplace = tagWorkplaceEditText.getText().toString();
+        tagWorkplaceEditText.onEditorAction(EditorInfo.IME_ACTION_DONE);
+
         if (name.equals("")){
             TextView tagNameAlert = findViewById(R.id.AddTagNameAlert);
             tagNameAlert.setText(R.string.enter_name);
