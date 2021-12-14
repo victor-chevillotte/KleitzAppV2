@@ -310,9 +310,9 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private void sortTagsList() {
         Collections.sort(tagsList, (tag1, tag2) -> {
             if (tag1.getIsFavorites()) {
-                if (tagsList.get(0) != tag1 && !tagsList.get(0).getIsFavorites())
+                /*if (tagsList.get(0) != tag1 && !tagsList.get(0).getIsFavorites())
                     return -1;
-                else
+                else*/
                     return 0;
             }
             if (sortType == SORT_BY_NAME) {

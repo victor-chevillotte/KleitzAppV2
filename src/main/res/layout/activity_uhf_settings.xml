@@ -16,11 +16,13 @@
 
             <LinearLayout
                 android:layout_width="fill_parent"
+                android:visibility="gone"
                 android:layout_height="wrap_content"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp">
 
                 <TextView
+                    android:visibility="gone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/tvFrequencyBand"
@@ -36,6 +38,7 @@
 
             <LinearLayout
                 android:layout_width="fill_parent"
+                android:visibility="gone"
                 android:layout_height="wrap_content"
                 android:padding="5dp">
 
@@ -122,6 +125,16 @@
                     android:text="@string/btSetFreHop" />
             </LinearLayout>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="30dp"
+                android:padding="5dp"
+                android:text="Réglages"
+                android:layout_gravity="center"
+                android:textSize="20sp" />
+
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -132,6 +145,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
                     android:text="@string/uhf_title_power"
                     android:textSize="16sp" />
 
@@ -175,6 +189,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:paddingLeft="10dp"
+                android:visibility="gone"
                 android:paddingRight="10dp"
                 android:paddingTop="5dp">
 
@@ -196,6 +211,7 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:padding="5dp">
 
                 <Button
@@ -218,6 +234,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:padding="5dp"
+                android:layout_marginLeft="10dp"
                 android:text="@string/title_buzzer"
                 android:textSize="16sp" />
 
@@ -248,7 +265,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:padding="5dp"
+                android:padding="10dp"
+                android:layout_marginLeft="10dp"
                 android:text="Informations : "
                 android:textSize="16sp" />
 
@@ -257,6 +275,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:id="@+id/bluetooth_version"
+                android:layout_marginLeft="10dp"
                 android:text="@string/bluetooth_version"
                 android:textSize="16sp" />
 
@@ -264,6 +283,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/device_version"
+                android:layout_marginLeft="10dp"
                 android:text="device_version"
                 android:textSize="16sp" />
 
@@ -271,12 +291,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/device_battery"
+                android:layout_marginLeft="10dp"
                 android:text="Batterie"
                 android:textSize="16sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:id="@+id/device_temperature"
                 android:text="Temperature"
                 android:textSize="16sp" />
@@ -293,6 +315,7 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="12dp"
                     android:paddingRight="12dp"
+                    android:textSize="16sp"
                     android:text="@string/chooseTime" />
 
                 <Spinner
@@ -399,6 +422,7 @@
                         android:id="@+id/btSet"
                         android:text="@string/title_bt_rename"
                         android:layout_width="0dp"
+                        android:layout_marginBottom="20dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content" />
                 </LinearLayout>

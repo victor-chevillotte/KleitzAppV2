@@ -181,9 +181,9 @@
     </string-array>
 
     <!-- power -->
-    <string name="uhf_title_power">Output Power：</string>
-    <string name="uhf_btn_setpower">PowerSet </string>
-    <string name="uhf_btn_getpower">Read power</string>
+    <string name="uhf_title_power">Puisance du scanner</string>
+    <string name="uhf_btn_setpower">Modifier </string>
+    <string name="uhf_btn_getpower">Puissance actuelle</string>
 
     <string name="uhf_title_dbm">dBm</string>
 
@@ -1004,10 +1004,10 @@
         <item>gb2312</item>
     </string-array>
     <string name="title_format">Encoding Format</string>
-    <string name="title_buzzer">Buzzer</string>
-    <string name="title_buzzer_open">Buzzer Open</string>
-    <string name="title_buzzer_close">Buzzer Close</string>
-    <string name="title_bt_rename">Nom de l\'antenne</string>
+    <string name="title_buzzer">Buzzer sur le scanner</string>
+    <string name="title_buzzer_open">Activer</string>
+    <string name="title_buzzer_close">Désactiver</string>
+    <string name="title_bt_rename">Modifier le nom</string>
     <string name="title_new_name">Nouveau nom</string>
     <string name="file_title_sel_file">Choose file</string>
     <string name="file_title_sel_file_confirm">Are you sure to select the file?</string>
@@ -1073,7 +1073,7 @@
     <string name="fr">fr</string>
     <string name="ActivateBluetooth">Activer le bluetooth</string>
     <string name="titleActivateBluetooth">Veuillez activer le bluetooth sur votre téléphone pour continuer.</string>
-    <string name="btn_update_device">Mettre à jour l\'antenne</string>
+    <string name="btn_update_device">Mettre à jour le scanner</string>
     <string name="bluetooth_version">Version du Bluetooth</string>
     <string name="addTagTitle">Nommer l\'étiquette</string>
     <string name="btnRefresh">Refresh</string>
