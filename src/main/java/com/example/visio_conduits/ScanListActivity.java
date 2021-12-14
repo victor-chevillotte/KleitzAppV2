@@ -651,11 +651,13 @@ class TagsAdapter extends BaseAdapter {
                 favoritefull.setVisibility(View.GONE);
                 showToast("Favoris supprimé");
                 saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), true);
+                runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
             } else {
                 showToast("Favoris ajouté");
                 tag.setIsFavorites(true);
                 favoritefull.setVisibility(View.VISIBLE);
                 saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
+                runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
             }
         });
         tv_total.setText(total + " détections");

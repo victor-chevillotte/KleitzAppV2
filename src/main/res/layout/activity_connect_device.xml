@@ -57,7 +57,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="25dp"
-        android:indeterminateTint="@android:color/holo_orange_dark"
+        android:indeterminateTint="#15BDAE"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/swiperefreshlayout"
         app:layout_constraintStart_toEndOf="@+id/scanningDevice" />
