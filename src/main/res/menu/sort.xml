@@ -16,7 +16,7 @@
 
     <item
         android:id="@+id/detections"
-        android:title="tri par nombre de détections"
+        android:title="Tri par nombre de détections"
         android:visible="true" />
 
 </menu>

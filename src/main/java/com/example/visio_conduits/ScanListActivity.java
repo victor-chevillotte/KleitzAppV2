@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +28,6 @@ import android.widget.TextView;
 
 import com.example.visio_conduits.utils.DBHelper;
 import com.example.visio_conduits.utils.FileUtils;
-import com.example.visio_conduits.utils.NumberTool;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.ConnectionStatus;
 import com.rscja.deviceapi.interfaces.KeyEventCallback;
@@ -115,12 +113,11 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private NeumorphButton btStart;
     private NeumorphButton btStop;
     private NeumorphImageButton btSort;
-    private TextView tv_count, tv_total, tv_time;
+    private TextView tv_count, tv_total;
     private boolean isExit = false;
     private long total = 0;
     private TagsAdapter tagsAdapter;
     private List<MyTag> tagsList;
-    private long mStrTime;
     private final DBHelper mydb = new DBHelper(this, null, 1, this);
 
     private final ConnectStatus mConnectStatus = new ConnectStatus();
@@ -134,8 +131,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        checkReadWritePermission();
-        checkLocationEnable();
         setContentView(R.layout.activity_uhf_scan_list);
         uhf.setKeyEventCallback(new KeyEventCallback() {
             @Override
@@ -210,7 +205,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         btSort = findViewById(R.id.btSort);
         tv_count = findViewById(R.id.tv_count);
         tv_total = findViewById(R.id.tv_total);
-        tv_time = findViewById(R.id.tv_time);
 
         btStart.setOnClickListener(this);
         btClear.setOnClickListener(this);
@@ -293,9 +287,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
 
     @SuppressLint("SetTextI18n")
     private void clearData() {
-        tv_count.setText("0");
-        tv_total.setText("0");
-        tv_time.setText("0s");
+        tv_count.setText("0 étiquette");
+        tv_total.setText("0 détection");
 
         for (Iterator<MyTag> iterator = tagsList.iterator(); iterator.hasNext(); ) {
             MyTag tag = iterator.next();
@@ -391,22 +384,15 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             if (uhf.startInventoryTag()) {
                 loopFlag = true;
                 isScanningTags = true;
-                mStrTime = System.currentTimeMillis();
             } else {
                 showToast("Erreur de connexion à l'antenne.");
             }
-            long startTime = System.currentTimeMillis();
             while (loopFlag) {
                 List<UHFTAGInfo> list = getUHFInfo();
                 if (list == null || list.size() == 0) {
                     SystemClock.sleep(20);
                 } else {
                     addEPCToList(list);
-                }
-                if (System.currentTimeMillis() - startTime > 100) {
-                    startTime = System.currentTimeMillis();
-                    float useTime = (System.currentTimeMillis() - mStrTime) / 1000.0F;
-                    tv_time.setText(NumberTool.getPointDouble(loopFlag ? 1 : 3, useTime) + "s");
                 }
             }
         }
@@ -441,16 +427,26 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 for (MyTag tag : tagsList) {
                     if (tag.getEPC().equals(uhftagInfo.getEPC())) {
                         tagFound = true;
-                        tag.setRssi(uhftagInfo.getRssi());
+                        int distance = (int) Double.parseDouble(uhftagInfo.getRssi().replaceAll(",", "."));
+                        distance = -distance * 2 - 60;
+                        if (distance <= 0) {
+                            distance = 0;
+                        }
+                        tag.setRssi(String.valueOf(distance));
                         tag.setNbrDetections(false);
-                        tv_total.setText(String.valueOf(++total));
+                        ++total;
                         runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
                         break;
                     }
                 }
                 if (!tagFound) {
                     //mEmptyList.setVisibility(View.GONE);//ici
-                    MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", uhftagInfo.getRssi(), false);
+                    int distance = (int) Double.parseDouble(uhftagInfo.getRssi().replaceAll(",", "."));
+                    distance = -distance * 2 - 60;
+                    if (distance <= 0) {
+                        distance = 0;
+                    }
+                    MyTag newTag = new MyTag(uhftagInfo.getEPC(), "", "", String.valueOf(distance), false);
                     addTag(newTag);
                 }
                 sortTagsList();
@@ -482,7 +478,6 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         }
         tag.setNbrDetections(false);
         tagsList.add(0, tag);
-        tv_count.setText("" + tagsAdapter.getCount());
         runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
     }
 
@@ -601,7 +596,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             return position;
         }
 
-        @SuppressLint("InflateParams")
+        @SuppressLint({"InflateParams", "SetTextI18n"})
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewGroup vg;
@@ -636,7 +631,10 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                     saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
                 }
             });
-            tvrssi.setText(tag.getRssi());
+            tv_total.setText(total + " détections");
+            tv_count.setText(tagsAdapter.getCount() + " étiquettes" );
+            if (tag.getRssi() != "Non détecté")
+                tvrssi.setText(tag.getRssi() + "cm");
             tvrssi.setTextColor(Color.BLACK);
             tvcount.setText(String.valueOf(tag.getNbrDetections()));
             tvcount.setTextColor(Color.BLACK);

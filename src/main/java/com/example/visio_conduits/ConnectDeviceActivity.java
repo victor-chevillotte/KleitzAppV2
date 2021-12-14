@@ -92,8 +92,6 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        checkReadWritePermission();
-        checkLocationEnable();
         uhf.init(getApplicationContext());
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter.isEnabled())
@@ -102,6 +100,7 @@ public class ConnectDeviceActivity extends BaseActivity implements View.OnClickL
             set_activity_activate_bluetooth();
         IntentFilter bluetoothfilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(bluetoothBroadcastReceiver, bluetoothfilter);
+        checkReadWritePermission();
     }
 
     @Override

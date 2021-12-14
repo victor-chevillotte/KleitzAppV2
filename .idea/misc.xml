@@ -29,8 +29,10 @@
         <entry key="src/main/res/layout/device_address_name_list.xml" value="0.1890625" />
         <entry key="src/main/res/layout/device_element.xml" value="0.4530166109390396" />
         <entry key="src/main/res/layout/device_list.xml" value="0.3411458333333333" />
+        <entry key="src/main/res/layout/fragment_barcode.xml" value="0.18020833333333333" />
         <entry key="src/main/res/layout/listtag_items.xml" value="0.3265625" />
         <entry key="src/main/res/layout/test.xml" value="0.45" />
+        <entry key="src/main/res/layout/usuallib_normal_dialog_layout.xml" value="0.18020833333333333" />
         <entry key="src/main/res/menu/main.xml" value="0.18958333333333333" />
         <entry key="src/main/res/menu/sort.xml" value="0.18958333333333333" />
       </map>
