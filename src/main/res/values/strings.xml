@@ -1075,12 +1075,12 @@
     <string name="titleActivateBluetooth">Veuillez activer le bluetooth sur votre téléphone pour continuer.</string>
     <string name="btn_update_device">Mettre à jour le scanner</string>
     <string name="bluetooth_version">Version du Bluetooth</string>
-    <string name="addTagTitle">Nommer le scanner</string>
+    <string name="addTagTitle">Nommer l\'étiquette</string>
     <string name="btnRefresh">Refresh</string>
     <string name="ConnectTitle">Connexion à votre scanner</string>
     <string name="searching_device">Recherche de scanners</string>
     <string name="appDescription">MurVision vous permet de localiser vos conduits à travers les murs !</string>
-    <string name="modify_tag_name">Modifier le scanner</string>
+    <string name="modify_tag_name">Modifier l\'étiquette</string>
     <string name="modify_tag">Modifier</string>
     <string name="enter_name">Veuillez entrer un nom.</string>
     <string name="enter_room_name">Veuillez entrer une pièce.</string>
