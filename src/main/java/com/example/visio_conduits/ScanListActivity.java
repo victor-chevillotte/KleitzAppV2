@@ -221,6 +221,8 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
         for (String[] device : deviceFavoritesList) {
             MyTag favoriteTag = new MyTag(device[0], device[1], device[2], "Non détécté", true);
             addTag(favoriteTag);
+            favoriteTag.setNbrDetections(true);
+            runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
         }
     }
 

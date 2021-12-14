@@ -163,6 +163,7 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         Utils.initSound(getApplicationContext());
         MyTag newTag = new MyTag(focusedTagEPC, "", "", "0,0", false);
         addTag(newTag);
+        stopInventory();
     }
 
 
