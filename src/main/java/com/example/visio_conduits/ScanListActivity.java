@@ -441,6 +441,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 }
                 if (!tagFound) {
                     //mEmptyList.setVisibility(View.GONE);//ici
+                    ++total;
                     int distance = (int) Double.parseDouble(uhftagInfo.getRssi().replaceAll(",", "."));
                     distance = -distance * 2 - 60;
                     if (distance <= 0) {
@@ -634,7 +635,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
             tv_total.setText(total + " détections");
             tv_count.setText(tagsAdapter.getCount() + " étiquettes" );
             if (tag.getRssi() != "Non détecté")
-                tvrssi.setText(tag.getRssi() + "cm");
+                tvrssi.setText(tag.getRssi() + " cm");
             tvrssi.setTextColor(Color.BLACK);
             tvcount.setText(String.valueOf(tag.getNbrDetections()));
             tvcount.setTextColor(Color.BLACK);
