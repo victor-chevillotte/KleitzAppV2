@@ -1036,8 +1036,8 @@
     <string name="get_fail">Get failure</string>
     <string name="open_succ">Open success</string>
     <string name="open_fail">Open failure</string>
-    <string name="setting_succ">Setup successfully</string>
-    <string name="setting_fail">Setup failed</string>
+    <string name="setting_succ">Réglage appliqué au scanner avec succès</string>
+    <string name="setting_fail">Echec de la mise en place du réglage sur le scanner</string>
     <string name="setup">Setup</string>
     <string name="msg_disable_succ">Disable success</string>
     <string name="msg_disable_fail">Disable fail</string>

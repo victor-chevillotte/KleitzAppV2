@@ -52,17 +52,17 @@
     <string name="uhf_msg_inventory_open_fail">Open failure</string>
     <string name="uhf_msg_set_frequency_fail">Set the frequency failure</string>
     <string name="uhf_msg_set_frequency_succ">Set the frequency success</string>
-    <string name="uhf_msg_read_frequency_fail">Read the frequency failure</string>
+    <string name="uhf_msg_read_frequency_fail">Echec lors de la récupération de la fréquence du scanner</string>
     
-    <string name="uhf_msg_set_pwm_succ">Set the PWM success</string>
-    <string name="uhf_msg_set_pwm_fail">Set the PWM failure</string>
+    <string name="uhf_msg_set_pwm_succ">Puissance mise à jour avec succès</string>
+    <string name="uhf_msg_set_pwm_fail">Echec lors de la mise à jour de la puissance</string>
     
     
-    <string name="uhf_msg_read_pwm_fail">Read the PWM failure</string>
-    <string name="uhf_msg_read_frequency_succ">Read the frequency success</string>
-    <string name="uhf_msg_set_power_fail">Set the power failure</string>
-    <string name="uhf_msg_set_power_succ">Set the power success</string>
-    <string name="uhf_msg_read_power_fail">Read the power failure</string>
-    <string name="uhf_msg_read_power_succ">Read the power success</string>
+    <string name="uhf_msg_read_pwm_fail">Echec lors de la récupération de la puissance du scanner</string>
+    <string name="uhf_msg_read_frequency_succ">Puissance du scanner récupérée avec succès</string>
+    <string name="uhf_msg_set_power_fail">Echec lors de la mise à jour de la puissance</string>
+    <string name="uhf_msg_set_power_succ">Puissance du scanner mise à jour avec succès</string>
+    <string name="uhf_msg_read_power_fail">Puissance du scanner récupérée avec succès</string>
+    <string name="uhf_msg_read_power_succ">Echec lors de la récupération de la puissance du scanner</string>
 
 </resources>
