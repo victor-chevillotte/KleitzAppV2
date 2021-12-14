@@ -19,6 +19,8 @@ import android.widget.TextView;
 
 import com.example.visio_conduits.utils.DBHelper;
 
+import soup.neumorphism.NeumorphButton;
+
 public class AddTagNameActivity extends BaseActivity{
 
     public String uiiOfFocus;
@@ -74,7 +76,7 @@ public class AddTagNameActivity extends BaseActivity{
     }
 
     public void AddTagbuttonHandler(View view) {
-        Button addModifyTagBtn = findViewById(R.id.AddTagSubmitBtn);
+        NeumorphButton addModifyTagBtn = findViewById(R.id.AddTagSubmitBtn);
 
         EditText tagNameEditText = findViewById(R.id.AddTagName);
         name = tagNameEditText.getText().toString();
@@ -102,8 +104,9 @@ public class AddTagNameActivity extends BaseActivity{
             tagWorkplaceAlert.setText(R.string.enter_workplace_name);
             return;
         }
-        if(addModifyTagBtn.getText()=="Modifier"){
+        if(addModifyTagBtn.getText().equals("Modifier")){
             //Decide what happens when the user clicks the Modify Tag button
+            showToast("yo");
             mydb.updateTag(uiiOfFocus,name,room,workplace);
         }
         else {

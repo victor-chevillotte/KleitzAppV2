@@ -1,6 +1,7 @@
 package com.example.visio_conduits;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -55,6 +56,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     public static final int SORT_BY_RSSI = 2;
     public static final int SORT_BY_DETECTIONS_NUM = 3;
     public static final int SORT_BY_NEW_DETECTIONS = 4;
+    private String focusedTagEPC = "";
     private int sortType = SORT_BY_RSSI;
     private TextView device_battery;
     private ProgressBar batteryPB;
@@ -119,6 +121,7 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
     private TagsAdapter tagsAdapter;
     private List<MyTag> tagsList;
     private final DBHelper mydb = new DBHelper(this, null, 1, this);
+    private static final int TAG_RENAME = 1;
 
     private final ConnectStatus mConnectStatus = new ConnectStatus();
 
@@ -493,157 +496,180 @@ public class ScanListActivity extends BaseActivity implements View.OnClickListen
                 Bundle b2 = new Bundle();
                 b2.putString(BluetoothDevice.EXTRA_DEVICE, remoteBTName);
                 Bundle b3 = new Bundle();
-                b2.putString(TAG_EPC, tag.getEPC());
+                focusedTagEPC = tag.getEPC();
+                b2.putString(TAG_EPC, focusedTagEPC);
                 newIntent.putExtras(b);
                 newIntent.putExtras(b2);
                 newIntent.putExtras(b3);
-                ScanListActivity.this.startActivity(newIntent);
+                startActivityForResult(newIntent, TAG_RENAME);
             } else {
                 showToast(R.string.invalid_bluetooth_address);
             }
         }
     };
 
+    @SuppressLint("Range")
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == TAG_RENAME) {
+            for (MyTag tag : tagsList) {
+                if (tag.getEPC().equals(focusedTagEPC)) {
+                    Cursor cursor = mydb.selectATag(focusedTagEPC);
 
-    static class MyTag {
-        private final String epc;
-        private String name;
-        private String rssi;
-        private String type;
-        private int nbrDetections;
-        private boolean isFavorites;
-
-        public MyTag(String epc, String name, String type, String rssi, Boolean isFavorites) {
-            this.epc = epc;
-            this.name = name;
-            this.type = type;
-            this.rssi = rssi;
-            this.nbrDetections = 0;
-            this.isFavorites = isFavorites;
-        }
-
-        public String getEPC() {
-            return epc;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setRssi(String rssi) {
-            this.rssi = rssi;
-        }
-
-        public String getRssi() {
-            return this.rssi;
-        }
-
-        public void setNbrDetections(boolean reset) {
-            if (reset)
-                this.nbrDetections = 0;
-            else
-                this.nbrDetections++;
-        }
-
-        public int getNbrDetections() {
-            return nbrDetections;
-        }
-
-        public Boolean getIsFavorites() {
-            return isFavorites;
-        }
-
-        public void setIsFavorites(boolean isFavorites) {
-            this.isFavorites = isFavorites;
-        }
-
-    }
-
-    class TagsAdapter extends BaseAdapter {
-        Context context;
-        List<MyTag> tagsList;
-        LayoutInflater inflater;
-
-        public TagsAdapter(Context context, List<MyTag> tags) {
-            this.context = context;
-            inflater = LayoutInflater.from(context);
-            this.tagsList = tags;
-        }
-
-        @Override
-        public int getCount() {
-            return tagsList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return tagsList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @SuppressLint({"InflateParams", "SetTextI18n"})
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewGroup vg;
-
-            if (convertView != null) {
-                vg = (ViewGroup) convertView;
-            } else {
-                vg = (ViewGroup) inflater.inflate(R.layout.listtag_items, null);
-            }
-            MyTag tag = tagsList.get(position);
-            final TextView tvname = vg.findViewById(R.id.name);
-            final TextView tvtype = vg.findViewById(R.id.type);
-            final TextView tvcount = vg.findViewById(R.id.count);
-            final TextView tvrssi = vg.findViewById(R.id.rssi);
-            final ImageView favoritefull = vg.findViewById(R.id.favoritefull);
-            final RelativeLayout favorite = vg.findViewById(R.id.favorite);
-            if (tag.getIsFavorites())
-                favoritefull.setVisibility(View.VISIBLE);
-            else
-                favoritefull.setVisibility(View.GONE);
-
-            favorite.setOnClickListener(v -> {
-                if (tag.getIsFavorites()) {
-                    tag.setIsFavorites(false);
-                    favoritefull.setVisibility(View.GONE);
-                    showToast("Favoris supprimé");
-                    saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), true);
-                } else {
-                    showToast("Favoris ajouté");
-                    tag.setIsFavorites(true);
-                    favoritefull.setVisibility(View.VISIBLE);
-                    saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
+                    if (cursor.moveToFirst() && cursor.getCount() != 0) {
+                        String NewTagName = cursor.getString(cursor.getColumnIndex("name"));
+                        String NewTagRoom = cursor.getString(cursor.getColumnIndex("room"));
+                        tag.setName(NewTagName + " " + NewTagRoom);
+                    }
+                    runOnUiThread(() -> tagsAdapter.notifyDataSetChanged());
+                    break;
                 }
-            });
-            tv_total.setText(total + " détections");
-            tv_count.setText(tagsAdapter.getCount() + " étiquettes" );
-            if (tag.getRssi() != "Non détecté")
-                tvrssi.setText(tag.getRssi() + " cm");
-            tvrssi.setTextColor(Color.BLACK);
-            tvcount.setText(String.valueOf(tag.getNbrDetections()));
-            tvcount.setTextColor(Color.BLACK);
-            tvname.setText(tag.getName());
-            tvname.setTextColor(Color.BLACK);
-            tvtype.setText(tag.getType());
-            tvtype.setTextColor(Color.BLACK);
-            return vg;
+            }
+            focusedTagEPC = "";
         }
     }
+
+
+static class MyTag {
+    private final String epc;
+    private String name;
+    private String rssi;
+    private String type;
+    private int nbrDetections;
+    private boolean isFavorites;
+
+    public MyTag(String epc, String name, String type, String rssi, Boolean isFavorites) {
+        this.epc = epc;
+        this.name = name;
+        this.type = type;
+        this.rssi = rssi;
+        this.nbrDetections = 0;
+        this.isFavorites = isFavorites;
+    }
+
+    public String getEPC() {
+        return epc;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setRssi(String rssi) {
+        this.rssi = rssi;
+    }
+
+    public String getRssi() {
+        return this.rssi;
+    }
+
+    public void setNbrDetections(boolean reset) {
+        if (reset)
+            this.nbrDetections = 0;
+        else
+            this.nbrDetections++;
+    }
+
+    public int getNbrDetections() {
+        return nbrDetections;
+    }
+
+    public Boolean getIsFavorites() {
+        return isFavorites;
+    }
+
+    public void setIsFavorites(boolean isFavorites) {
+        this.isFavorites = isFavorites;
+    }
+
+}
+
+class TagsAdapter extends BaseAdapter {
+    Context context;
+    List<MyTag> tagsList;
+    LayoutInflater inflater;
+
+    public TagsAdapter(Context context, List<MyTag> tags) {
+        this.context = context;
+        inflater = LayoutInflater.from(context);
+        this.tagsList = tags;
+    }
+
+    @Override
+    public int getCount() {
+        return tagsList.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return tagsList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @SuppressLint({"InflateParams", "SetTextI18n"})
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewGroup vg;
+
+        if (convertView != null) {
+            vg = (ViewGroup) convertView;
+        } else {
+            vg = (ViewGroup) inflater.inflate(R.layout.listtag_items, null);
+        }
+        MyTag tag = tagsList.get(position);
+        final TextView tvname = vg.findViewById(R.id.name);
+        final TextView tvtype = vg.findViewById(R.id.type);
+        final TextView tvcount = vg.findViewById(R.id.count);
+        final TextView tvrssi = vg.findViewById(R.id.rssi);
+        final ImageView favoritefull = vg.findViewById(R.id.favoritefull);
+        final RelativeLayout favorite = vg.findViewById(R.id.favorite);
+        if (tag.getIsFavorites())
+            favoritefull.setVisibility(View.VISIBLE);
+        else
+            favoritefull.setVisibility(View.GONE);
+
+        favorite.setOnClickListener(v -> {
+            if (tag.getIsFavorites()) {
+                tag.setIsFavorites(false);
+                favoritefull.setVisibility(View.GONE);
+                showToast("Favoris supprimé");
+                saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), true);
+            } else {
+                showToast("Favoris ajouté");
+                tag.setIsFavorites(true);
+                favoritefull.setVisibility(View.VISIBLE);
+                saveFavoriteTags(tag.getEPC(), tag.getName(), tag.getType(), false);
+            }
+        });
+        tv_total.setText(total + " détections");
+        tv_count.setText(tagsAdapter.getCount() + " étiquettes");
+        if (tag.getRssi() != "Non détecté")
+            tvrssi.setText(tag.getRssi() + " cm");
+        tvrssi.setTextColor(Color.BLACK);
+        tvcount.setText(String.valueOf(tag.getNbrDetections()));
+        tvcount.setTextColor(Color.BLACK);
+        tvname.setText(tag.getName());
+        tvname.setTextColor(Color.BLACK);
+        tvtype.setText(tag.getType());
+        tvtype.setTextColor(Color.BLACK);
+        return vg;
+    }
+}
 }

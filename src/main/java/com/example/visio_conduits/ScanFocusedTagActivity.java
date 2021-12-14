@@ -169,6 +169,8 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
 
     @Override
     protected void onDestroy() {
+        Intent result = new Intent();
+        setResult(Activity.RESULT_OK, result);
         Utils.freeSound();
         unregisterReceiver(bluetoothBroadcastReceiver);
         isExit = true;
@@ -242,14 +244,18 @@ public class ScanFocusedTagActivity extends BaseActivity implements View.OnClick
         });
     }
 
+    @SuppressLint("Range")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == NEW_TAG_NAME) {//When the DeviceListActivity return, with the selected device address
             if (resultCode == Activity.RESULT_OK && data != null) {
-                focusedTagName = data.getStringExtra("NewFocusedTagName");
-                focusedTagRoom = data.getStringExtra("NewFocusedTagRoom");
-                focusedTagWorkPlace = data.getStringExtra("NewFocusedTagWorkPlace");
+                Cursor cursor = mydb.selectATag(focusedTagEPC);
+                if (cursor.moveToFirst() && cursor.getCount() != 0) {
+                    focusedTagName = cursor.getString(cursor.getColumnIndex("name"));
+                    focusedTagRoom = cursor.getString(cursor.getColumnIndex("room"));
+                    focusedTagWorkPlace = cursor.getString(cursor.getColumnIndex("workplace"));
+                }
                 nameTV.setText(focusedTagName);
                 roomTV.setText(focusedTagRoom);
                 workplaceTV.setText(focusedTagWorkPlace);
