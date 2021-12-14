@@ -5,13 +5,19 @@
     android:paddingRight="16dp"
     android:orientation="vertical" >
 
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/logo" />
 
     <TextView
         android:id="@+id/titleActivateBluetooth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="100dp"
         android:text="@string/titleActivateBluetooth"
         android:textAlignment="center"
         android:textSize="22dp" />
@@ -20,7 +26,7 @@
         android:id="@+id/btn_activate_bluetooth"
         style="@style/Widget.Neumorph.Button"
         android:layout_width="300dp"
-    android:layout_marginTop="100dp"
+    android:layout_marginTop="50dp"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:text="@string/ActivateBluetooth" />

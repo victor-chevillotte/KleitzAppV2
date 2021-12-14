@@ -13,7 +13,7 @@
         android:gravity="center"
         android:text="@string/addTagTitle"
         android:textAlignment="center"
-        android:textColor="#f6b101"
+        android:textColor= "#15BDAE"
         android:textSize="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
