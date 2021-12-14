@@ -10,6 +10,7 @@
     <ImageView
         android:layout_width="125dp"
         android:layout_height="75dp"
+        android:layout_marginTop="16dp"
         android:src="@drawable/logo"
         app:layout_constraintEnd_toStartOf="@+id/market_button"
         app:layout_constraintStart_toStartOf="parent"
